@@ -1628,6 +1628,41 @@ The money collected from the fine will be paid to CMBA within a 30 day period wh
     content: `Parent guide for post-game conversations. 1) Create Safe Emotional Space. 2) Focus on Effort and Growth, Not Outcomes. 3) Listen More Than You Talk. 4) Normalize Mistakes as Growth. 5) Be Specific in Praise. 6) Separate Athlete from Performance. After Tough Loss: acknowledge feelings. After Big Win: celebrate effort/teamwork. After Poor Performance: normalize off days. After Practice: ask what they learned. Builds resilience, confidence, intrinsic motivation, parent-child bond.`,
     driveUrl: "#",
   },
+  {
+    id: "scc-decisions",
+    title: "How The SCC Makes Decisions",
+    category: "SCC",
+    content: `The SCC makes decisions based on levels of discipline for spectators, players, coaches AND officials. Decisions are made on a case-by-case basis based on Levels of Discipline and all factors involved. SCC Investigation Process: complaint received, initial review, investigation, deliberation, decision communicated.`,
+    driveUrl: "#",
+  },
+  {
+    id: "scc-appeal",
+    title: "How To Appeal An SCC Decision",
+    category: "SCC",
+    content: `Any suspension from the SCC can be appealed to the Executive Appeals Committee. Submit written appeal within 7 days of decision. Include grounds for appeal and any new evidence.`,
+    driveUrl: "#",
+  },
+  {
+    id: "scc-conduct",
+    title: "SCC Code of Conduct",
+    category: "SCC",
+    content: `All SCC members sign a code of conduct. Confidentiality is at a premium. Any breach results in removal from SCC and potential further discipline. Members commit to fair, unbiased decision-making.`,
+    driveUrl: "#",
+  },
+  {
+    id: "edi-policy",
+    title: "Equity, Diversity and Inclusion Policy",
+    category: "About Us",
+    content: `CMBA stands against any form of racism, discrimination or harassment. Committed to equity, diversity, inclusion and access in administration, policies, programs and activities.`,
+    driveUrl: "#",
+  },
+  {
+    id: "filming-policy",
+    title: "CMBA Filming Policy",
+    category: "About Us",
+    content: `Guidelines for recording, photographing, and streaming CMBA events. Covers consent requirements, appropriate use of footage, privacy considerations, and liability waivers.`,
+    driveUrl: "#",
+  },
 ];
 
 export function searchRules(query: string): { document: RuleDocument; snippet: string; score: number }[] {

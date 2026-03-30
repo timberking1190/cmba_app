@@ -1,87 +1,154 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   Trophy,
   BookOpen,
-  Calendar,
   FileText,
   ChevronRight,
-  Clock,
-  CheckCircle,
-  Lock,
-  Play,
-  Star,
+  ExternalLink,
+  Heart,
+  Target,
+  Zap,
+  Brain,
+  ArrowRight,
 } from "lucide-react";
 
-const certPathway = [
+const LTAD_URL = "https://sportforlife.ca/long-term-development/";
+
+const developmentStages = [
   {
-    level: "Community Coach",
-    status: "in_progress",
-    progress: 65,
-    modules: 8,
-    completed: 5,
+    stage: 1,
+    title: "Tykes",
+    subtitle: "Active Start / FUNdamentals",
+    ages: "Ages 5-9",
+    color: "from-green-500 to-green-600",
+    borderColor: "border-green-500",
+    focus: "Fun, fundamental movement, exploration, play-based learning",
+    skills: [
+      "Dribble in place with both hands",
+      "Basic push shot technique",
+      "Chest & bounce pass to stationary partner",
+      "Running, jumping, sliding, skipping",
+      "Push/pull spacing concepts",
+    ],
+    equipment: "Size 3-5 ball, lowered hoops (6-8 ft)",
   },
   {
-    level: "Trained Coach",
-    status: "locked",
-    progress: 0,
-    modules: 12,
-    completed: 0,
+    stage: 2,
+    title: "Under 11",
+    subtitle: "FUNdamentals / Learn to Train",
+    ages: "Ages 9-10",
+    color: "from-blue-500 to-blue-600",
+    borderColor: "border-blue-500",
+    focus: "Physical literacy, sport-specific skills, decision-making",
+    skills: [
+      "Dribble both hands while moving",
+      "Layups from both sides",
+      "Passing to moving partners",
+      "Basic defensive stance & slides",
+      "V-cuts, L-cuts, spacing",
+    ],
+    equipment: "Size 5 ball, lowered hoops (8-9 ft)",
   },
   {
-    level: "Developed Coach",
-    status: "locked",
-    progress: 0,
-    modules: 15,
-    completed: 0,
+    stage: 3,
+    title: "Under 13",
+    subtitle: "Learn to Train",
+    ages: "Ages 11-12",
+    color: "from-yellow-500 to-yellow-600",
+    borderColor: "border-yellow-500",
+    focus: "Game-like practice, random practice, competitive engagement",
+    skills: [
+      "Advanced dribbling (hesitation, between-legs)",
+      "Shooting off the catch & dribble",
+      "Pass-and-move, skip passes",
+      "Help defense & rotation",
+      "Pick-and-roll/pop, pass-cut-fill",
+    ],
+    equipment: "Size 6 ball, regulation hoops (10 ft)",
+  },
+  {
+    stage: 4,
+    title: "Under 15",
+    subtitle: "Train to Train",
+    ages: "Ages 13-14",
+    color: "from-orange-500 to-orange-600",
+    borderColor: "border-orange-500",
+    focus: "Game-speed skills, advanced tactics, injury prevention",
+    skills: [
+      "Advanced dribble combinations in transition",
+      "Mid-range & finishing through contact",
+      "No-look passes, passing out of traps",
+      "Team defensive principles",
+      "Set plays, push/pull & pass-cut-fill applied",
+    ],
+    equipment: "Strength training introduced",
+  },
+  {
+    stage: 5,
+    title: "Under 18",
+    subtitle: "Train to Compete",
+    ages: "Ages 15-17",
+    color: "from-cmba-red to-cmba-red-dark",
+    borderColor: "border-cmba-red",
+    focus: "Skill mastery, game intelligence, leadership, mental resilience",
+    skills: [
+      "Mastery of ball-handling under pressure",
+      "Consistent shooting from 3pt under pressure",
+      "Pinpoint passing in high-pressure situations",
+      "Mastery of man-to-man, press, zone defense",
+      "Advanced offensive systems & transition",
+    ],
+    equipment: "Comprehensive strength & conditioning",
   },
 ];
 
-const recentCourses = [
+const pillars = [
   {
-    id: 1,
-    title: "Defensive Fundamentals for Youth",
-    category: "Defence",
-    division: "U10-U12",
-    progress: 80,
-    duration: "45 min",
+    icon: Target,
+    title: "Gradual Challenge",
+    desc: "Build skills progressively: 1on0, then 1onGuide, then 1on1. Balance success and challenge.",
   },
   {
-    id: 2,
-    title: "Running a Fast Break Offence",
-    category: "Offence",
-    division: "U12-U14",
-    progress: 30,
-    duration: "35 min",
+    icon: Zap,
+    title: "Block vs Random Practice",
+    desc: "Block for beginners (technique focus). Random for advanced (game-like decision-making).",
   },
   {
-    id: 3,
-    title: "Effective Communication with Players",
-    category: "Communication",
-    division: "All",
-    progress: 0,
-    duration: "25 min",
+    icon: Brain,
+    title: "High Repetition Count",
+    desc: "Build muscle memory, motor control, and automaticity through purposeful practice design.",
+  },
+  {
+    icon: Heart,
+    title: "Fun as Central Theme",
+    desc: "Play drives intrinsic motivation, creativity, social connection, and long-term participation.",
   },
 ];
 
-const upcomingClinics = [
+const coachResources = [
   {
-    id: 1,
-    title: "Spring Coaching Development Clinic",
-    date: "Apr 12, 2025",
-    time: "9:00 AM - 12:00 PM",
-    location: "Cardel Rec South",
-    spots: 8,
-    registered: true,
+    title: "Conversations in the Car",
+    desc: "Guide for parents on supporting young athletes with thoughtful post-game feedback",
+    href: "/rules",
+    search: "car conversations",
   },
   {
-    id: 2,
-    title: "Offensive Sets for U14+",
-    date: "Apr 26, 2025",
-    time: "10:00 AM - 1:00 PM",
-    location: "Shouldice Arena",
-    spots: 15,
-    registered: false,
+    title: "Concussion Management",
+    desc: "Protocol for all ages — awareness, response, symptoms, return-to-play",
+    href: "/rules",
+    search: "concussion",
+  },
+  {
+    title: "Mental Health in Coaching",
+    desc: "Fostering supportive environments, recognizing struggles, building resilience",
+    href: "/rules",
+    search: "mental health",
+  },
+  {
+    title: "Gender Differences in Coaching",
+    desc: "Age-specific considerations for coaching boys and girls effectively",
+    href: "/rules",
+    search: "gender",
   },
 ];
 
@@ -100,239 +167,241 @@ export default function CoachDashboard() {
                 </span>
               </div>
               <h1 className="font-display font-black text-4xl lg:text-5xl text-white uppercase tracking-tight leading-[0.95]">
-                COACH <span className="text-cmba-red">DASHBOARD</span>
+                ATHLETE <span className="text-cmba-red">DEVELOPMENT</span>
               </h1>
-              <p className="text-cmba-grey mt-2">
-                Track your certifications, continue courses, and register for clinics.
+              <p className="text-cmba-grey mt-2 max-w-xl">
+                CMBA&apos;s approach to developing basketball players is built on
+                the Long-Term Athlete Development (LTAD) framework and four
+                core pillars of development.
               </p>
             </div>
             <div className="flex gap-3">
-              <Link
-                href="/coach/pathway"
-                className="bg-cmba-red hover:bg-cmba-red-dark text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors"
+              <a
+                href={LTAD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-cmba-red hover:bg-cmba-red-dark text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors"
               >
-                View Pathway
-              </Link>
+                <ExternalLink size={16} />
+                Sport for Life LTAD
+              </a>
               <Link
-                href="/coach/courses"
+                href="/rules"
                 className="border border-cmba-grey-dark text-cmba-grey-light hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors"
               >
-                All Courses
+                Search Rules
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-12">
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Certification Progress */}
-            <div className="bg-cmba-black-card border border-cmba-grey-dark/20">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-cmba-grey-dark/20">
-                <h2 className="font-display font-bold text-lg text-white uppercase tracking-wider">
-                  Certification Pathway
-                </h2>
-                <Link
-                  href="/coach/pathway"
-                  className="text-xs text-cmba-red font-display font-bold uppercase tracking-wider flex items-center gap-1"
-                >
-                  Details <ChevronRight size={14} />
-                </Link>
-              </div>
-              <div className="p-6 space-y-4">
-                {certPathway.map((cert) => (
-                  <div
-                    key={cert.level}
-                    className={`flex items-center gap-4 p-4 border ${
-                      cert.status === "in_progress"
-                        ? "border-cmba-red/30 bg-cmba-red/5"
-                        : "border-cmba-grey-dark/10 opacity-50"
-                    }`}
-                  >
-                    <div className="shrink-0">
-                      {cert.status === "in_progress" ? (
-                        <div className="w-10 h-10 bg-cmba-red/20 flex items-center justify-center">
-                          <Play size={18} className="text-cmba-red" />
-                        </div>
-                      ) : (
-                        <div className="w-10 h-10 bg-cmba-grey-dark/20 flex items-center justify-center">
-                          <Lock size={18} className="text-cmba-grey-mid" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider">
-                        {cert.level}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex-1 h-2 bg-cmba-grey-dark/30 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-cmba-red rounded-full transition-all"
-                            style={{ width: `${cert.progress}%` }}
-                          />
-                        </div>
-                        <span className="font-mono text-xs text-cmba-grey-mid">
-                          {cert.completed}/{cert.modules}
-                        </span>
-                      </div>
-                    </div>
-                    {cert.status === "in_progress" && (
-                      <span className="font-display font-bold text-xs text-cmba-red bg-cmba-red/10 px-2 py-1 uppercase tracking-wider">
-                        {cert.progress}%
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Recent Courses */}
-            <div className="bg-cmba-black-card border border-cmba-grey-dark/20">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-cmba-grey-dark/20">
-                <h2 className="font-display font-bold text-lg text-white uppercase tracking-wider">
-                  Continue Learning
-                </h2>
-                <Link
-                  href="/coach/courses"
-                  className="text-xs text-cmba-red font-display font-bold uppercase tracking-wider flex items-center gap-1"
-                >
-                  All Courses <ChevronRight size={14} />
-                </Link>
-              </div>
-              <div className="divide-y divide-cmba-grey-dark/10">
-                {recentCourses.map((course) => (
-                  <Link
-                    key={course.id}
-                    href={`/coach/courses/${course.id}`}
-                    className="flex items-center gap-4 px-6 py-4 hover:bg-cmba-red/5 transition-colors group"
-                  >
-                    <div className="w-12 h-12 bg-cmba-red/10 flex items-center justify-center shrink-0">
-                      {course.progress > 0 ? (
-                        <Play size={20} className="text-cmba-red" />
-                      ) : (
-                        <BookOpen size={20} className="text-cmba-grey" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-display font-bold text-sm text-white uppercase tracking-wide truncate group-hover:text-cmba-red transition-colors">
-                        {course.title}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="font-mono text-[10px] text-cmba-grey-mid bg-cmba-black-surface px-1.5 py-0.5">
-                          {course.category}
-                        </span>
-                        <span className="font-mono text-[10px] text-cmba-grey-mid">
-                          {course.division}
-                        </span>
-                        <span className="font-mono text-[10px] text-cmba-grey-mid flex items-center gap-1">
-                          <Clock size={10} />
-                          {course.duration}
-                        </span>
-                      </div>
-                    </div>
-                    {course.progress > 0 && (
-                      <div className="text-right shrink-0">
-                        <span className="font-display font-bold text-sm text-cmba-red">
-                          {course.progress}%
-                        </span>
-                      </div>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Profile Card */}
-            <div className="bg-cmba-black-card border border-cmba-grey-dark/20 p-6 text-center">
-              <div className="w-16 h-16 bg-cmba-black-surface rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-cmba-red/30 overflow-hidden">
-                <Image src="/cmba-logo.png" alt="CMBA" width={40} height={40} className="w-10 h-10" />
-              </div>
-              <h3 className="font-display font-bold text-lg text-white uppercase">
-                John Doe
-              </h3>
-              <p className="text-xs text-cmba-grey-mid mt-1">
-                Coach · U12 Division
-              </p>
-              <div className="flex justify-center gap-2 mt-3">
-                <span className="font-mono text-[10px] bg-cmba-red/15 text-cmba-red px-2 py-1">
-                  NCCP Community
-                </span>
-                <span className="font-mono text-[10px] bg-green-500/15 text-green-400 px-2 py-1">
-                  Active
-                </span>
-              </div>
-            </div>
-
-            {/* Upcoming Clinics */}
-            <div className="bg-cmba-black-card border border-cmba-grey-dark/20">
-              <div className="px-5 py-3 border-b border-cmba-grey-dark/20">
-                <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider flex items-center gap-2">
-                  <Calendar size={16} className="text-cmba-red" />
-                  Upcoming Clinics
+      {/* Four Pillars */}
+      <section className="bg-cmba-black">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
+          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
+            Four Pillars of <span className="text-cmba-red">Development</span>
+          </h2>
+          <p className="text-cmba-grey text-sm mb-8">
+            Every CMBA coach should build their approach on these four research-backed principles.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {pillars.map((p) => (
+              <div
+                key={p.title}
+                className="bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-5 transition-colors"
+              >
+                <p.icon size={28} className="text-cmba-red mb-3" />
+                <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-2">
+                  {p.title}
                 </h3>
+                <p className="text-xs text-cmba-grey leading-relaxed">
+                  {p.desc}
+                </p>
               </div>
-              <div className="divide-y divide-cmba-grey-dark/10">
-                {upcomingClinics.map((clinic) => (
-                  <div key={clinic.id} className="px-5 py-3">
-                    <h4 className="font-display font-bold text-xs text-white uppercase tracking-wide">
-                      {clinic.title}
-                    </h4>
-                    <div className="mt-1.5 space-y-0.5">
-                      <p className="font-mono text-[10px] text-cmba-grey-mid">
-                        {clinic.date} · {clinic.time}
-                      </p>
-                      <p className="font-mono text-[10px] text-cmba-grey-mid">
-                        {clinic.location}
-                      </p>
-                    </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <span className="font-mono text-[10px] text-cmba-grey-mid">
-                        {clinic.spots} spots left
-                      </span>
-                      {clinic.registered ? (
-                        <span className="flex items-center gap-1 font-mono text-[10px] text-green-400">
-                          <CheckCircle size={10} /> Registered
-                        </span>
-                      ) : (
-                        <button className="font-display font-bold text-[10px] text-cmba-red uppercase tracking-wider hover:text-cmba-red-dark">
-                          Register
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Links */}
-            <div className="bg-cmba-black-card border border-cmba-grey-dark/20 p-5 space-y-2">
-              <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-3">
-                Quick Links
-              </h3>
-              {[
-                { label: "Age Division Resources", href: "/coach", icon: FileText },
-                { label: "Practice Plan Templates", href: "/coach", icon: FileText },
-                { label: "Video Library", href: "/coach/courses", icon: Play },
-                { label: "Coach Directory", href: "/contact", icon: Star },
-              ].map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className="flex items-center gap-2 text-xs text-cmba-grey hover:text-cmba-red transition-colors"
-                >
-                  <link.icon size={14} className="text-cmba-red/50" />
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* LTAD Development Stages */}
+      <section className="bg-cmba-black-light border-y border-cmba-grey-dark/20">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">
+              Development <span className="text-cmba-red">Stages</span>
+            </h2>
+            <a
+              href={LTAD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-cmba-red font-display font-bold uppercase tracking-wider flex items-center gap-1 hover:text-cmba-red-dark"
+            >
+              LTAD Framework <ExternalLink size={12} />
+            </a>
+          </div>
+          <p className="text-cmba-grey text-sm mb-8">
+            Based on Sport for Life&apos;s Long-Term Athlete Development model.
+            Each stage has specific learning outcomes, coaching approaches, and
+            skill focuses.
+          </p>
+
+          <div className="space-y-4">
+            {developmentStages.map((stage) => (
+              <div
+                key={stage.stage}
+                className={`bg-cmba-black-card border-l-4 ${stage.borderColor} border border-cmba-grey-dark/20`}
+              >
+                <div className="p-5 lg:p-6">
+                  <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+                    <div className="lg:w-1/3">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="font-display font-black text-3xl text-cmba-red/30">
+                          {String(stage.stage).padStart(2, "0")}
+                        </span>
+                        <div>
+                          <h3 className="font-display font-bold text-lg text-white uppercase tracking-wider">
+                            {stage.title}
+                          </h3>
+                          <p className="font-display font-semibold text-xs text-cmba-red uppercase tracking-wider">
+                            {stage.subtitle}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="font-mono text-[10px] text-cmba-grey-mid bg-cmba-black-surface px-2 py-0.5">
+                        {stage.ages}
+                      </span>
+                      <p className="text-xs text-cmba-grey mt-2 leading-relaxed">
+                        <strong className="text-cmba-grey-light">Focus:</strong>{" "}
+                        {stage.focus}
+                      </p>
+                      <p className="text-xs text-cmba-grey mt-1">
+                        <strong className="text-cmba-grey-light">Equipment:</strong>{" "}
+                        {stage.equipment}
+                      </p>
+                    </div>
+                    <div className="lg:w-2/3">
+                      <h4 className="font-display font-bold text-xs text-cmba-grey-mid uppercase tracking-widest mb-2">
+                        Learning Outcomes
+                      </h4>
+                      <div className="grid sm:grid-cols-2 gap-1.5">
+                        {stage.skills.map((skill) => (
+                          <div
+                            key={skill}
+                            className="flex items-start gap-2 text-xs text-cmba-grey"
+                          >
+                            <ChevronRight
+                              size={12}
+                              className="text-cmba-red shrink-0 mt-0.5"
+                            />
+                            {skill}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Other Important Topics */}
+      <section className="bg-cmba-black">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
+          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
+            Other Important <span className="text-cmba-red">Topics</span>
+          </h2>
+          <p className="text-cmba-grey text-sm mb-8">
+            Essential resources for CMBA coaches covering safety, mental health,
+            parent communication, and inclusive coaching.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {coachResources.map((r) => (
+              <Link
+                key={r.title}
+                href={`${r.href}?q=${encodeURIComponent(r.search)}`}
+                className="flex items-center gap-4 bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-4 transition-colors group"
+              >
+                <div className="w-10 h-10 bg-cmba-red/10 flex items-center justify-center shrink-0">
+                  <BookOpen size={20} className="text-cmba-red" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">
+                    {r.title}
+                  </h3>
+                  <p className="text-xs text-cmba-grey">{r.desc}</p>
+                </div>
+                <ArrowRight
+                  size={16}
+                  className="text-cmba-grey-dark shrink-0"
+                />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Rules Quick Links */}
+      <section className="bg-cmba-black-light border-t border-cmba-grey-dark/20">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
+          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
+            Rules & <span className="text-cmba-red">Policies</span>
+          </h2>
+          <p className="text-cmba-grey text-sm mb-8">
+            Key rules documents every coach should know.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[
+              { title: "Rules of Play (FIBA)", search: "rules of play" },
+              { title: "Division Modifications", search: "rule modifications" },
+              { title: "Discipline Policy", search: "discipline" },
+              { title: "Concussion Policy", search: "concussion" },
+              { title: "Mercy Policy", search: "mercy" },
+              { title: "Overtime Rules", search: "overtime" },
+            ].map((rule) => (
+              <Link
+                key={rule.title}
+                href={`/rules?q=${encodeURIComponent(rule.search)}`}
+                className="flex items-center gap-3 bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-3 transition-colors group"
+              >
+                <FileText size={16} className="text-cmba-red shrink-0" />
+                <span className="font-display font-bold text-xs text-cmba-grey-light uppercase tracking-wider group-hover:text-cmba-red transition-colors">
+                  {rule.title}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-cmba-red">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 text-center">
+          <p className="text-white/90 text-sm mb-4">
+            Thank you for volunteering to coach in CMBA and for taking the time
+            to grow and develop by utilizing these resources.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <a
+              href={LTAD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-2.5 hover:bg-cmba-grey-light transition-colors"
+            >
+              <ExternalLink size={14} />
+              Sport for Life LTAD Framework
+            </a>
+            <Link
+              href="/rules"
+              className="inline-flex items-center gap-2 border-2 border-white/50 text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-2.5 hover:bg-white/10 transition-colors"
+            >
+              Search All Rules & Guides
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
