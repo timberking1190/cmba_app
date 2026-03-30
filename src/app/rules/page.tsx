@@ -1,67 +1,73 @@
-import { BookOpen, MessageSquare, FileText, ArrowRight, ExternalLink } from "lucide-react";
+"use client";
 
-const RULES_DRIVE_URL =
-  "https://drive.google.com/drive/folders/1l0BUfCp8iDpIhf1-emuoesNf3ONnjz_7?usp=sharing";
+import { useState } from "react";
+import {
+  BookOpen,
+  FileText,
+  ArrowRight,
+  ExternalLink,
+  Search,
+  X,
+} from "lucide-react";
+import { searchRules, rulesDocuments, RULES_DRIVE_URL } from "@/lib/rulesData";
 
-const ruleDocuments = [
-  { title: "1 General", category: "General" },
-  { title: "3 Fees", category: "General" },
-  { title: "4 Registration", category: "Registration" },
-  { title: "5 Participation", category: "General" },
-  { title: "6 Games and Competition", category: "Games" },
-  { title: "7 Rules of Play", category: "Rules" },
-  { title: "7.1 U11 MODS", category: "Division Mods" },
-  { title: "7.2 U13 MODS", category: "Division Mods" },
-  { title: "7.3 U15 MODS", category: "Division Mods" },
-  { title: "7.4 U18 MODS", category: "Division Mods" },
-  { title: "7.5 Platinum League Rules", category: "Rules" },
-  { title: "8 Discipline", category: "Discipline" },
-  { title: "9 Officials Discipline", category: "Discipline" },
-];
+const ruleDocuments = rulesDocuments.filter((d) =>
+  /^(Section |7\.\d|FIBA)/.test(d.title) || d.title.startsWith("7.")
+);
 
-const policyDocuments = [
-  { title: "40 PT Mercy Policy", category: "Policy" },
-  { title: "Concussion Policy", category: "Policy" },
-  { title: "Forfeit Policy", category: "Policy" },
-  { title: "Jewelry Policy", category: "Policy" },
-  { title: "Overtime Rules", category: "Rules" },
-  { title: "Rule of Two", category: "Policy" },
-  { title: "Transgender Policy", category: "Policy" },
-  { title: "U11 Seeding Rules", category: "Rules" },
-];
+const policyDocuments = rulesDocuments.filter(
+  (d) =>
+    !ruleDocuments.includes(d) &&
+    (d.title.toLowerCase().includes("policy") ||
+      d.title.toLowerCase().includes("rule") ||
+      d.title.toLowerCase().includes("overtime") ||
+      d.title.toLowerCase().includes("seeding"))
+);
 
-const divisionMods = [
-  {
-    division: "U11",
-    doc: "7.1 U11 MODS",
-    description: "Modified rules for U11 age division",
-  },
-  {
-    division: "U13",
-    doc: "7.2 U13 MODS",
-    description: "Modified rules for U13 age division",
-  },
-  {
-    division: "U15",
-    doc: "7.3 U15 MODS",
-    description: "Modified rules for U15 age division",
-  },
-  {
-    division: "U18",
-    doc: "7.4 U18 MODS",
-    description: "Modified rules for U18 age division",
-  },
-];
+const otherDocuments = rulesDocuments.filter(
+  (d) => !ruleDocuments.includes(d) && !policyDocuments.includes(d)
+);
+
+const divisionMods = rulesDocuments.filter(
+  (d) =>
+    d.title.includes("U11 Rule") ||
+    d.title.includes("U13 Rule") ||
+    d.title.includes("U15 Rule") ||
+    d.title.includes("U18 Rule")
+);
 
 const popularQuestions = [
-  "Can a U11 team full-court press?",
-  "What are the overtime rules?",
+  "Can U11 full-court press?",
   "What is the mercy policy?",
-  "What are the U13 rule modifications?",
-  "What is the concussion policy?",
+  "What are the overtime rules?",
+  "U13 ball size",
+  "Concussion policy",
 ];
 
 export default function RulesPage() {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<
+    ReturnType<typeof searchRules>
+  >([]);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  const handleSearch = (q: string) => {
+    setQuery(q);
+    if (q.trim().length >= 2) {
+      setResults(searchRules(q));
+      setHasSearched(true);
+    } else {
+      setResults([]);
+      setHasSearched(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setQuery("");
+    setResults([]);
+    setHasSearched(false);
+  };
+
   return (
     <div>
       {/* Hero */}
@@ -78,30 +84,38 @@ export default function RulesPage() {
               RULES <span className="text-cmba-red">&</span> INFO
             </h1>
             <p className="text-cmba-grey text-base lg:text-lg mb-8">
-              The official CMBA rulebook and policies. All rules documents are
-              maintained in our shared Google Drive and accessible to everyone.
+              Search the official CMBA rules instantly. Type any question and get
+              answers directly from the rulebook.
             </p>
           </div>
 
-          {/* AI Search Box */}
+          {/* Search Box */}
           <div className="max-w-2xl">
             <div className="relative">
               <div className="flex items-center gap-3 bg-cmba-black-card border-2 border-cmba-red/30 focus-within:border-cmba-red px-5 py-4 transition-colors">
-                <MessageSquare size={22} className="text-cmba-red shrink-0" />
+                <Search size={22} className="text-cmba-red shrink-0" />
                 <input
                   type="text"
-                  placeholder='Ask CMBA anything... e.g. "What is the mercy policy?"'
+                  value={query}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder='Search rules... e.g. "mercy policy" or "U13 ball size"'
                   className="flex-1 bg-transparent text-cmba-grey-light text-base placeholder:text-cmba-grey-mid outline-none font-body"
                 />
-                <button className="bg-cmba-red hover:bg-cmba-red-dark text-white font-display font-bold text-sm uppercase tracking-wider px-4 py-2 transition-colors shrink-0">
-                  Ask
-                </button>
+                {query && (
+                  <button
+                    onClick={clearSearch}
+                    className="text-cmba-grey hover:text-white transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-xs text-cmba-grey-mid">Popular:</span>
-                {popularQuestions.slice(0, 3).map((q) => (
+                <span className="text-xs text-cmba-grey-mid">Try:</span>
+                {popularQuestions.map((q) => (
                   <button
                     key={q}
+                    onClick={() => handleSearch(q)}
                     className="text-xs text-cmba-grey hover:text-cmba-red bg-cmba-black-surface px-2 py-1 transition-colors"
                   >
                     {q}
@@ -112,6 +126,70 @@ export default function RulesPage() {
           </div>
         </div>
       </section>
+
+      {/* Search Results */}
+      {hasSearched && (
+        <section className="bg-cmba-black border-b border-cmba-grey-dark/20">
+          <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-12">
+            <h2 className="font-display font-bold text-lg text-white uppercase tracking-wider mb-6">
+              {results.length > 0 ? (
+                <>
+                  Found{" "}
+                  <span className="text-cmba-red">{results.length}</span>{" "}
+                  result{results.length !== 1 ? "s" : ""} for &ldquo;{query}
+                  &rdquo;
+                </>
+              ) : (
+                <>
+                  No results for &ldquo;{query}&rdquo;{" "}
+                  <span className="text-cmba-grey font-body font-normal text-sm normal-case">
+                    — Try different keywords or{" "}
+                    <a
+                      href={RULES_DRIVE_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-cmba-red underline"
+                    >
+                      browse all rules on Google Drive
+                    </a>
+                  </span>
+                </>
+              )}
+            </h2>
+            <div className="space-y-4">
+              {results.map((result) => (
+                <a
+                  key={result.document.id}
+                  href={result.document.driveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/40 p-5 transition-colors group"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-cmba-red/10 flex items-center justify-center shrink-0 mt-1">
+                      <FileText size={20} className="text-cmba-red" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-display font-bold text-base text-white uppercase tracking-wide group-hover:text-cmba-red transition-colors">
+                          {result.document.title}
+                        </h3>
+                        <ExternalLink
+                          size={12}
+                          className="text-cmba-grey-dark shrink-0"
+                        />
+                      </div>
+                      <p className="text-sm text-cmba-grey leading-relaxed">
+                        {result.snippet}
+                      </p>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* View All Rules CTA */}
       <section className="bg-cmba-red">
@@ -136,14 +214,13 @@ export default function RulesPage() {
             Core <span className="text-cmba-red">Rules</span>
           </h2>
           <p className="text-cmba-grey text-sm mb-8">
-            The foundational rules governing CMBA operations, registration,
-            games, and discipline.
+            Foundational rules governing CMBA operations, games, and discipline.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
             {ruleDocuments.map((doc) => (
               <a
-                key={doc.title}
-                href={RULES_DRIVE_URL}
+                key={doc.id}
+                href={doc.driveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-4 bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-4 transition-colors group"
@@ -176,33 +253,35 @@ export default function RulesPage() {
             Division <span className="text-cmba-red">Modifications</span>
           </h2>
           <p className="text-cmba-grey text-sm mb-8">
-            Each age division has specific rule modifications. Click to view the
-            full document.
+            Each age division has specific rule modifications.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {divisionMods.map((mod) => (
-              <a
-                key={mod.division}
-                href={RULES_DRIVE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/50 p-6 text-center transition-all card-hover group"
-              >
-                <div className="font-display font-black text-4xl text-cmba-red/30 group-hover:text-cmba-red/60 transition-colors mb-2">
-                  {mod.division}
-                </div>
-                <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-1 group-hover:text-cmba-red transition-colors">
-                  {mod.doc}
-                </h3>
-                <p className="text-xs text-cmba-grey">{mod.description}</p>
-                <div className="mt-3 flex items-center justify-center gap-1 text-cmba-red">
-                  <span className="font-mono text-[10px] uppercase">
-                    View Document
-                  </span>
-                  <ExternalLink size={10} />
-                </div>
-              </a>
-            ))}
+            {divisionMods.map((doc) => {
+              const division =
+                doc.title.match(/U\d+/)?.[0] || "Division";
+              return (
+                <a
+                  key={doc.id}
+                  href={doc.driveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/50 p-6 text-center transition-all card-hover group"
+                >
+                  <div className="font-display font-black text-4xl text-cmba-red/30 group-hover:text-cmba-red/60 transition-colors mb-2">
+                    {division}
+                  </div>
+                  <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-1 group-hover:text-cmba-red transition-colors">
+                    Rule Modifications
+                  </h3>
+                  <div className="mt-3 flex items-center justify-center gap-1 text-cmba-red">
+                    <span className="font-mono text-[10px] uppercase">
+                      View Document
+                    </span>
+                    <ExternalLink size={10} />
+                  </div>
+                </a>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -214,14 +293,13 @@ export default function RulesPage() {
             Policies <span className="text-cmba-red">& Special Rules</span>
           </h2>
           <p className="text-cmba-grey text-sm mb-8">
-            Additional policies covering specific situations including
-            concussions, forfeits, mercy rule, and more.
+            Additional policies covering specific situations.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {policyDocuments.map((doc) => (
+            {[...policyDocuments, ...otherDocuments].map((doc) => (
               <a
-                key={doc.title}
-                href={RULES_DRIVE_URL}
+                key={doc.id}
+                href={doc.driveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-4 bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-4 transition-colors group"
@@ -243,42 +321,6 @@ export default function RulesPage() {
                 />
               </a>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Additional Resources */}
-      <section className="bg-cmba-black-light border-t border-cmba-grey-dark/20">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
-          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
-            Additional <span className="text-cmba-red">Resources</span>
-          </h2>
-          <p className="text-cmba-grey text-sm mb-8">
-            Scoresheets and other downloadable resources.
-          </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            <a
-              href={RULES_DRIVE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-4 bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-4 transition-colors group"
-            >
-              <div className="w-10 h-10 bg-cmba-red/10 flex items-center justify-center shrink-0">
-                <FileText size={20} className="text-cmba-red" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-display font-bold text-sm text-white uppercase tracking-wide truncate group-hover:text-cmba-red transition-colors">
-                  CMBA U11 Scoresheet 2024
-                </h4>
-                <span className="font-mono text-[10px] text-cmba-grey-mid">
-                  PDF
-                </span>
-              </div>
-              <ExternalLink
-                size={14}
-                className="text-cmba-grey-dark group-hover:text-cmba-red transition-colors shrink-0"
-              />
-            </a>
           </div>
         </div>
       </section>
