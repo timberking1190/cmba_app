@@ -99,13 +99,36 @@ export default function HomePage() {
     <div>
       {/* Hero Section */}
       <section className="relative bg-hero-gradient overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03]">
+        <div className="absolute inset-0 opacity-[0.04]">
           <svg viewBox="0 0 1200 600" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Basketball half-court */}
             <rect x="100" y="50" width="1000" height="500" stroke="white" strokeWidth="2" />
+            {/* Center line */}
             <line x1="600" y1="50" x2="600" y2="550" stroke="white" strokeWidth="2" />
-            <circle cx="600" cy="300" r="80" stroke="white" strokeWidth="2" />
-            <rect x="100" y="150" width="200" height="300" stroke="white" strokeWidth="2" />
-            <rect x="900" y="150" width="200" height="300" stroke="white" strokeWidth="2" />
+            {/* Center circle */}
+            <circle cx="600" cy="300" r="60" stroke="white" strokeWidth="2" />
+            {/* Left key/paint area */}
+            <rect x="100" y="200" width="190" height="200" stroke="white" strokeWidth="2" />
+            {/* Left free throw circle */}
+            <circle cx="290" cy="300" r="60" stroke="white" strokeWidth="1.5" strokeDasharray="8 6" />
+            {/* Left backboard & rim */}
+            <line x1="130" y1="270" x2="130" y2="330" stroke="white" strokeWidth="3" />
+            <circle cx="145" cy="300" r="12" stroke="white" strokeWidth="1.5" />
+            {/* Left 3-point arc */}
+            <path d="M 100 140 L 220 140 Q 360 140 360 300 Q 360 460 220 460 L 100 460" stroke="white" strokeWidth="1.5" />
+            {/* Right key/paint area */}
+            <rect x="910" y="200" width="190" height="200" stroke="white" strokeWidth="2" />
+            {/* Right free throw circle */}
+            <circle cx="910" cy="300" r="60" stroke="white" strokeWidth="1.5" strokeDasharray="8 6" />
+            {/* Right backboard & rim */}
+            <line x1="1070" y1="270" x2="1070" y2="330" stroke="white" strokeWidth="3" />
+            <circle cx="1055" cy="300" r="12" stroke="white" strokeWidth="1.5" />
+            {/* Right 3-point arc */}
+            <path d="M 1100 140 L 980 140 Q 840 140 840 300 Q 840 460 980 460 L 1100 460" stroke="white" strokeWidth="1.5" />
+            {/* Basketball seams (decorative, top-right) */}
+            <circle cx="950" cy="100" r="70" stroke="white" strokeWidth="1" opacity="0.5" />
+            <path d="M 895 55 Q 950 100 895 145" stroke="white" strokeWidth="1" opacity="0.5" />
+            <path d="M 1005 55 Q 950 100 1005 145" stroke="white" strokeWidth="1" opacity="0.5" />
           </svg>
         </div>
         <div className="absolute top-0 left-0 right-0 h-1 bg-red-gradient" />
