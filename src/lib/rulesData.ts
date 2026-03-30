@@ -1579,6 +1579,55 @@ Forfeits:  Any game that is forfeited will result in the offending Association b
 The money collected from the fine will be paid to CMBA within a 30 day period which will then be passed onto the team that was forfeited on, thru their association.  Teams that forfeit twice in any season of play will come under review by the CMBA Executive and may lose their privilege to participate in CMBA League Play and/or CMBA Playoffs. Any player who plays on two teams in CMBA Spring League will be suspended and the team(s) they played on forfeit. This will also count as a forfeit and the association being fined $300.00`,
     driveUrl: "https://docs.google.com/document/d/1m66bsWkhkw36kzHP9DcNAFTWJ4kIfyOyBbn-DnxCv7s/edit?usp=sharing",
   },
+  {
+    id: "dev-guide-tykes",
+    title: "CMBA Tykes Athlete Development Guide (Ages 5-9)",
+    category: "Coach Education",
+    content: `Stage 1: Tykes - Active Start/FUNdamentals. Ball Handling: Dribble in place with both hands. Walk while dribbling. Change hands when stationary. Eyes up while dribbling. Shooting: Basic push shot close to basket. One hand shots. Power from legs. Shooting arc. Passing: Chest pass and bounce pass to stationary partner. Single hand passes. Catching soft passes. Showing targets. Movement: Running, jumping, sliding, skipping. Jump stops, side shuffles. Spatial Awareness: Push/pull concepts. 5 out spacing. Key Focus: Fun, fundamental movement, exploration, play-based learning. Modified equipment: size 3-5 ball, lowered hoops 6-8 feet.`,
+    driveUrl: "#",
+  },
+  {
+    id: "dev-guide-u11",
+    title: "CMBA U11 Athlete Development Guide (Ages 9-10)",
+    category: "Coach Education",
+    content: `Stage 2: Under 11 - FUNdamentals/Learn to Train. Ball Handling: Dribble both hands while moving. Crossovers without defense. Running while dribbling. Eyes up. Shooting: Layups both sides both hands. Shooting form fundamentals. Range to 15-18 feet. Proper arc. Passing: Moving passes. Catching on move. Single hand push passes. Defense: Basic stance and slides. Guarding ball handler. Line to rim. Help deny rim. Communication. Offense: V-cuts, L-cuts, spacing. Moving without ball. Key Focus: Physical literacy, sport-specific skills, decision-making, variability, fun. Size 5 ball, 8-9 foot hoops.`,
+    driveUrl: "#",
+  },
+  {
+    id: "dev-guide-u13",
+    title: "CMBA U13 Athlete Development Guide (Ages 11-12)",
+    category: "Coach Education",
+    content: `Stage 3: Under 13 - Learn to Train. Ball Handling: Advanced dribbling (in-and-out, between-legs, hesitation). Dribbling under pressure. Shooting: Off the catch with footwork. Layups through contact. Shooting off dribble. Passing: Pass and move. Skip passes. Lead passes. Defense: On-ball forcing weak areas. Help defense and rotation. Offense: Pick-and-roll/pop. 5v5 spacing. Push/pull concepts. Pass-cut-fill. Key Focus: Advanced physical literacy, game-like practice, random practice, competitive engagement, self-regulation. Size 6 ball, 10-foot hoops.`,
+    driveUrl: "#",
+  },
+  {
+    id: "dev-guide-u15",
+    title: "CMBA U15 Athlete Development Guide (Ages 13-14)",
+    category: "Coach Education",
+    content: `Stage 4: Under 15 - Train to Train. Ball Handling: Advanced combinations. Transition handling. Shooting: Mid-range and beyond. Finishing in paint (floaters, reverse layups). Passing: No-look, in traffic, out of double teams. Fast-break passing. Defense: On-ball priorities. Team principles (switching). Offense: Advanced pick-and-roll. Set plays. Push/pull and pass-cut-fill applied. Transition: Spacing, defensive transition, advancing with passes. Key Focus: Physical development, game-speed skill refinement, advanced tactics, autonomous motor learning, injury prevention. Strength training introduced.`,
+    driveUrl: "#",
+  },
+  {
+    id: "dev-guide-u18",
+    title: "CMBA U18 Athlete Development Guide (Ages 15-17)",
+    category: "Coach Education",
+    content: `Stage 5: Under 18 - Train to Compete. Ball Handling: Mastery under pressure. Transition reading. Shooting: Consistent three-point and mid-range under pressure. Off screens. Euro steps, acrobatic finishes. Passing: Pinpoint in high-pressure. Out of traps. Defense: Mastery of man-to-man, press, zone. Communicating rotations. Offense: Advanced systems (motion, set plays, spacing). Decision-making in sets. Transition offense. Key Focus: Physical performance, skill mastery (automatic), game intelligence, leadership, injury prevention, mental resilience.`,
+    driveUrl: "#",
+  },
+  {
+    id: "dev-pillars",
+    title: "CMBA Pillars of Athlete Development",
+    category: "Coach Education",
+    content: `Four pillars: 1) Gradual Challenge - Start 1on0, then 1onGuide, then 1on1. Build confidence and competence. 2) Block vs Random Practice - Block for beginners (technique), Random for advanced (game-like). Both essential. 3) High Repetition Count - Builds muscle memory, motor control, automaticity, neuroplasticity. Challenge Point Framework. 4) Fun as Central Theme - Intrinsic motivation, creativity, social connections, engagement, prevents burnout. Examples: 3v3, HORSE, dribbling relays, modified rules.`,
+    driveUrl: "#",
+  },
+  {
+    id: "dev-car-conversations",
+    title: "Guide to Conversations in the Car - Supporting Young Athletes",
+    category: "Coach Education",
+    content: `Parent guide for post-game conversations. 1) Create Safe Emotional Space. 2) Focus on Effort and Growth, Not Outcomes. 3) Listen More Than You Talk. 4) Normalize Mistakes as Growth. 5) Be Specific in Praise. 6) Separate Athlete from Performance. After Tough Loss: acknowledge feelings. After Big Win: celebrate effort/teamwork. After Poor Performance: normalize off days. After Practice: ask what they learned. Builds resilience, confidence, intrinsic motivation, parent-child bond.`,
+    driveUrl: "#",
+  },
 ];
 
 export function searchRules(query: string): { document: RuleDocument; snippet: string; score: number }[] {
