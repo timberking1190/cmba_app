@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   BookOpen,
   Shield,
@@ -118,8 +119,16 @@ export default function HomePage() {
                   Official Platform
                 </span>
               </div>
-              <h1 className="font-display font-black text-5xl sm:text-6xl lg:text-8xl text-white uppercase leading-[0.9] tracking-tight mb-4">
-                CMBA<br /><span className="text-cmba-red">Connect</span>
+              <Image
+                src="/cmba-logo.svg"
+                alt="CMBA"
+                width={400}
+                height={160}
+                className="h-20 sm:h-24 lg:h-32 w-auto mb-2"
+                priority
+              />
+              <h1 className="font-display font-black text-4xl sm:text-5xl lg:text-7xl text-cmba-red uppercase leading-[0.9] tracking-tight mb-4">
+                Connect
               </h1>
               <p className="font-display font-semibold text-lg sm:text-xl text-cmba-grey uppercase tracking-[4px] mb-6">
                 Calgary Minor Basketball
@@ -291,6 +300,13 @@ export default function HomePage() {
       {/* CTA */}
       <section className="bg-red-gradient">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16 text-center">
+          <Image
+            src="/cmba-logo.svg"
+            alt="CMBA"
+            width={200}
+            height={80}
+            className="h-14 lg:h-16 w-auto mx-auto mb-6 brightness-0 invert opacity-30"
+          />
           <h2 className="font-display font-black text-3xl lg:text-5xl text-white uppercase tracking-tight mb-4">Ready to Get Started?</h2>
           <p className="text-white/80 max-w-lg mx-auto mb-8">
             Whether you&apos;re coaching your first practice or officiating your hundredth game, CMBA Connect has the tools and resources you need.

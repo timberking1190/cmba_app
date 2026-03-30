@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160" fill="none">
+  <rect x="0" y="0" width="400" height="160" rx="12" fill="#EB1C24"/>
+  <path d="M0 12C0 5.373 5.373 0 12 0H120V160H12C5.373 160 0 154.627 0 148V12Z" fill="#000000"/>
+  <!-- Basketball player silhouette -->
+  <g fill="white">
+    <!-- Head -->
+    <circle cx="95" cy="28" r="14"/>
+    <!-- Body/torso -->
+    <path d="M82 44 C82 44, 78 60, 72 72 C66 84, 58 95, 55 100 L65 106 C70 98, 78 86, 84 76 C86 72, 90 64, 92 58 L82 44Z"/>
+    <!-- Right arm reaching down with ball -->
+    <path d="M92 58 C96 62, 102 68, 108 78 C112 85, 116 92, 118 100 C120 106, 118 112, 112 116 L104 110 C108 106, 108 100, 106 94 C104 88, 100 80, 96 74 L92 58Z"/>
+    <!-- Ball -->
+    <circle cx="110" cy="120" r="14"/>
+    <!-- Left arm -->
+    <path d="M82 44 C86 48, 92 50, 96 48 C100 46, 104 42, 108 38 L102 32 C98 36, 94 40, 90 42 L82 44Z"/>
+    <!-- Left leg -->
+    <path d="M55 100 C50 110, 44 122, 38 134 C34 142, 30 150, 28 156 L40 160 C42 154, 46 144, 50 136 C54 128, 58 118, 62 110 L55 100Z"/>
+    <!-- Right leg -->
+    <path d="M65 106 C72 116, 80 126, 86 134 C90 140, 94 146, 96 152 L108 148 C106 142, 102 134, 96 126 C90 118, 82 108, 76 100 L65 106Z"/>
+  </g>
+  <!-- CMBA Text -->
+  <text x="250" y="108" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="72" fill="white" text-anchor="middle" letter-spacing="-1">CMBA</text>
+</svg>

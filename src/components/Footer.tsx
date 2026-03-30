@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const footerSections = [
   {
@@ -65,14 +66,16 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-cmba-grey-dark/20 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-cmba-red rounded-sm flex items-center justify-center">
-              <span className="font-display font-black text-white text-sm leading-none">
-                C
-              </span>
-            </div>
+            <Image
+              src="/cmba-logo.svg"
+              alt="CMBA"
+              width={120}
+              height={48}
+              className="h-10 w-auto"
+            />
             <div>
               <span className="font-display font-black text-white text-lg uppercase">
-                CMBA <span className="text-cmba-red">Connect</span>
+                <span className="text-cmba-red">Connect</span>
               </span>
             </div>
           </div>

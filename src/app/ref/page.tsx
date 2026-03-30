@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Flag,
   FileText,
@@ -154,8 +155,8 @@ export default function RefDashboard() {
 
             {/* Profile Card */}
             <div className="bg-cmba-black-card border border-cmba-grey-dark/20 p-6 text-center">
-              <div className="w-16 h-16 bg-cmba-red/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Flag size={24} className="text-cmba-red" />
+              <div className="w-16 h-16 bg-cmba-black-surface rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-cmba-red/30 overflow-hidden">
+                <Image src="/cmba-icon.svg" alt="CMBA" width={40} height={40} className="w-10 h-10" />
               </div>
               <h3 className="font-display font-bold text-lg text-white uppercase">Jane Smith</h3>
               <p className="text-xs text-cmba-grey-mid mt-1">Referee · RAMP Basic Certified</p>

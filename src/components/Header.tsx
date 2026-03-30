@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Menu,
   X,
@@ -104,14 +105,17 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-4 lg:px-6 flex items-center justify-between h-14 lg:h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 bg-cmba-red rounded-sm flex items-center justify-center">
-              <span className="font-display font-black text-white text-lg leading-none">
-                C
-              </span>
-            </div>
+            <Image
+              src="/cmba-logo.svg"
+              alt="CMBA"
+              width={120}
+              height={48}
+              className="h-9 lg:h-10 w-auto"
+              priority
+            />
             <div className="hidden sm:block">
               <div className="font-display font-black text-white text-xl uppercase leading-none tracking-tight">
-                CMBA <span className="text-cmba-red">Connect</span>
+                <span className="text-cmba-red">Connect</span>
               </div>
               <div className="text-[10px] text-cmba-grey tracking-[3px] uppercase">
                 Calgary Minor Basketball

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Mail, Lock, ArrowRight, User } from "lucide-react";
 
 export default function LoginPage() {
@@ -12,11 +13,16 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-cmba-red rounded-sm flex items-center justify-center mx-auto mb-4">
-            <span className="font-display font-black text-white text-2xl leading-none">C</span>
-          </div>
+          <Image
+            src="/cmba-logo.svg"
+            alt="CMBA"
+            width={200}
+            height={80}
+            className="h-16 w-auto mx-auto mb-4"
+            priority
+          />
           <h1 className="font-display font-black text-3xl text-white uppercase tracking-tight">
-            CMBA <span className="text-cmba-red">Connect</span>
+            <span className="text-cmba-red">Connect</span>
           </h1>
           <p className="text-sm text-cmba-grey mt-2">
             {mode === "login" ? "Sign in to your account" : "Create a new account"}
