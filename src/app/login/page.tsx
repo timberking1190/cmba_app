@@ -14,7 +14,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Image
-            src="/cmba-logo.png"
+            src="/cmba-logo-md.png"
             alt="CMBA"
             width={200}
             height={80}
