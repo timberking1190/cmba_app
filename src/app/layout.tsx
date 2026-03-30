@@ -33,8 +33,8 @@ export const metadata: Metadata = {
     "The official platform for Calgary Minor Basketball Association — rules, education, certification tracking, and game reports for coaches, referees, parents, and admins.",
   keywords: ["CMBA", "Calgary", "basketball", "minor basketball", "coaches", "referees"],
   icons: {
-    icon: "/cmba-logo.png",
-    apple: "/cmba-logo.png",
+    icon: "/cmba-logo-vector.svg",
+    apple: "/cmba-logo-vector.svg",
   },
 };
 

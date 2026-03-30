@@ -120,7 +120,7 @@ export default function HomePage() {
                 </span>
               </div>
               <Image
-                src="/cmba-logo.png"
+                src="/cmba-logo-vector.svg"
                 alt="CMBA"
                 width={400}
                 height={160}
@@ -301,7 +301,7 @@ export default function HomePage() {
       <section className="bg-red-gradient">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16 text-center">
           <Image
-            src="/cmba-logo.png"
+            src="/cmba-logo-vector.svg"
             alt="CMBA"
             width={200}
             height={80}
