@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, BookOpen, GraduationCap, Flag, ClipboardList } from "lucide-react";
+import { Home, CalendarDays, BarChart3, BookOpen, ClipboardList } from "lucide-react";
 import { clsx } from "clsx";
 
+// Quick-access tabs for the broad mobile audience (families checking schedule /
+// scores). Role hubs (Coach/Ref) and everything else live in the header menu.
 const tabs = [
   { label: "Home", href: "/", icon: Home },
+  { label: "Schedule", href: "/calendar", icon: CalendarDays },
+  { label: "Standings", href: "/standings", icon: BarChart3 },
   { label: "Rules", href: "/rules", icon: BookOpen },
-  { label: "Coach", href: "/coach", icon: GraduationCap },
-  { label: "Ref", href: "/ref", icon: Flag },
   { label: "Report", href: "/game-report", icon: ClipboardList },
 ];
 

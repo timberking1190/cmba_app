@@ -61,7 +61,9 @@ export default function RootLayout({
         <GlobalFX />
 
         <Header />
-        <main className="relative z-10 min-h-screen pb-16 lg:pb-0">{children}</main>
+        {/* overflow-x-clip on mobile guards against any stray horizontal scroll;
+            visible on lg so desktop sticky sidebars are unaffected. */}
+        <main className="relative z-10 min-h-screen pb-16 lg:pb-0 overflow-x-clip lg:overflow-x-visible">{children}</main>
         <Footer />
         <MobileNav />
       </body>

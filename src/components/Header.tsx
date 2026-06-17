@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Menu, X, ChevronDown, Search, User, BookOpen, Flag,
-  Calendar, HelpCircle, Phone, Shield, BarChart3, Trophy, Users,
+  Calendar, HelpCircle, Phone, Shield, BarChart3, Trophy, Users, ClipboardList,
 } from "lucide-react";
 
 const navLinks = [
@@ -34,6 +34,7 @@ const navLinks = [
 ];
 
 const utilLinks = [
+  { label: "Game Report", href: "/game-report", icon: ClipboardList },
   { label: "FAQ", href: "/faq", icon: HelpCircle },
   { label: "Contact", href: "/contact", icon: Phone },
 ];
