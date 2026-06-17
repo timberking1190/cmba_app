@@ -1,23 +1,16 @@
-import { Mail, MapPin, ExternalLink } from "lucide-react";
+import { Mail, MapPin, Phone, ExternalLink, Clock, Camera, Share2, Video, Users } from "lucide-react";
+import { CMBA, DOCS } from "@/lib/cmbaLinks";
 
-const boardMembers = [
-  { name: "CMBA President", person: "Position TBD", email: "president@cmba.ab.ca", phone: "" },
-  { name: "Vice President", person: "Position TBD", email: "vp@cmba.ab.ca", phone: "" },
-  { name: "Registrar", person: "Position TBD", email: "registrar@cmba.ab.ca", phone: "" },
-  { name: "Treasurer", person: "Position TBD", email: "treasurer@cmba.ab.ca", phone: "" },
-  { name: "Officials Assignor", person: "Position TBD", email: "officials@cmba.ab.ca", phone: "" },
-  { name: "Coach Coordinator", person: "Position TBD", email: "coaches@cmba.ab.ca", phone: "" },
-  { name: "Discipline Chair", person: "Position TBD", email: "discipline@cmba.ab.ca", phone: "" },
-  { name: "Communications", person: "Position TBD", email: "info@cmba.ab.ca", phone: "" },
+const directory = [
+  { label: "General League Inquiries", desc: "Registration, schedules, and everything else", href: CMBA.emailHref, value: CMBA.email },
+  { label: "Executive & Board Contacts", desc: "President, registrar, age-group directors, and committees", href: DOCS.boardContacts, value: "View directory", external: true },
+  { label: "CMBA Leadership", desc: "Board, executive, and committee structure", href: DOCS.leadership, value: "View leadership", external: true },
 ];
 
-const divisionReps = [
-  { division: "U8", name: "Rep TBD", email: "u8@cmba.ab.ca" },
-  { division: "U10", name: "Rep TBD", email: "u10@cmba.ab.ca" },
-  { division: "U12", name: "Rep TBD", email: "u12@cmba.ab.ca" },
-  { division: "U14", name: "Rep TBD", email: "u14@cmba.ab.ca" },
-  { division: "U16", name: "Rep TBD", email: "u16@cmba.ab.ca" },
-  { division: "U18", name: "Rep TBD", email: "u18@cmba.ab.ca" },
+const social = [
+  { label: "Instagram", handle: "@cmbabasketball", href: CMBA.social.instagram, icon: Camera },
+  { label: "Facebook", handle: "calgaryminorbasketball", href: CMBA.social.facebook, icon: Share2 },
+  { label: "YouTube", handle: "CMBA Channel", href: CMBA.social.youtube, icon: Video },
 ];
 
 export default function ContactPage() {
@@ -26,79 +19,98 @@ export default function ContactPage() {
       <section className="bg-hero-gradient border-b-2 border-cmba-red">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
           <h1 className="font-display font-black text-4xl lg:text-5xl text-white uppercase tracking-tight leading-[0.95]">
-            CONTACT <span className="text-cmba-red">DIRECTORY</span>
+            CONTACT <span className="text-cmba-red">CMBA</span>
           </h1>
-          <p className="text-cmba-grey mt-2">Reach the right person at CMBA. All email addresses below are direct links.</p>
+          <p className="text-cmba-grey mt-2 max-w-xl">
+            Calgary Minor Basketball Association. The league office handles registration, schedules, and general inquiries.
+          </p>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-12">
-        {/* General Contact */}
-        <div className="bg-cmba-black-card border border-cmba-red/30 p-6 mb-8">
-          <h2 className="font-display font-bold text-lg text-cmba-red uppercase tracking-wider mb-4">General Contact</h2>
-          <div className="grid sm:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3">
-              <Mail size={18} className="text-cmba-red" />
-              <div>
-                <div className="font-mono text-[10px] text-cmba-grey-mid uppercase">Email</div>
-                <a href="mailto:info@cmba.ab.ca" className="text-sm text-cmba-grey-light hover:text-cmba-red transition-colors">info@cmba.ab.ca</a>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <MapPin size={18} className="text-cmba-red" />
-              <div>
-                <div className="font-mono text-[10px] text-cmba-grey-mid uppercase">Location</div>
-                <span className="text-sm text-cmba-grey-light">Calgary, Alberta</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <ExternalLink size={18} className="text-cmba-red" />
-              <div>
-                <div className="font-mono text-[10px] text-cmba-grey-mid uppercase">Website</div>
-                <a href="https://cmba.ab.ca" target="_blank" rel="noopener noreferrer" className="text-sm text-cmba-grey-light hover:text-cmba-red transition-colors">cmba.ab.ca</a>
-              </div>
-            </div>
+        {/* Primary contact */}
+        <div className="grid md:grid-cols-3 gap-px bg-white/12 border border-white/12 mb-8">
+          <a href={CMBA.emailHref} className="bg-cmba-black/80 backdrop-blur-sm p-6 group">
+            <Mail size={20} className="text-cmba-red mb-3" />
+            <div className="font-mono text-[10px] text-cmba-grey-mid uppercase tracking-widest">Email</div>
+            <div className="text-sm text-white group-hover:text-cmba-red transition-colors mt-1">{CMBA.email}</div>
+          </a>
+          <a href={CMBA.phoneHref} className="bg-cmba-black/80 backdrop-blur-sm p-6 group">
+            <Phone size={20} className="text-cmba-red mb-3" />
+            <div className="font-mono text-[10px] text-cmba-grey-mid uppercase tracking-widest">Phone (voicemail)</div>
+            <div className="text-sm text-white group-hover:text-cmba-red transition-colors mt-1">{CMBA.phone}</div>
+          </a>
+          <div className="bg-cmba-black/80 backdrop-blur-sm p-6">
+            <MapPin size={20} className="text-cmba-red mb-3" />
+            <div className="font-mono text-[10px] text-cmba-grey-mid uppercase tracking-widest">Mailing Address</div>
+            <div className="text-sm text-cmba-grey-light mt-1">{CMBA.address}</div>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* Board Members */}
-          <div className="bg-cmba-black-card border border-cmba-grey-dark/20">
-            <div className="px-6 py-4 border-b border-cmba-grey-dark/20">
-              <h2 className="font-display font-bold text-lg text-white uppercase tracking-wider">Board & Staff</h2>
+          {/* Directory */}
+          <div className="bg-cmba-black/80 backdrop-blur-sm border border-white/12">
+            <div className="px-6 py-4 border-b border-white/12 flex items-center gap-2">
+              <Users size={16} className="text-cmba-red" />
+              <h2 className="font-display font-bold text-lg text-white uppercase tracking-wider">Who to Contact</h2>
             </div>
-            <div className="divide-y divide-cmba-grey-dark/10">
-              {boardMembers.map((member) => (
-                <div key={member.name} className="flex items-center justify-between px-6 py-3">
+            <div className="divide-y divide-white/10">
+              {directory.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target={item.external ? "_blank" : undefined}
+                  rel={item.external ? "noopener noreferrer" : undefined}
+                  className="flex items-center justify-between gap-4 px-6 py-4 group"
+                >
                   <div>
-                    <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider">{member.name}</h3>
-                    <p className="font-mono text-[10px] text-cmba-grey-mid">{member.person}</p>
+                    <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">{item.label}</h3>
+                    <p className="text-xs text-cmba-grey mt-0.5">{item.desc}</p>
                   </div>
-                  <a href={`mailto:${member.email}`} className="flex items-center gap-1 font-mono text-xs text-cmba-red hover:text-cmba-red-dark transition-colors">
-                    <Mail size={12} />{member.email}
-                  </a>
-                </div>
+                  <span className="flex items-center gap-1 font-mono text-xs text-cmba-red shrink-0">
+                    {item.value}{item.external && <ExternalLink size={12} />}
+                  </span>
+                </a>
               ))}
             </div>
           </div>
 
-          {/* Division Reps */}
-          <div className="bg-cmba-black-card border border-cmba-grey-dark/20">
-            <div className="px-6 py-4 border-b border-cmba-grey-dark/20">
-              <h2 className="font-display font-bold text-lg text-white uppercase tracking-wider">Division Representatives</h2>
-            </div>
-            <div className="divide-y divide-cmba-grey-dark/10">
-              {divisionReps.map((rep) => (
-                <div key={rep.division} className="flex items-center justify-between px-6 py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="font-display font-black text-lg text-cmba-red">{rep.division}</span>
-                    <span className="font-mono text-[10px] text-cmba-grey-mid">{rep.name}</span>
+          {/* Hours + social */}
+          <div className="space-y-6">
+            <div className="bg-cmba-black/80 backdrop-blur-sm border border-white/12">
+              <div className="px-6 py-4 border-b border-white/12 flex items-center gap-2">
+                <Clock size={16} className="text-cmba-red" />
+                <h2 className="font-display font-bold text-lg text-white uppercase tracking-wider">Office Hours</h2>
+              </div>
+              <div className="divide-y divide-white/10">
+                {CMBA.officeHours.map((row) => (
+                  <div key={row.day} className="flex items-center justify-between px-6 py-2.5">
+                    <span className="text-sm text-cmba-grey-light">{row.day}</span>
+                    <span className="font-mono text-xs text-cmba-grey">{row.hours}</span>
                   </div>
-                  <a href={`mailto:${rep.email}`} className="flex items-center gap-1 font-mono text-xs text-cmba-red hover:text-cmba-red-dark transition-colors">
-                    <Mail size={12} />{rep.email}
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-cmba-black/80 backdrop-blur-sm border border-white/12 p-6">
+              <h2 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-4">Follow CMBA</h2>
+              <div className="flex flex-wrap gap-3">
+                {social.map((s) => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 border border-white/12 hover:border-cmba-red/60 px-4 py-2.5 transition-colors group"
+                  >
+                    <s.icon size={16} className="text-cmba-red" />
+                    <span className="text-xs text-cmba-grey-light group-hover:text-white transition-colors">{s.handle}</span>
                   </a>
-                </div>
-              ))}
+                ))}
+              </div>
+              <a href={CMBA.siteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 mt-5 font-mono text-xs text-cmba-red hover:text-white transition-colors">
+                <ExternalLink size={12} /> cmba.ab.ca
+              </a>
             </div>
           </div>
         </div>

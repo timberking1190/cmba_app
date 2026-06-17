@@ -1,56 +1,71 @@
 "use client";
 
-import { useState } from "react";
-import { HelpCircle, ChevronDown, Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { HelpCircle, ChevronDown, Search, ExternalLink } from "lucide-react";
+import { CMBA, REGISTER, COURSES, DOCS, REF } from "@/lib/cmbaLinks";
 
-const faqCategories = [
+type Q = { q: string; a: string; link?: { label: string; href: string; internal?: boolean } };
+
+const faqCategories: { category: string; questions: Q[] }[] = [
   {
     category: "Registration",
     questions: [
-      { q: "When does registration open for the next season?", a: "Registration typically opens in late August for the fall/winter season. Watch for announcements on CMBA Connect and via email. Early bird pricing is usually available for the first two weeks." },
-      { q: "What is the cost to register?", a: "Registration fees vary by division and are set each season by the CMBA board. Fees cover gym rental, referee costs, team jerseys, and league administration. Check the current season page for exact pricing." },
-      { q: "Can my child play up a division?", a: "Players may request to play up one division with approval from the CMBA executive. A request form must be submitted before the season starts. Playing down is not permitted." },
+      { q: "When does registration open?", a: "CMBA registers through TeamLinkt. Fall/Winter registration typically opens in late summer, and Spring League opens in late winter. Watch cmba.ab.ca and CMBA's Instagram for the exact dates each season.", link: { label: "Register a Player", href: REGISTER.player } },
+      { q: "What does it cost to register?", a: "Fees are set each season and vary by age group and league. They cover gym rental, officials, and league administration. The current fee schedule is published in CMBA's Fees document.", link: { label: "View Fees", href: DOCS.fees } },
+      { q: "How do I register my child?", a: "Create a TeamLinkt account and complete the player registration for the league and age group you want. Tykes, U11, U13, U15, and U18 are all registered the same way.", link: { label: "Player Registration", href: REGISTER.player } },
     ],
   },
   {
-    category: "Rules & Play",
+    category: "Divisions & Play",
     questions: [
-      { q: "What are the pressing rules for U10?", a: "U10 divisions use half-court press only. Full-court pressing is not permitted at any point in the game. This is designed to encourage ball handling development." },
-      { q: "Is there a shot clock?", a: "U12 uses a 30-second shot clock. U14 and above use the standard 24-second shot clock. U8 and U10 do not have a shot clock." },
-      { q: "How many players are on a team?", a: "Team sizes vary by division. U8 typically plays 4-on-4, U10 plays 5-on-5, and U12+ follows standard 5-on-5 rules. Roster sizes are set each season." },
+      { q: "What age groups does CMBA offer?", a: "CMBA runs Tykes, U11, U13, U15, and U18, across the Club Weeknight League and the Rec Weekend League, plus a Spring League and summer camps." },
+      { q: "What rules does CMBA play under?", a: "CMBA plays under the FIBA Official Rules of the Game, with CMBA modifications for each age group (U11, U13, U15, U18).", link: { label: "7. Rules of Play", href: DOCS.rulesOfPlay } },
+      { q: "Are there pressing or defense restrictions?", a: "Yes. Younger divisions require person-to-person defense and limit full-court pressing, with allowances that change by division. Always confirm against the official modification documents.", link: { label: "Rule Modifications Guide", href: DOCS.ruleModsGuide } },
     ],
   },
   {
     category: "Coaches",
     questions: [
-      { q: "What certifications do I need to coach?", a: "All head coaches must complete the NCCP Community Coach pathway as a minimum. This includes the Make Ethical Decisions online module and the Coaching Children workshop. See the Coach Hub for full pathway details." },
-      { q: "How do I register as a coach?", a: "Create an account on CMBA Connect with the 'Coach' role. You'll gain access to the Coach Hub where you can start your certification pathway and register for clinics." },
+      { q: "What training do I need to coach?", a: "All CMBA coaches must complete the mandatory online Coach Training (hosted on reach360) and Safe CMBA Interactions, and follow the Rule of Two for supervising minors.", link: { label: "Start Coach Training", href: COURSES.coachTrainingRegister } },
+      { q: "How do I register as a coach?", a: "Register as a coach on TeamLinkt, then complete your required training and explore the athlete-development guides in the Coach Hub.", link: { label: "Coach Registration", href: REGISTER.coach } },
     ],
   },
   {
     category: "Referees",
     questions: [
-      { q: "How do I become a CMBA referee?", a: "Register on CMBA Connect as a referee, complete the RAMP Basic pathway, and attend one in-person Referee Development Day. The Referee Hub has all the resources you need." },
-      { q: "How are referees assigned to games?", a: "The Officials Assignor handles game assignments. Referees can view and manage their availability through the CMBA Connect platform (coming soon)." },
+      { q: "How do I become a CMBA referee?", a: "Complete the Intro to CMBA Officiating course and review the Referee Handbook. New officials are supported through CMBA's officiating program.", link: { label: "Intro to Officiating", href: COURSES.introOfficiating } },
+      { q: "How are referees assigned to games?", a: "Game assignments and availability are managed through RAMP Assigning. Sign in to your official's account to view and manage your schedule.", link: { label: "RAMP Assigning", href: REF.assigning } },
     ],
   },
   {
-    category: "Discipline",
+    category: "Reports & Conduct",
     questions: [
-      { q: "How do I report a concern about a game?", a: "Use the Game Report feature on CMBA Connect. Select 'Concern', provide the game details, and describe the situation. All reports are reviewed by CMBA administration. No login is required." },
-      { q: "What happens after I submit a game report?", a: "You'll receive a confirmation email with a reference number. An admin will review the report and triage it. You may be contacted for additional information. Reports are handled confidentially." },
+      { q: "How do I report a concern or compliment about a game?", a: "Use the Game Report to submit a concern or a compliment. No login is required, and all submissions are reviewed by CMBA.", link: { label: "Open Game Report", href: "/game-report", internal: true } },
+      { q: "Where can I find CMBA's policies?", a: "Discipline, concussion, mercy, forfeit, and conduct policies are all published on cmba.ab.ca, including the Sportsmanship and Conduct Committee (SCC) Code of Conduct.", link: { label: "SCC Code of Conduct", href: DOCS.sccCodeOfConduct } },
     ],
   },
 ];
 
 export default function FAQPage() {
   const [openItems, setOpenItems] = useState<string[]>([]);
+  const [query, setQuery] = useState("");
 
-  const toggle = (id: string) => {
-    setOpenItems((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
-  };
+  const toggle = (id: string) =>
+    setOpenItems((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return faqCategories;
+    return faqCategories
+      .map((cat) => ({
+        ...cat,
+        questions: cat.questions.filter(
+          (item) => item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q)
+        ),
+      }))
+      .filter((cat) => cat.questions.length > 0);
+  }, [query]);
 
   return (
     <div>
@@ -64,16 +79,28 @@ export default function FAQPage() {
             FREQUENTLY ASKED <span className="text-cmba-red">QUESTIONS</span>
           </h1>
           <div className="max-w-lg mt-6">
-            <div className="flex items-center gap-3 bg-cmba-black-card border border-cmba-grey-dark/20 px-4 py-3">
+            <div className="flex items-center gap-3 bg-cmba-black-card border border-white/12 px-4 py-3">
               <Search size={18} className="text-cmba-grey-mid" />
-              <input type="text" placeholder="Search questions..." className="flex-1 bg-transparent text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark outline-none" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search questions..."
+                className="flex-1 bg-transparent text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark outline-none"
+              />
             </div>
           </div>
         </div>
       </section>
 
       <div className="max-w-4xl mx-auto px-4 lg:px-6 py-8 lg:py-12 space-y-8">
-        {faqCategories.map((cat) => (
+        {filtered.length === 0 && (
+          <p className="text-sm text-cmba-grey">
+            No questions match &quot;{query}&quot;. Try a different term, or email{" "}
+            <a href={CMBA.emailHref} className="text-cmba-red hover:text-white transition-colors">{CMBA.email}</a>.
+          </p>
+        )}
+        {filtered.map((cat) => (
           <div key={cat.category}>
             <h2 className="font-display font-black text-xl text-white uppercase tracking-wider mb-4 flex items-center gap-3">
               <span className="text-cmba-red">{"//  "}</span>{cat.category}
@@ -81,26 +108,29 @@ export default function FAQPage() {
             <div className="space-y-2">
               {cat.questions.map((item) => {
                 const id = `${cat.category}-${item.q}`;
-                const isOpen = openItems.includes(id);
+                const isOpen = openItems.includes(id) || query.trim().length > 0;
                 return (
-                  <div key={id} className="bg-cmba-black-card border border-cmba-grey-dark/20">
-                    <button
-                      onClick={() => toggle(id)}
-                      className="w-full flex items-center justify-between px-5 py-4 text-left group"
-                    >
+                  <div key={id} className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12">
+                    <button onClick={() => toggle(id)} className="w-full flex items-center justify-between px-5 py-4 text-left group">
                       <span className="font-display font-bold text-sm text-cmba-grey-light uppercase tracking-wide group-hover:text-cmba-red transition-colors pr-4">
                         {item.q}
                       </span>
-                      <ChevronDown
-                        size={18}
-                        className={`text-cmba-grey shrink-0 transition-transform ${isOpen ? "rotate-180 text-cmba-red" : ""}`}
-                      />
+                      <ChevronDown size={18} className={`text-cmba-grey shrink-0 transition-transform ${isOpen ? "rotate-180 text-cmba-red" : ""}`} />
                     </button>
                     {isOpen && (
-                      <div className="px-5 pb-4 animate-slide-up">
-                        <p className="text-sm text-cmba-grey leading-relaxed border-t border-cmba-grey-dark/10 pt-3">
-                          {item.a}
-                        </p>
+                      <div className="px-5 pb-4">
+                        <p className="text-sm text-cmba-grey leading-relaxed border-t border-white/10 pt-3">{item.a}</p>
+                        {item.link && (
+                          item.link.internal ? (
+                            <Link href={item.link.href} className="inline-flex items-center gap-1.5 mt-3 font-mono text-xs text-cmba-red hover:text-white transition-colors">
+                              {item.link.label} <ExternalLink size={12} />
+                            </Link>
+                          ) : (
+                            <a href={item.link.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 mt-3 font-mono text-xs text-cmba-red hover:text-white transition-colors">
+                              {item.link.label} <ExternalLink size={12} />
+                            </a>
+                          )
+                        )}
                       </div>
                     )}
                   </div>

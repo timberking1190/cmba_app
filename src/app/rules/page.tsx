@@ -8,8 +8,13 @@ import {
   ExternalLink,
   Search,
   X,
+  MessageCircle,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
-import { searchRules, rulesDocuments, RULES_DRIVE_URL } from "@/lib/rulesData";
+import { rulesDocuments, RULES_DRIVE_URL } from "@/lib/rulesData";
+import { answerQuestion } from "@/lib/rulesQA";
+import type { QAResult } from "@/lib/rulesQA";
 
 const ruleDocuments = rulesDocuments.filter((d) =>
   /^(Section |7\.\d|FIBA)/.test(d.title) || d.title.startsWith("7.")
@@ -37,34 +42,35 @@ const divisionMods = rulesDocuments.filter(
 );
 
 const popularQuestions = [
-  "Can U11 full-court press?",
+  "Can I press in U11?",
   "What is the mercy policy?",
   "What are the overtime rules?",
   "U13 ball size",
   "Concussion policy",
+  "Can U13 double team?",
+  "Zone defense rules",
 ];
 
 export default function RulesPage() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<
-    ReturnType<typeof searchRules>
-  >([]);
+  const [qaResult, setQaResult] = useState<QAResult | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = (q: string) => {
     setQuery(q);
     if (q.trim().length >= 2) {
-      setResults(searchRules(q));
+      const result = answerQuestion(q);
+      setQaResult(result);
       setHasSearched(true);
     } else {
-      setResults([]);
+      setQaResult(null);
       setHasSearched(false);
     }
   };
 
   const clearSearch = () => {
     setQuery("");
-    setResults([]);
+    setQaResult(null);
     setHasSearched(false);
   };
 
@@ -81,11 +87,11 @@ export default function RulesPage() {
               </span>
             </div>
             <h1 className="font-display font-black text-4xl lg:text-6xl text-white uppercase tracking-tight leading-[0.95] mb-4">
-              RULES <span className="text-cmba-red">&</span> INFO
+              ASK <span className="text-cmba-red">CMBA</span>
             </h1>
             <p className="text-cmba-grey text-base lg:text-lg mb-8">
-              Search the official CMBA rules instantly. Type any question and get
-              answers directly from the rulebook.
+              Ask any basketball rule question and get an instant, direct answer
+              with rule citations from the official CMBA rulebook.
             </p>
           </div>
 
@@ -98,7 +104,7 @@ export default function RulesPage() {
                   type="text"
                   value={query}
                   onChange={(e) => handleSearch(e.target.value)}
-                  placeholder='Search rules... e.g. "mercy policy" or "U13 ball size"'
+                  placeholder='Ask a question... e.g. "Can I press in U11?"'
                   className="flex-1 bg-transparent text-cmba-grey-light text-base placeholder:text-cmba-grey-mid outline-none font-body"
                 />
                 {query && (
@@ -127,37 +133,92 @@ export default function RulesPage() {
         </div>
       </section>
 
+      {/* Direct Answer */}
+      {hasSearched && qaResult?.directAnswer && (
+        <section className="bg-cmba-black border-b border-cmba-grey-dark/20">
+          <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-10">
+            <div className="max-w-2xl">
+              <div className="bg-cmba-black-card border-l-4 border-cmba-red p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <MessageCircle size={18} className="text-cmba-red" />
+                  <span className="font-display font-bold text-sm text-cmba-red uppercase tracking-wider">
+                    Direct Answer
+                  </span>
+                  <span className="ml-auto flex items-center gap-1 font-mono text-[10px] text-green-400 bg-green-500/10 px-2 py-0.5">
+                    <CheckCircle size={10} />
+                    {qaResult.directAnswer.confidence === "high" ? "Verified" : "Likely"}
+                  </span>
+                </div>
+                <div className="text-cmba-grey-light text-base leading-relaxed whitespace-pre-line">
+                  {qaResult.directAnswer.answer.split(/(\*\*[^*]+\*\*)/).map((part, i) => {
+                    if (part.startsWith("**") && part.endsWith("**")) {
+                      return <strong key={i} className="text-white">{part.slice(2, -2)}</strong>;
+                    }
+                    return <span key={i}>{part}</span>;
+                  })}
+                </div>
+                <div className="mt-4 pt-3 border-t border-cmba-grey-dark/20 flex items-center gap-2">
+                  <AlertCircle size={12} className="text-cmba-grey-mid" />
+                  <span className="font-mono text-[10px] text-cmba-grey-mid">
+                    Source: {qaResult.directAnswer.ruleReference}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* No Answer Found */}
+      {hasSearched && !qaResult?.directAnswer && qaResult?.searchResults.length === 0 && (
+        <section className="bg-cmba-black border-b border-cmba-grey-dark/20">
+          <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-10">
+            <div className="max-w-2xl">
+              <div className="bg-cmba-black-card border-l-4 border-cmba-grey-mid p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertCircle size={18} className="text-cmba-grey-mid" />
+                  <span className="font-display font-bold text-sm text-cmba-grey-mid uppercase tracking-wider">
+                    Not Found
+                  </span>
+                </div>
+                <p className="text-cmba-grey text-base">
+                  Sorry, I couldn&apos;t find a specific answer for &ldquo;{query}&rdquo;.
+                  Try rephrasing your question or{" "}
+                  <a
+                    href={RULES_DRIVE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-cmba-red underline"
+                  >
+                    browse all rules on Google Drive
+                  </a>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Search Results */}
-      {hasSearched && (
+      {hasSearched && qaResult && qaResult.searchResults.length > 0 && (
         <section className="bg-cmba-black border-b border-cmba-grey-dark/20">
           <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-12">
             <h2 className="font-display font-bold text-lg text-white uppercase tracking-wider mb-6">
-              {results.length > 0 ? (
+              {qaResult.directAnswer ? (
                 <>
-                  Found{" "}
-                  <span className="text-cmba-red">{results.length}</span>{" "}
-                  result{results.length !== 1 ? "s" : ""} for &ldquo;{query}
-                  &rdquo;
+                  Related <span className="text-cmba-red">Documents</span>
                 </>
               ) : (
                 <>
-                  No results for &ldquo;{query}&rdquo;{" "}
-                  <span className="text-cmba-grey font-body font-normal text-sm normal-case">
-                    — Try different keywords or{" "}
-                    <a
-                      href={RULES_DRIVE_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-cmba-red underline"
-                    >
-                      browse all rules on Google Drive
-                    </a>
-                  </span>
+                  Found{" "}
+                  <span className="text-cmba-red">{qaResult.searchResults.length}</span>{" "}
+                  result{qaResult.searchResults.length !== 1 ? "s" : ""} for &ldquo;{query}
+                  &rdquo;
                 </>
               )}
             </h2>
             <div className="space-y-4">
-              {results.map((result) => (
+              {qaResult.searchResults.map((result) => (
                 <a
                   key={result.document.id}
                   href={result.document.driveUrl}

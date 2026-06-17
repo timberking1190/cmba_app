@@ -1,4 +1,12 @@
-import { BookOpen } from "lucide-react";
+import { BookOpen, ExternalLink } from "lucide-react";
+import { REF } from "@/lib/cmbaLinks";
+
+const officialRefs = [
+  { label: "CMBA Referee Handbook", href: REF.handbook },
+  { label: "Intro to CMBA Officiating Course", href: REF.introCourse },
+  { label: "Minor Officials Roles", href: REF.minorOfficials },
+  { label: "RAMP Assigning (My Account)", href: REF.assigning },
+];
 
 const signalCategories = [
   {
@@ -62,7 +70,15 @@ export default function SignalsPage() {
           <h1 className="font-display font-black text-4xl lg:text-5xl text-white uppercase tracking-tight leading-[0.95]">
             OFFICIATING <span className="text-cmba-red">SIGNALS</span>
           </h1>
-          <p className="text-cmba-grey mt-2">Complete visual guide to all basketball officiating hand signals.</p>
+          <p className="text-cmba-grey mt-2">Visual guide to FIBA officiating hand signals used in CMBA play.</p>
+          <div className="flex flex-wrap gap-2 mt-6">
+            {officialRefs.map((r) => (
+              <a key={r.label} href={r.href} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 font-mono text-xs text-cmba-red hover:text-white border border-cmba-red/30 hover:border-cmba-red px-3 py-1.5 transition-colors">
+                {r.label} <ExternalLink size={12} />
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 

@@ -1,15 +1,46 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Star, Send, Upload } from "lucide-react";
+import { AlertTriangle, Star, Send, Upload, ExternalLink, CheckCircle } from "lucide-react";
+import { CMBA, DOCS } from "@/lib/cmbaLinks";
 
-const divisions = ["U8", "U10", "U12 Boys", "U12 Girls", "U14 Boys", "U14 Girls", "U16 Boys", "U16 Girls", "U18 Boys", "U18 Girls"];
+const divisions = ["Tykes", "U11 Boys", "U11 Girls", "U13 Boys", "U13 Girls", "U15 Boys", "U15 Girls", "U18 Boys", "U18 Girls"];
 const reportedPartyOptions = ["Officials", "Coaches", "Players", "Spectators", "Gym Monitors", "CMBA Operations"];
 const officialCategories = ["Professionalism", "Rules Knowledge", "Game Management"];
 const submitterRoles = ["Parent", "Coach", "Referee", "Player", "Other"];
 
 export default function GameReportPage() {
   const [reportType, setReportType] = useState<"concern" | "compliment" | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const parties = fd.getAll("reportedParty").join(", ");
+    const lines = [
+      `Report type: ${reportType}`,
+      `About: ${parties || "n/a"}`,
+      reportType === "concern" ? `Officials area: ${fd.get("officialCategory") || "n/a"}` : "",
+      "",
+      `Game date: ${fd.get("gameDate") || "n/a"}`,
+      `Division: ${fd.get("division") || "n/a"}`,
+      `Home team: ${fd.get("homeTeam") || "n/a"}`,
+      `Away team: ${fd.get("awayTeam") || "n/a"}`,
+      `Facility: ${fd.get("facility") || "n/a"}`,
+      "",
+      `Submitted by: ${fd.get("reporterName") || "n/a"} (${fd.get("reporterRole") || "n/a"})`,
+      `Email: ${fd.get("reporterEmail") || "n/a"}`,
+      `Phone: ${fd.get("reporterPhone") || "n/a"}`,
+      `Witnesses: ${fd.get("witnesses") || "n/a"}`,
+      "",
+      "Details:",
+      `${fd.get("description") || ""}`,
+    ].filter((l) => l !== "");
+    const subject = `CMBA Game ${reportType === "concern" ? "Concern" : "Compliment"}${fd.get("division") ? ` - ${fd.get("division")}` : ""}`;
+    const body = lines.join("\n");
+    window.location.href = `${CMBA.emailHref}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    setSubmitted(true);
+  };
 
   return (
     <div>
@@ -19,21 +50,40 @@ export default function GameReportPage() {
             GAME <span className="text-cmba-red">REPORT</span>
           </h1>
           <p className="text-cmba-grey mt-2 max-w-lg">
-            Submit game feedback — whether it&apos;s a concern or a compliment. No login required. All submissions are reviewed by CMBA administration.
+            Submit game feedback, whether it&apos;s a concern or a compliment. No login required. Reports are reviewed by CMBA.
           </p>
         </div>
       </section>
 
       <div className="max-w-3xl mx-auto px-4 lg:px-6 py-8 lg:py-12">
+        {/* Official form banner */}
+        <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-4 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p className="text-sm text-cmba-grey">
+            This form emails the league office. You can also use CMBA&apos;s official online form.
+          </p>
+          <a href={DOCS.gameReportForm} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 shrink-0 font-mono text-xs text-cmba-red hover:text-white border border-cmba-red/30 hover:border-cmba-red px-3 py-1.5 transition-colors">
+            Official CMBA Form <ExternalLink size={12} />
+          </a>
+        </div>
+
+        {submitted && (
+          <div className="bg-green-500/10 border border-green-500/40 p-6 mb-8 flex items-start gap-3">
+            <CheckCircle size={22} className="text-green-400 shrink-0" />
+            <div>
+              <h3 className="font-display font-bold text-white uppercase tracking-wider text-sm">Email Drafted</h3>
+              <p className="text-sm text-cmba-grey mt-1">
+                Your email app should have opened a pre-filled message to {CMBA.email}. Send it to complete your report. If nothing opened, email {CMBA.email} directly or use the official form above.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Report Type Selection */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <button
             onClick={() => setReportType("concern")}
-            className={`p-6 border-2 text-center transition-all ${
-              reportType === "concern"
-                ? "border-red-500 bg-red-500/10"
-                : "border-cmba-grey-dark/20 hover:border-red-500/30 bg-cmba-black-card"
-            }`}
+            className={`p-6 border-2 text-center transition-all ${reportType === "concern" ? "border-red-500 bg-red-500/10" : "border-white/12 hover:border-red-500/30 bg-cmba-black-card/80"}`}
           >
             <AlertTriangle size={32} className={`mx-auto mb-2 ${reportType === "concern" ? "text-red-400" : "text-cmba-grey"}`} />
             <div className="font-display font-bold text-lg text-white uppercase tracking-wider">Concern</div>
@@ -41,11 +91,7 @@ export default function GameReportPage() {
           </button>
           <button
             onClick={() => setReportType("compliment")}
-            className={`p-6 border-2 text-center transition-all ${
-              reportType === "compliment"
-                ? "border-green-500 bg-green-500/10"
-                : "border-cmba-grey-dark/20 hover:border-green-500/30 bg-cmba-black-card"
-            }`}
+            className={`p-6 border-2 text-center transition-all ${reportType === "compliment" ? "border-green-500 bg-green-500/10" : "border-white/12 hover:border-green-500/30 bg-cmba-black-card/80"}`}
           >
             <Star size={32} className={`mx-auto mb-2 ${reportType === "compliment" ? "text-green-400" : "text-cmba-grey"}`} />
             <div className="font-display font-bold text-lg text-white uppercase tracking-wider">Compliment</div>
@@ -54,16 +100,16 @@ export default function GameReportPage() {
         </div>
 
         {reportType && (
-          <form className="space-y-6 animate-slide-up">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Who is being reported */}
-            <div className="bg-cmba-black-card border border-cmba-grey-dark/20 p-6">
+            <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-6">
               <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-4">
                 Who is this {reportType} about?
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {reportedPartyOptions.map((party) => (
                   <label key={party} className="flex items-center gap-2 bg-cmba-black-surface px-3 py-2 cursor-pointer hover:bg-cmba-red/5 transition-colors">
-                    <input type="checkbox" className="accent-cmba-red w-4 h-4" />
+                    <input type="checkbox" name="reportedParty" value={party} className="accent-cmba-red w-4 h-4" />
                     <span className="text-sm text-cmba-grey">{party}</span>
                   </label>
                 ))}
@@ -72,14 +118,14 @@ export default function GameReportPage() {
 
             {/* Official Category (if concern about officials) */}
             {reportType === "concern" && (
-              <div className="bg-cmba-black-card border border-cmba-grey-dark/20 p-6">
+              <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-6">
                 <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-4">
-                  If about officials — primary area of concern
+                  If about officials, primary area of concern
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {officialCategories.map((cat) => (
                     <label key={cat} className="flex items-center gap-2 bg-cmba-black-surface px-3 py-2 cursor-pointer hover:bg-cmba-red/5 transition-colors">
-                      <input type="radio" name="officialCategory" className="accent-cmba-red w-4 h-4" />
+                      <input type="radio" name="officialCategory" value={cat} className="accent-cmba-red w-4 h-4" />
                       <span className="text-sm text-cmba-grey">{cat}</span>
                     </label>
                   ))}
@@ -88,98 +134,99 @@ export default function GameReportPage() {
             )}
 
             {/* Game Details */}
-            <div className="bg-cmba-black-card border border-cmba-grey-dark/20 p-6">
+            <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-6">
               <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-4">Game Details</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Game Date *</label>
-                  <input type="date" className="w-full bg-cmba-black-surface border border-cmba-grey-dark/20 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input required type="date" name="gameDate" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Division *</label>
-                  <select className="w-full bg-cmba-black-surface border border-cmba-grey-dark/20 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors">
+                  <select required name="division" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors">
                     <option value="">Select division...</option>
                     {divisions.map((d) => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Home Team</label>
-                  <input type="text" placeholder="Team name" className="w-full bg-cmba-black-surface border border-cmba-grey-dark/20 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input type="text" name="homeTeam" placeholder="Team name" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Away Team</label>
-                  <input type="text" placeholder="Team name" className="w-full bg-cmba-black-surface border border-cmba-grey-dark/20 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input type="text" name="awayTeam" placeholder="Team name" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Facility / Gym</label>
-                  <input type="text" placeholder="Gym or facility name" className="w-full bg-cmba-black-surface border border-cmba-grey-dark/20 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input type="text" name="facility" placeholder="Gym or facility name" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
                 </div>
               </div>
             </div>
 
             {/* Your Information */}
-            <div className="bg-cmba-black-card border border-cmba-grey-dark/20 p-6">
+            <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-6">
               <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-4">Your Information</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Your Name *</label>
-                  <input type="text" className="w-full bg-cmba-black-surface border border-cmba-grey-dark/20 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input required type="text" name="reporterName" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Email *</label>
-                  <input type="email" className="w-full bg-cmba-black-surface border border-cmba-grey-dark/20 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input required type="email" name="reporterEmail" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Phone (optional)</label>
-                  <input type="tel" className="w-full bg-cmba-black-surface border border-cmba-grey-dark/20 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input type="tel" name="reporterPhone" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Your Role *</label>
-                  <select className="w-full bg-cmba-black-surface border border-cmba-grey-dark/20 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors">
+                  <select required name="reporterRole" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors">
                     <option value="">Select role...</option>
-                    {submitterRoles.map((r) => <option key={r} value={r.toLowerCase()}>{r}</option>)}
+                    {submitterRoles.map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </div>
               </div>
             </div>
 
             {/* Description */}
-            <div className="bg-cmba-black-card border border-cmba-grey-dark/20 p-6">
+            <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-6">
               <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-4">
                 {reportType === "concern" ? "Describe the Concern" : "Describe the Compliment"}
               </h3>
               <textarea
+                required
+                name="description"
                 rows={6}
                 placeholder={reportType === "concern" ? "Please describe what happened factually and specifically..." : "Tell us who impressed you and why..."}
-                className="w-full bg-cmba-black-surface border border-cmba-grey-dark/20 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors resize-none"
+                className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors resize-none"
                 minLength={50}
               />
               <p className="font-mono text-[10px] text-cmba-grey-dark mt-1">Minimum 50 characters</p>
             </div>
 
             {/* Witnesses & Evidence */}
-            <div className="bg-cmba-black-card border border-cmba-grey-dark/20 p-6">
+            <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-6">
               <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-4">Witnesses & Evidence (Optional)</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Witness Names</label>
-                  <input type="text" placeholder="Names of anyone who can corroborate" className="w-full bg-cmba-black-surface border border-cmba-grey-dark/20 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input type="text" name="witnesses" placeholder="Names of anyone who can corroborate" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
                 </div>
                 <div>
-                  <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-2">Upload Evidence</label>
-                  <div className="border-2 border-dashed border-cmba-grey-dark/30 p-6 text-center hover:border-cmba-red/30 transition-colors cursor-pointer">
+                  <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-2">Evidence</label>
+                  <div className="border-2 border-dashed border-white/20 p-6 text-center">
                     <Upload size={24} className="mx-auto text-cmba-grey-mid mb-2" />
-                    <p className="text-xs text-cmba-grey">Drop files here or click to upload</p>
-                    <p className="font-mono text-[10px] text-cmba-grey-dark mt-1">Video or photo evidence (max 25MB)</p>
+                    <p className="text-xs text-cmba-grey">Have video or photos? Mention them in your report and CMBA will follow up for the files.</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Acknowledgement */}
-            <div className="bg-cmba-black-card border border-yellow-500/20 p-6">
+            <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-yellow-500/20 p-6">
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" className="accent-cmba-red w-5 h-5 mt-0.5 shrink-0" />
+                <input required type="checkbox" className="accent-cmba-red w-5 h-5 mt-0.5 shrink-0" />
                 <span className="text-sm text-cmba-grey leading-relaxed">
                   I understand that CMBA takes all reports seriously and that submitting false or embellished reports may result in disciplinary action under CMBA&apos;s policies. The information I&apos;ve provided is truthful and accurate to the best of my knowledge.
                 </span>
@@ -189,7 +236,7 @@ export default function GameReportPage() {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full bg-cmba-red hover:bg-cmba-red-dark text-white font-display font-bold text-base uppercase tracking-wider py-4 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-base uppercase tracking-wider py-4 transition-colors flex items-center justify-center gap-2"
             >
               <Send size={18} />
               Submit {reportType === "concern" ? "Concern" : "Compliment"}

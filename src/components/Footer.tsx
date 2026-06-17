@@ -40,21 +40,19 @@ const footerSections = [
 
 export function Footer() {
   return (
-    <footer className="hidden lg:block bg-cmba-black-light border-t-2 border-cmba-red">
-      <div className="max-w-7xl mx-auto px-6 py-12">
+    <footer className="hidden lg:block relative z-10 bg-cmba-black/85 backdrop-blur-xl border-t border-cmba-red/60">
+      <div className="max-w-7xl mx-auto px-6 py-14">
         <div className="grid grid-cols-4 gap-8">
           {footerSections.map((section) => (
             <div key={section.title}>
-              <h3 className="font-display font-bold text-sm text-cmba-red uppercase tracking-widest mb-4">
+              <h3 className="font-mono font-medium text-[11px] text-cmba-red uppercase tracking-[0.18em] mb-4">
                 {section.title}
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {section.links.map((link) => (
                   <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-cmba-grey hover:text-white transition-colors"
-                    >
+                    <Link href={link.href}
+                      className="text-sm text-cmba-grey hover:text-white transition-colors">
                       {link.label}
                     </Link>
                   </li>
@@ -64,33 +62,20 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 pt-8 border-t border-cmba-grey-dark/20 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Image
-              src="/cmba-logo-sm.png"
-              alt="CMBA"
-              width={120}
-              height={48}
-              className="h-10 w-auto"
-            />
-            <div>
-              <span className="font-display font-black text-white text-lg uppercase">
-                <span className="text-cmba-red">Connect</span>
-              </span>
-            </div>
+            <Image src="/cmba-logo-sm.png" alt="CMBA" width={120} height={48} className="h-10 w-auto" />
+            <span className="font-display font-black text-white text-2xl uppercase leading-none tracking-tight">
+              CMBA<span className="text-cmba-red">+</span>
+            </span>
           </div>
           <p className="text-xs text-cmba-grey-mid text-center md:text-right">
-            &copy; {new Date().getFullYear()} Calgary Minor Basketball
-            Association. All rights reserved.
+            &copy; {new Date().getFullYear()} Calgary Minor Basketball Association. All rights reserved.
             <br />
             <span className="text-cmba-grey-dark">
               Built by{" "}
-              <a
-                href="https://boostinnovation.ca"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-cmba-red transition-colors"
-              >
+              <a href="https://boostinnovation.ca" target="_blank" rel="noopener noreferrer"
+                className="hover:text-cmba-red transition-colors">
                 Boost Innovation
               </a>
             </span>

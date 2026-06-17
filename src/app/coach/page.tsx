@@ -9,8 +9,8 @@ import {
   Target,
   Zap,
   Brain,
-  ArrowRight,
 } from "lucide-react";
+import { COURSES, DEV_GUIDES, COACH, DOCS } from "@/lib/cmbaLinks";
 
 const LTAD_URL = "https://sportforlife.ca/long-term-development/";
 
@@ -20,7 +20,6 @@ const developmentStages = [
     title: "Tykes",
     subtitle: "Active Start / FUNdamentals",
     ages: "Ages 5-9",
-    color: "from-green-500 to-green-600",
     borderColor: "border-green-500",
     focus: "Fun, fundamental movement, exploration, play-based learning",
     skills: [
@@ -31,13 +30,13 @@ const developmentStages = [
       "Push/pull spacing concepts",
     ],
     equipment: "Size 3-5 ball, lowered hoops (6-8 ft)",
+    guide: DEV_GUIDES.tykes,
   },
   {
     stage: 2,
-    title: "Under 11",
+    title: "U11",
     subtitle: "FUNdamentals / Learn to Train",
     ages: "Ages 9-10",
-    color: "from-blue-500 to-blue-600",
     borderColor: "border-blue-500",
     focus: "Physical literacy, sport-specific skills, decision-making",
     skills: [
@@ -48,13 +47,13 @@ const developmentStages = [
       "V-cuts, L-cuts, spacing",
     ],
     equipment: "Size 5 ball, lowered hoops (8-9 ft)",
+    guide: DEV_GUIDES.u11,
   },
   {
     stage: 3,
-    title: "Under 13",
+    title: "U13",
     subtitle: "Learn to Train",
     ages: "Ages 11-12",
-    color: "from-yellow-500 to-yellow-600",
     borderColor: "border-yellow-500",
     focus: "Game-like practice, random practice, competitive engagement",
     skills: [
@@ -65,13 +64,13 @@ const developmentStages = [
       "Pick-and-roll/pop, pass-cut-fill",
     ],
     equipment: "Size 6 ball, regulation hoops (10 ft)",
+    guide: DEV_GUIDES.u13,
   },
   {
     stage: 4,
-    title: "Under 15",
+    title: "U15",
     subtitle: "Train to Train",
     ages: "Ages 13-14",
-    color: "from-orange-500 to-orange-600",
     borderColor: "border-orange-500",
     focus: "Game-speed skills, advanced tactics, injury prevention",
     skills: [
@@ -82,13 +81,13 @@ const developmentStages = [
       "Set plays, push/pull & pass-cut-fill applied",
     ],
     equipment: "Strength training introduced",
+    guide: DEV_GUIDES.u15,
   },
   {
     stage: 5,
-    title: "Under 18",
+    title: "U18",
     subtitle: "Train to Compete",
     ages: "Ages 15-17",
-    color: "from-cmba-red to-cmba-red-dark",
     borderColor: "border-cmba-red",
     focus: "Skill mastery, game intelligence, leadership, mental resilience",
     skills: [
@@ -99,6 +98,7 @@ const developmentStages = [
       "Advanced offensive systems & transition",
     ],
     equipment: "Comprehensive strength & conditioning",
+    guide: DEV_GUIDES.u18,
   },
 ];
 
@@ -126,30 +126,19 @@ const pillars = [
 ];
 
 const coachResources = [
-  {
-    title: "Conversations in the Car",
-    desc: "Guide for parents on supporting young athletes with thoughtful post-game feedback",
-    href: "/rules",
-    search: "car conversations",
-  },
-  {
-    title: "Concussion Management",
-    desc: "Protocol for all ages — awareness, response, symptoms, return-to-play",
-    href: "/rules",
-    search: "concussion",
-  },
-  {
-    title: "Mental Health in Coaching",
-    desc: "Fostering supportive environments, recognizing struggles, building resilience",
-    href: "/rules",
-    search: "mental health",
-  },
-  {
-    title: "Gender Differences in Coaching",
-    desc: "Age-specific considerations for coaching boys and girls effectively",
-    href: "/rules",
-    search: "gender",
-  },
+  { title: "Mandatory Coach Training", desc: "Required online CMBA coach training, hosted on reach360.", href: COURSES.coachTrainingRegister },
+  { title: "Essentials Coaching Workbook", desc: "CMBA's practical, season-long coaching workbook.", href: COACH.essentialsWorkbook },
+  { title: "Concussion Policy", desc: "Awareness, response, symptoms, and return-to-play protocol.", href: DOCS.concussion },
+  { title: "Emergency Action Plan", desc: "What every coach should have ready before practices and games.", href: COACH.emergencyActionPlan },
+];
+
+const ruleLinks = [
+  { title: "7. Rules of Play (FIBA)", href: DOCS.rulesOfPlay },
+  { title: "Division Rule Modifications", href: DOCS.ruleModsGuide },
+  { title: "40-Point Mercy Rule", href: DOCS.mercy40 },
+  { title: "Concussion Policy", href: DOCS.concussion },
+  { title: "Forfeit Policy", href: DOCS.forfeit },
+  { title: "3. Fees", href: DOCS.fees },
 ];
 
 export default function CoachDashboard() {
@@ -175,21 +164,21 @@ export default function CoachDashboard() {
                 core pillars of development.
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3">
               <a
-                href={LTAD_URL}
+                href={COURSES.coachTrainingRegister}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-cmba-red hover:bg-cmba-red-dark text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors"
+                className="flex items-center justify-center gap-2 bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors"
               >
                 <ExternalLink size={16} />
-                Sport for Life LTAD
+                Start Mandatory Training
               </a>
               <Link
-                href="/rules"
-                className="border border-cmba-grey-dark text-cmba-grey-light hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors"
+                href="/coach/clinics"
+                className="border border-cmba-grey-dark text-cmba-grey-light hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors text-center"
               >
-                Search Rules
+                Training & Clinics
               </Link>
             </div>
           </div>
@@ -197,7 +186,7 @@ export default function CoachDashboard() {
       </section>
 
       {/* Four Pillars */}
-      <section className="bg-cmba-black">
+      <section className="bg-cmba-black/70">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
           <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
             Four Pillars of <span className="text-cmba-red">Development</span>
@@ -209,7 +198,7 @@ export default function CoachDashboard() {
             {pillars.map((p) => (
               <div
                 key={p.title}
-                className="bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-5 transition-colors"
+                className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/30 p-5 transition-colors"
               >
                 <p.icon size={28} className="text-cmba-red mb-3" />
                 <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-2">
@@ -225,32 +214,30 @@ export default function CoachDashboard() {
       </section>
 
       {/* LTAD Development Stages */}
-      <section className="bg-cmba-black-light border-y border-cmba-grey-dark/20">
+      <section className="bg-cmba-black-light/70 border-y border-white/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">
               Development <span className="text-cmba-red">Stages</span>
             </h2>
             <a
-              href={LTAD_URL}
+              href={DEV_GUIDES.master}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-cmba-red font-display font-bold uppercase tracking-wider flex items-center gap-1 hover:text-cmba-red-dark"
+              className="text-xs text-cmba-red font-display font-bold uppercase tracking-wider flex items-center gap-1 hover:text-white transition-colors"
             >
-              LTAD Framework <ExternalLink size={12} />
+              Master Guide <ExternalLink size={12} />
             </a>
           </div>
           <p className="text-cmba-grey text-sm mb-8">
-            Based on Sport for Life&apos;s Long-Term Athlete Development model.
-            Each stage has specific learning outcomes, coaching approaches, and
-            skill focuses.
+            Each stage maps to CMBA&apos;s Athlete Development Guide for that age group, with specific learning outcomes, coaching approaches, and skill focuses.
           </p>
 
           <div className="space-y-4">
             {developmentStages.map((stage) => (
               <div
                 key={stage.stage}
-                className={`bg-cmba-black-card border-l-4 ${stage.borderColor} border border-cmba-grey-dark/20`}
+                className={`bg-cmba-black-card/80 backdrop-blur-sm border-l-4 ${stage.borderColor} border border-white/12`}
               >
                 <div className="p-5 lg:p-6">
                   <div className="flex flex-col lg:flex-row lg:items-start gap-4">
@@ -279,6 +266,14 @@ export default function CoachDashboard() {
                         <strong className="text-cmba-grey-light">Equipment:</strong>{" "}
                         {stage.equipment}
                       </p>
+                      <a
+                        href={stage.guide}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 mt-3 font-mono text-[11px] text-cmba-red hover:text-white transition-colors"
+                      >
+                        Open {stage.title} Guide <ExternalLink size={11} />
+                      </a>
                     </div>
                     <div className="lg:w-2/3">
                       <h4 className="font-display font-bold text-xs text-cmba-grey-mid uppercase tracking-widest mb-2">
@@ -307,22 +302,23 @@ export default function CoachDashboard() {
         </div>
       </section>
 
-      {/* Other Important Topics */}
-      <section className="bg-cmba-black">
+      {/* Key coach resources */}
+      <section className="bg-cmba-black/70">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
           <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
-            Other Important <span className="text-cmba-red">Topics</span>
+            Essential <span className="text-cmba-red">Resources</span>
           </h2>
           <p className="text-cmba-grey text-sm mb-8">
-            Essential resources for CMBA coaches covering safety, mental health,
-            parent communication, and inclusive coaching.
+            The documents and training every CMBA coach should have on hand.
           </p>
           <div className="grid sm:grid-cols-2 gap-3">
             {coachResources.map((r) => (
-              <Link
+              <a
                 key={r.title}
-                href={`${r.href}?q=${encodeURIComponent(r.search)}`}
-                className="flex items-center gap-4 bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-4 transition-colors group"
+                href={r.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-4 bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/30 p-4 transition-colors group"
               >
                 <div className="w-10 h-10 bg-cmba-red/10 flex items-center justify-center shrink-0">
                   <BookOpen size={20} className="text-cmba-red" />
@@ -333,44 +329,42 @@ export default function CoachDashboard() {
                   </h3>
                   <p className="text-xs text-cmba-grey">{r.desc}</p>
                 </div>
-                <ArrowRight
-                  size={16}
-                  className="text-cmba-grey-dark shrink-0"
-                />
-              </Link>
+                <ExternalLink size={16} className="text-cmba-grey-dark shrink-0" />
+              </a>
             ))}
           </div>
         </div>
       </section>
 
       {/* Rules Quick Links */}
-      <section className="bg-cmba-black-light border-t border-cmba-grey-dark/20">
+      <section className="bg-cmba-black-light/70 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
-          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
-            Rules & <span className="text-cmba-red">Policies</span>
-          </h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">
+              Rules & <span className="text-cmba-red">Policies</span>
+            </h2>
+            <Link href="/rules" className="text-xs text-cmba-red font-display font-bold uppercase tracking-wider flex items-center gap-1 hover:text-white transition-colors">
+              Search All Rules <ChevronRight size={14} />
+            </Link>
+          </div>
           <p className="text-cmba-grey text-sm mb-8">
-            Key rules documents every coach should know.
+            Key rules documents every coach should know. You can also search the full rulebook in the app.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[
-              { title: "Rules of Play (FIBA)", search: "rules of play" },
-              { title: "Division Modifications", search: "rule modifications" },
-              { title: "Discipline Policy", search: "discipline" },
-              { title: "Concussion Policy", search: "concussion" },
-              { title: "Mercy Policy", search: "mercy" },
-              { title: "Overtime Rules", search: "overtime" },
-            ].map((rule) => (
-              <Link
+            {ruleLinks.map((rule) => (
+              <a
                 key={rule.title}
-                href={`/rules?q=${encodeURIComponent(rule.search)}`}
-                className="flex items-center gap-3 bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-3 transition-colors group"
+                href={rule.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/30 p-3 transition-colors group"
               >
                 <FileText size={16} className="text-cmba-red shrink-0" />
-                <span className="font-display font-bold text-xs text-cmba-grey-light uppercase tracking-wider group-hover:text-cmba-red transition-colors">
+                <span className="flex-1 font-display font-bold text-xs text-cmba-grey-light uppercase tracking-wider group-hover:text-cmba-red transition-colors">
                   {rule.title}
                 </span>
-              </Link>
+                <ExternalLink size={13} className="text-cmba-grey-dark shrink-0" />
+              </a>
             ))}
           </div>
         </div>
