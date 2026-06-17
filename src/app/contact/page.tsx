@@ -63,7 +63,7 @@ export default function ContactPage() {
                   rel={item.external ? "noopener noreferrer" : undefined}
                   className="flex items-center justify-between gap-4 px-6 py-4 group"
                 >
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">{item.label}</h3>
                     <p className="text-xs text-cmba-grey mt-0.5">{item.desc}</p>
                   </div>
@@ -84,9 +84,9 @@ export default function ContactPage() {
               </div>
               <div className="divide-y divide-white/10">
                 {CMBA.officeHours.map((row) => (
-                  <div key={row.day} className="flex items-center justify-between px-6 py-2.5">
+                  <div key={row.day} className="flex items-center justify-between gap-3 px-6 py-2.5">
                     <span className="text-sm text-cmba-grey-light">{row.day}</span>
-                    <span className="font-mono text-xs text-cmba-grey">{row.hours}</span>
+                    <span className="font-mono text-xs text-cmba-grey text-right shrink-0">{row.hours}</span>
                   </div>
                 ))}
               </div>

@@ -94,7 +94,7 @@ export default function OperationsPage() {
                 {g.links.map((l) => (
                   <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer"
                     className="flex items-center justify-between gap-4 px-6 py-3.5 group">
-                    <div>
+                    <div className="min-w-0">
                       <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">{l.label}</h3>
                       <p className="text-xs text-cmba-grey mt-0.5">{l.desc}</p>
                     </div>

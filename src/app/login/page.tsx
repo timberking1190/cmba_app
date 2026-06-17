@@ -70,7 +70,7 @@ export default function LoginPage() {
           </button>
           <button onClick={() => setMode("register")}
             className={`flex-1 py-2.5 font-display font-bold text-sm uppercase tracking-wider transition-colors ${mode === "register" ? "bg-cmba-red text-white" : "text-cmba-grey hover:text-white"}`}>
-            Create Training Account
+            Create Account
           </button>
         </div>
 
