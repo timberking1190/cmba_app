@@ -6,8 +6,9 @@ const footerSections = [
     title: "CMBA Connect",
     links: [
       { label: "Rules & Info", href: "/rules" },
+      { label: "Schedule", href: "/calendar" },
+      { label: "Standings", href: "/standings" },
       { label: "FAQ", href: "/faq" },
-      { label: "Season Calendar", href: "/calendar" },
       { label: "Contact Directory", href: "/contact" },
     ],
   },

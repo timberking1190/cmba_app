@@ -20,6 +20,34 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## TeamLinkt integration (hybrid: native render + iframe fallback)
+
+The schedule page (`/calendar`, also aliased at `/schedule`) and `/standings`
+read TeamLinkt's league JSON endpoints **server-side** and render them in the
+app's own design. If those endpoints change or return nothing, the pages
+automatically fall back to TeamLinkt's official iframe, so users never see a
+blank page. TeamLinkt stays the source of truth for scores, standings, and
+account actions; login / score reporting / account deep-link to
+`app.teamlinkt.com` (we never proxy or replicate TeamLinkt auth, and never invent
+scores/standings).
+
+Note: the JSON endpoints are undocumented/private and may change without notice;
+the iframe fallback is what keeps these pages working if they do. They must be
+called server-side (CORS blocks browser calls).
+
+Copy `.env.example` to `.env.local` and set (IDs change each season, so they live
+in env, never in components):
+
+- **`TEAMLINKT_LEAGUE_BASE`**: e.g. `https://leagues.teamlinkt.com`
+- **`TEAMLINKT_ASSOC_ID`**: CMBA association id (e.g. `34176`)
+- **`TEAMLINKT_SEASON_ID`**: current season/league id (e.g. `50938`)
+- **`TEAMLINKT_LEAGUE_SLUG`**: e.g. `calgaryminorbasketballassociation`
+- **`NEXT_PUBLIC_TEAMLINKT_APP_URL`**: base URL for deep-links
+  (default `https://app.teamlinkt.com`)
+
+Endpoint responses are cached for an hour (`revalidate: 3600`), with an 8s
+timeout; any failure returns an empty result and triggers the iframe fallback.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

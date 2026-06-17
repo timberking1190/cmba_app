@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Menu, X, ChevronDown, Search, User, BookOpen, Flag,
-  Calendar, HelpCircle, Phone, Shield, ClipboardList, Trophy, Users,
+  Calendar, HelpCircle, Phone, Shield, BarChart3, Trophy, Users,
 } from "lucide-react";
 
 const navLinks = [
@@ -29,8 +29,8 @@ const navLinks = [
     ],
   },
   { label: "PARENTS", href: "/parent", icon: Users },
-  { label: "GAME REPORT", href: "/game-report", icon: ClipboardList },
-  { label: "CALENDAR", href: "/calendar", icon: Calendar },
+  { label: "SCHEDULE", href: "/calendar", icon: Calendar },
+  { label: "STANDINGS", href: "/standings", icon: BarChart3 },
 ];
 
 const utilLinks = [
@@ -115,6 +115,9 @@ export function Header() {
             <button aria-label="Search" className="p-2 text-cmba-grey hover:text-cmba-red transition-colors">
               <Search size={20} />
             </button>
+            {/* TODO(teamlinkt): if we move auth fully to TeamLinkt, point Sign In at
+                NEXT_PUBLIC_TEAMLINKT_APP_URL (target=_blank) instead of /login. Left as
+                /login for now so the training-account flow is unchanged this pass. */}
             <Link href="/login"
               className="hidden lg:flex items-center gap-1.5 bg-cmba-red hover:bg-cmba-hot text-white font-display font-black text-xs uppercase tracking-[0.06em] px-3.5 py-1.5 transition-colors">
               <User size={14} /> Sign In
