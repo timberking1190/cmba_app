@@ -244,7 +244,7 @@ export default function RefDashboard() {
               </h1>
               <p className="text-cmba-grey mt-2">Signals, mechanics, rule interpretations, and certification tracking.</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Link href="/ref/quick-ref" className="bg-cmba-red hover:bg-cmba-red-dark text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors">
                 Quick Ref Card
               </Link>

@@ -361,7 +361,7 @@ export default function CoachPathwayPage() {
             {/* Level Header */}
             <button
               onClick={() => setExpandedLevel(expandedLevel === idx ? -1 : idx)}
-              className="w-full flex items-center gap-4 px-6 py-5 border-b border-cmba-grey-dark/10 text-left"
+              className="w-full flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-5 border-b border-cmba-grey-dark/10 text-left"
             >
               <div className="font-display font-black text-5xl text-cmba-red/20">{String(idx + 1).padStart(2, "0")}</div>
               <div className="flex-1">
@@ -469,7 +469,7 @@ export default function CoachPathwayPage() {
           <h3 className="font-display font-bold text-lg text-white uppercase tracking-wider mb-6">
             XP <span className="text-cmba-red">Levels</span>
           </h3>
-          <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {XP_LEVELS.map((lvl) => (
               <div
                 key={lvl.level}
