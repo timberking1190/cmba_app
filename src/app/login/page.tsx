@@ -4,8 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, ArrowRight, User, ExternalLink, GraduationCap, Info } from "lucide-react";
+import { Mail, Lock, ArrowRight, User, ExternalLink, GraduationCap, Info, ClipboardList } from "lucide-react";
 import { REGISTER } from "@/lib/cmbaLinks";
+import { Wordmark } from "@/components/Wordmark";
 
 const roleHubs: Record<string, string> = {
   athlete: "/athlete",
@@ -38,16 +39,28 @@ export default function LoginPage() {
         <div className="text-center mb-6">
           <Image src="/cmba-logo-md.png" alt="CMBA" width={200} height={80} className="h-16 w-auto mx-auto mb-4" priority />
           <h1 className="font-display font-black text-3xl text-white uppercase tracking-tight">
-            <span className="text-cmba-red">Connect</span> Training
+            <Wordmark /> Login
           </h1>
+          <p className="text-xs text-cmba-grey-mid mt-1 font-mono uppercase tracking-[0.18em]">Training, courses & resources</p>
         </div>
+
+        {/* Cross-link to the TeamLinkt score-report login */}
+        <Link href="/score-login"
+          className="flex items-center gap-3 bg-cmba-black-card border border-white/12 hover:border-cmba-red/50 p-3 mb-6 transition-colors group">
+          <ClipboardList size={18} className="text-cmba-red shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="font-display font-bold text-xs text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">Reporting a game score?</div>
+            <div className="text-[11px] text-cmba-grey">Use the TeamLinkt Score Report Login</div>
+          </div>
+          <ArrowRight size={16} className="text-cmba-grey-dark shrink-0 group-hover:text-cmba-red transition-colors" />
+        </Link>
 
         {/* Training-only clarification */}
         <div className="bg-cmba-red/10 border border-cmba-red/30 p-4 mb-6 flex items-start gap-3">
           <Info size={18} className="text-cmba-red shrink-0 mt-0.5" />
           <p className="text-xs text-cmba-grey-light leading-relaxed">
             <span className="font-display font-bold text-white uppercase tracking-wider">For training and education only.</span>{" "}
-            A CMBA Connect account is how you reach your role&apos;s training, courses, and resources. It is <span className="text-white font-medium">not</span> your league registration. To register to play or coach, use TeamLinkt below.
+            A CMBA+ account is how you reach your role&apos;s training, courses, and resources. It is <span className="text-white font-medium">not</span> your league registration. To register to play or coach, use TeamLinkt below.
           </p>
         </div>
 

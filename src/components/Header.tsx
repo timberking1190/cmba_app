@@ -7,6 +7,7 @@ import {
   Menu, X, ChevronDown, Search, User, BookOpen, Flag,
   Calendar, HelpCircle, Phone, Shield, BarChart3, Trophy, Users, ClipboardList,
 } from "lucide-react";
+import { Wordmark } from "@/components/Wordmark";
 
 const navLinks = [
   { label: "RULES", href: "/rules", icon: BookOpen },
@@ -77,11 +78,9 @@ export function Header() {
             <Image src="/cmba-logo-sm.png" alt="CMBA" width={120} height={48}
               className="h-9 lg:h-10 w-auto" priority />
             <div className="hidden sm:block leading-none">
-              <div className="font-display font-black text-white text-2xl uppercase tracking-tight">
-                CMBA<span className="text-cmba-red">+</span>
-              </div>
+              <Wordmark className="font-display font-black text-white text-2xl uppercase tracking-tight" />
               <div className="font-mono text-[9px] text-cmba-grey tracking-[0.28em] uppercase mt-0.5">
-                Connect · Calgary Minor Basketball
+                Calgary Minor Basketball
               </div>
             </div>
           </Link>

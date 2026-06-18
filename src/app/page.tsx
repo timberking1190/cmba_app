@@ -50,7 +50,7 @@ export default function HomePage() {
 
           <div className="relative z-10">
             <div className="mb-7 label-xs text-cmba-grey">
-              CMBA Connect · Calgary Minor Basketball
+              CMBA+ · Calgary Minor Basketball
             </div>
 
             <h1 className="font-display font-black uppercase leading-[0.82] tracking-tighter2 text-[clamp(30px,9vw,72px)] lg:text-[clamp(54px,13vw,200px)]">
@@ -64,7 +64,7 @@ export default function HomePage() {
                 Calgary Minor Basketball is a community of thousands of athletes, coaches, and
                 officials growing the game across the city, one practice, whistle, and final buzzer
                 at a time.{" "}
-                <span className="text-white font-medium">CMBA Connect keeps our rules, coaching, and officiating resources in one place.</span>
+                <span className="text-white font-medium">CMBA+ keeps our rules, coaching, and officiating resources in one place.</span>
               </p>
               <div className="flex flex-col xs:flex-row gap-3">
                 <Link href="/rules"
@@ -242,7 +242,7 @@ export default function HomePage() {
           </h2>
           <p className="text-white/85 max-w-lg mx-auto mt-6 mb-8 leading-relaxed">
             Whether you&apos;re coaching your first practice or officiating your hundredth game,
-            CMBA Connect has the tools and resources you need.
+            CMBA+ has the tools and resources you need.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <a href={REGISTER.player} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white text-cmba-red font-display font-black text-sm uppercase tracking-[0.06em] px-7 py-3.5 hover:bg-cmba-grey-light transition-colors">

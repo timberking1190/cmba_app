@@ -1,7 +1,7 @@
 /*
  * Single source of truth for real Calgary Minor Basketball Association links,
  * contact details, and program data (pulled from cmba.ab.ca). The public
- * sub-pages reference these so CMBA Connect links out to the association's real
+ * sub-pages reference these so CMBA+ links out to the association's real
  * resources (registration, courses, rules, calendar) instead of placeholders.
  *
  * Note: copy in this file intentionally avoids em/en dashes.

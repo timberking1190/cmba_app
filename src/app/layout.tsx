@@ -29,7 +29,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CMBA Connect | Calgary Minor Basketball Association",
+  title: "CMBA+ | Calgary Minor Basketball Association",
   description:
     "The official platform for Calgary Minor Basketball Association: rules, education, certification tracking, and game reports for coaches, referees, parents, and admins.",
   keywords: ["CMBA", "Calgary", "basketball", "minor basketball", "coaches", "referees"],

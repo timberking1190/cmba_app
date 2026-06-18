@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Wordmark } from "@/components/Wordmark";
 
 const footerSections = [
   {
-    title: "CMBA Connect",
+    title: "CMBA+",
     links: [
       { label: "Rules & Info", href: "/rules" },
       { label: "Schedule", href: "/calendar" },
@@ -66,9 +67,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Image src="/cmba-logo-sm.png" alt="CMBA" width={120} height={48} className="h-10 w-auto" />
-            <span className="font-display font-black text-white text-2xl uppercase leading-none tracking-tight">
-              CMBA<span className="text-cmba-red">+</span>
-            </span>
+            <Wordmark className="font-display font-black text-white text-2xl uppercase leading-none tracking-tight" />
           </div>
           <p className="text-xs text-cmba-grey-mid text-center md:text-right">
             &copy; {new Date().getFullYear()} Calgary Minor Basketball Association. All rights reserved.
