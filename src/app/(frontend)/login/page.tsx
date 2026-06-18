@@ -1,19 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, ArrowRight, User, ExternalLink, GraduationCap, Info, ClipboardList } from "lucide-react";
+import { Mail, Lock, ArrowRight, ExternalLink, Info, ClipboardList, CheckCircle2 } from "lucide-react";
 import { REGISTER } from "@/lib/cmbaLinks";
 import { Wordmark } from "@/components/Wordmark";
-
-const roleHubs: Record<string, string> = {
-  athlete: "/athlete",
-  parent: "/parent",
-  coach: "/coach",
-  referee: "/ref",
-};
 
 const hubCards = [
   { label: "Athletes", role: "athlete", href: "/athlete", desc: "Development pathway, guides, and drills" },
@@ -22,26 +15,177 @@ const hubCards = [
   { label: "Referees", role: "referee", href: "/ref", desc: "Officiating training and resources" },
 ];
 
+function isUnder18(dob: string): boolean {
+  if (!dob) return false;
+  const d = new Date(dob);
+  if (Number.isNaN(d.getTime())) return false;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age < 18;
+}
+
+type PolicyVersions = { termsVersion: string; privacyVersion: string; guardianConsentVersion: string };
+
+const inputCls =
+  "w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors";
+
+function Checkbox({
+  checked, onChange, children,
+}: { checked: boolean; onChange: (v: boolean) => void; children: React.ReactNode }) {
+  return (
+    <label className="flex items-start gap-3 cursor-pointer">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-4 w-4 shrink-0 accent-cmba-red"
+      />
+      <span className="text-xs text-cmba-grey-light leading-relaxed">{children}</span>
+    </label>
+  );
+}
+
 export default function LoginPage() {
-  const [mode, setMode] = useState<"login" | "register">("register");
-  const [role, setRole] = useState("");
+  const [mode, setMode] = useState<"signin" | "register">("signin");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [policy, setPolicy] = useState<PolicyVersions | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const [siEmail, setSiEmail] = useState("");
+  const [siPassword, setSiPassword] = useState("");
+
+  const [dob, setDob] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [gName, setGName] = useState("");
+  const [gEmail, setGEmail] = useState("");
+  const [gPhone, setGPhone] = useState("");
+
+  const [req1, setReq1] = useState(false);
+  const [req2, setReq2] = useState(false);
+  const [req3, setReq3] = useState(false);
+  const [optMarketing, setOptMarketing] = useState(false);
+  const [optPhoto, setOptPhoto] = useState(false);
+
+  const [pendingMsg, setPendingMsg] = useState<string | null>(null);
+
+  const minor = isUnder18(dob);
+
+  useEffect(() => {
+    fetch("/api/globals/policy-versions")
+      .then((r) => r.json())
+      .then((d) => setPolicy({
+        termsVersion: d.termsVersion, privacyVersion: d.privacyVersion, guardianConsentVersion: d.guardianConsentVersion,
+      }))
+      .catch(() => {});
+  }, []);
+
+  function redirectTarget(): string {
+    if (typeof window === "undefined") return "/account";
+    const p = new URLSearchParams(window.location.search).get("redirect");
+    return p && p.startsWith("/") ? p : "/account";
+  }
+
+  async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
-    router.push(roleHubs[role] || "/");
-  };
+    setError(null);
+    setBusy(true);
+    try {
+      const res = await fetch("/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: siEmail, password: siPassword }),
+      });
+      if (!res.ok) {
+        setError("Email or password is incorrect.");
+        return;
+      }
+      router.push(redirectTarget());
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const requiredOk = minor ? req1 && req2 && req3 : req1 && req2;
+
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!policy) { setError("Could not load the current policies. Please refresh."); return; }
+    if (!requiredOk) return;
+    setBusy(true);
+    try {
+      const acceptedAt = new Date().toISOString();
+      const consents: Record<string, unknown> = {
+        termsVersion: policy.termsVersion,
+        privacyVersion: policy.privacyVersion,
+        acceptedAt,
+        marketingOptIn: optMarketing,
+        photoOptIn: optPhoto,
+      };
+      const body: Record<string, unknown> = {
+        fullName,
+        dateOfBirth: dob,
+        consents,
+      };
+      if (minor) {
+        consents.guardianConsentVersion = policy.guardianConsentVersion;
+        body.email = gEmail; // guardian is the account holder
+        body.password = password;
+        body.guardian = { name: gName, email: gEmail, phone: gPhone, relationship: "Parent/Guardian" };
+      } else {
+        body.email = email;
+        body.password = password;
+      }
+
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.errors?.[0]?.message || "We could not create the account. Please check your entries.");
+        return;
+      }
+
+      if (minor) {
+        setPendingMsg(
+          `We sent a confirmation link to ${gEmail}. The account stays pending until you confirm it from that email.`,
+        );
+        return;
+      }
+      await fetch("/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      router.push("/account");
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-6">
           <Image src="/cmba-logo-md.png" alt="CMBA" width={200} height={80} className="h-16 w-auto mx-auto mb-4" priority />
           <h1 className="font-display font-black text-3xl text-white uppercase tracking-tight">
-            <Wordmark /> Login
+            <Wordmark /> Account
           </h1>
-          <p className="text-xs text-cmba-grey-mid mt-1 font-mono uppercase tracking-[0.18em]">Training, courses & resources</p>
+          <p className="text-xs text-cmba-grey-mid mt-1 font-mono uppercase tracking-[0.18em]">Training, courses &amp; resources</p>
         </div>
 
         {/* Cross-link to the TeamLinkt score-report login */}
@@ -60,11 +204,11 @@ export default function LoginPage() {
           <Info size={18} className="text-cmba-red shrink-0 mt-0.5" />
           <p className="text-xs text-cmba-grey-light leading-relaxed">
             <span className="font-display font-bold text-white uppercase tracking-wider">For training and education only.</span>{" "}
-            A CMBA+ account is how you reach your role&apos;s training, courses, and resources. It is <span className="text-white font-medium">not</span> your league registration. To register to play or coach, use TeamLinkt below.
+            A CMBA Connect account is how you reach your role&apos;s training, courses, and resources. It is <span className="text-white font-medium">not</span> your league registration. To register to play or coach, use TeamLinkt below.
           </p>
         </div>
 
-        {/* Quick hub access */}
+        {/* Quick hub access (public discovery, signed out) */}
         <div className="grid grid-cols-2 gap-2 mb-6">
           {hubCards.map((h) => (
             <Link key={h.role} href={h.href}
@@ -77,69 +221,122 @@ export default function LoginPage() {
 
         {/* Toggle */}
         <div className="flex bg-cmba-black-card border border-white/12 mb-4">
-          <button onClick={() => setMode("login")}
-            className={`flex-1 py-2.5 font-display font-bold text-sm uppercase tracking-wider transition-colors ${mode === "login" ? "bg-cmba-red text-white" : "text-cmba-grey hover:text-white"}`}>
+          <button onClick={() => { setMode("signin"); setError(null); }}
+            className={`flex-1 py-2.5 font-display font-bold text-sm uppercase tracking-wider transition-colors ${mode === "signin" ? "bg-cmba-red text-white" : "text-cmba-grey hover:text-white"}`}>
             Sign In
           </button>
-          <button onClick={() => setMode("register")}
+          <button onClick={() => { setMode("register"); setError(null); }}
             className={`flex-1 py-2.5 font-display font-bold text-sm uppercase tracking-wider transition-colors ${mode === "register" ? "bg-cmba-red text-white" : "text-cmba-grey hover:text-white"}`}>
             Create Account
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-cmba-black-card border border-white/12 p-6 space-y-4">
-          {mode === "register" && (
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/40 text-red-300 text-xs p-3 mb-4">{error}</div>
+        )}
+
+        {pendingMsg ? (
+          <div className="bg-cmba-black-card border border-cmba-red/30 p-6 text-center">
+            <CheckCircle2 size={36} className="text-cmba-red mx-auto mb-3" />
+            <h2 className="font-display font-bold text-white uppercase tracking-wide mb-2">Almost done</h2>
+            <p className="text-sm text-cmba-grey-light leading-relaxed">{pendingMsg}</p>
+          </div>
+        ) : mode === "signin" ? (
+          <form onSubmit={handleSignIn} className="bg-cmba-black-card border border-white/12 p-6 space-y-4">
             <div>
-              <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Full Name</label>
+              <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Email</label>
               <div className="relative">
-                <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cmba-grey-mid" />
-                <input type="text" placeholder="Your full name" className="w-full bg-cmba-black-surface border border-white/12 pl-10 pr-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
+                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cmba-grey-mid" />
+                <input type="email" required value={siEmail} onChange={(e) => setSiEmail(e.target.value)} placeholder="your@email.com" className={`${inputCls} pl-10`} />
               </div>
             </div>
-          )}
-
-          <div>
-            <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">I am a...</label>
-            <div className="relative">
-              <GraduationCap size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cmba-grey-mid" />
-              <select required value={role} onChange={(e) => setRole(e.target.value)}
-                className="w-full bg-cmba-black-surface border border-white/12 pl-10 pr-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors">
-                <option value="">Select your role...</option>
-                <option value="athlete">Athlete / Player</option>
-                <option value="parent">Parent / Guardian</option>
-                <option value="coach">Coach</option>
-                <option value="referee">Referee / Official</option>
-              </select>
+            <div>
+              <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cmba-grey-mid" />
+                <input type="password" required value={siPassword} onChange={(e) => setSiPassword(e.target.value)} placeholder="••••••••" className={`${inputCls} pl-10`} />
+              </div>
             </div>
-          </div>
-
-          <div>
-            <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Email</label>
-            <div className="relative">
-              <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cmba-grey-mid" />
-              <input type="email" placeholder="your@email.com" className="w-full bg-cmba-black-surface border border-white/12 pl-10 pr-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
+            <button type="submit" disabled={busy} className="w-full bg-cmba-red hover:bg-cmba-hot disabled:opacity-50 text-white font-display font-bold text-sm uppercase tracking-wider py-3 transition-colors flex items-center justify-center gap-2">
+              {busy ? "Signing in…" : "Sign In"} <ArrowRight size={16} />
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleRegister} className="bg-cmba-black-card border border-white/12 p-6 space-y-4">
+            {/* Step 1 — age check */}
+            <div>
+              <h2 className="font-display font-bold text-white uppercase tracking-wide text-sm">Let us set up the right account</h2>
+              <p className="text-xs text-cmba-grey mt-1 mb-3">
+                Enter the participant&apos;s date of birth. If the participant is under 18, a parent or guardian will set up and manage the account.
+              </p>
+              <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Participant date of birth</label>
+              <input type="date" required value={dob} onChange={(e) => setDob(e.target.value)} className={inputCls} />
             </div>
-          </div>
 
-          <div>
-            <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Password</label>
-            <div className="relative">
-              <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cmba-grey-mid" />
-              <input type="password" placeholder="••••••••" className="w-full bg-cmba-black-surface border border-white/12 pl-10 pr-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
-            </div>
-          </div>
+            {dob && (
+              <>
+                {minor ? (
+                  <div className="space-y-3 border-t border-white/10 pt-4">
+                    <h3 className="font-display font-bold text-white uppercase tracking-wide text-sm">Guardian setup</h3>
+                    <p className="text-xs text-cmba-grey">
+                      You are setting up an account for an athlete under 18. We will confirm your email so we know the account is connected to a guardian.
+                    </p>
+                    <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Athlete full name" className={inputCls} />
+                    <input type="text" required value={gName} onChange={(e) => setGName(e.target.value)} placeholder="Guardian name" className={inputCls} />
+                    <input type="email" required value={gEmail} onChange={(e) => setGEmail(e.target.value)} placeholder="Guardian email" className={inputCls} />
+                    <input type="tel" value={gPhone} onChange={(e) => setGPhone(e.target.value)} placeholder="Guardian phone" className={inputCls} />
+                    <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" className={inputCls} />
 
-          <button type="submit" className="w-full bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-sm uppercase tracking-wider py-3 transition-colors flex items-center justify-center gap-2">
-            Continue to My Training
-            <ArrowRight size={16} />
-          </button>
-        </form>
+                    <div className="space-y-2.5 pt-2">
+                      <Checkbox checked={req1} onChange={setReq1}>I am the parent or legal guardian of this athlete.</Checkbox>
+                      <Checkbox checked={req2} onChange={setReq2}>
+                        I have read and agree to the{" "}
+                        <Link href="/terms" target="_blank" className="text-cmba-red underline">Terms of Use</Link>, the{" "}
+                        <Link href="/privacy" target="_blank" className="text-cmba-red underline">Privacy Policy</Link>, and the{" "}
+                        <Link href="/guardian-consent" target="_blank" className="text-cmba-red underline">Guardian Consent and Children&apos;s Privacy Notice</Link>.
+                      </Checkbox>
+                      <Checkbox checked={req3} onChange={setReq3}>
+                        I consent to CMBA collecting and using my child&apos;s information as described, and I understand I can withdraw consent at any time.
+                      </Checkbox>
+                      <Checkbox checked={optMarketing} onChange={setOptMarketing}>Send certification and CMBA updates to my email.</Checkbox>
+                      <Checkbox checked={optPhoto} onChange={setOptPhoto}>I allow CMBA to use my child&apos;s profile photo inside CMBA Connect.</Checkbox>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3 border-t border-white/10 pt-4">
+                    <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" className={inputCls} />
+                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className={inputCls} />
+                    <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" className={inputCls} />
+
+                    <div className="space-y-2.5 pt-2">
+                      <Checkbox checked={req1} onChange={setReq1}>
+                        I have read and agree to the{" "}
+                        <Link href="/terms" target="_blank" className="text-cmba-red underline">Terms of Use</Link> and the{" "}
+                        <Link href="/privacy" target="_blank" className="text-cmba-red underline">Privacy Policy</Link>.
+                      </Checkbox>
+                      <Checkbox checked={req2} onChange={setReq2}>I confirm the information I provide is true and current.</Checkbox>
+                      <Checkbox checked={optMarketing} onChange={setOptMarketing}>Send me reminders about my certifications and CMBA updates by email.</Checkbox>
+                      <Checkbox checked={optPhoto} onChange={setOptPhoto}>I allow CMBA to use my profile photo inside CMBA Connect.</Checkbox>
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-[11px] text-cmba-grey leading-relaxed border-t border-white/10 pt-3">
+                  We keep your information safe and in Canada, we never sell it, and you can view, correct, download, or delete it at any time.
+                </p>
+
+                <button type="submit" disabled={busy || !requiredOk}
+                  className="w-full bg-cmba-red hover:bg-cmba-hot disabled:opacity-40 disabled:cursor-not-allowed text-white font-display font-bold text-sm uppercase tracking-wider py-3 transition-colors flex items-center justify-center gap-2">
+                  {busy ? "Creating…" : minor ? "Create my child's account" : "Create my account"}
+                </button>
+              </>
+            )}
+          </form>
+        )}
 
         {/* Official CMBA registration */}
         <div className="mt-6 bg-cmba-black-card border border-white/12 p-4">
-          <h3 className="font-display font-bold text-xs text-white uppercase tracking-wider mb-1">
-            Registering for the season?
-          </h3>
+          <h3 className="font-display font-bold text-xs text-white uppercase tracking-wider mb-1">Registering for the season?</h3>
           <p className="text-xs text-cmba-grey leading-relaxed mb-3">
             League registration (different from this training account) is handled on TeamLinkt.
           </p>
@@ -157,9 +354,7 @@ export default function LoginPage() {
 
         <p className="text-center text-xs text-cmba-grey-mid mt-6">
           Public rule lookups and game reports don&apos;t require an account.{" "}
-          <Link href="/rules" className="text-cmba-red hover:text-cmba-red-dark">
-            Browse rules
-          </Link>
+          <Link href="/rules" className="text-cmba-red hover:text-cmba-red-dark">Browse rules</Link>
         </p>
       </div>
     </div>

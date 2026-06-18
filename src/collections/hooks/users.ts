@@ -141,6 +141,9 @@ export const logConsentRecord: CollectionAfterChangeHook = async ({ doc, previou
     await req.payload.create({
       collection: 'consent-records',
       overrideAccess: true,
+      // Pass req so this insert joins the parent transaction and can see the
+      // not-yet-committed user (otherwise the user_id FK fails).
+      req,
       data: {
         user: doc.id,
         kind: operation === 'create' ? 'initial' : 'reconsent',

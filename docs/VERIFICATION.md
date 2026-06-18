@@ -74,3 +74,62 @@ against it (§3). Details in `docs/BACKEND_NOTES.md`.
 ### Phase 0 verdict: ✅ GREEN
 Static gate (build/typecheck/lint/types) + live-DB gate (migrate, first-admin,
 smoke, auth, access control, advisors) all pass. Ready to start Phase 1.
+
+---
+
+## Phase 1 — Profiles, certifications & front-end wiring
+
+Date: 2026-06-18 · Branch: `feat/backend` · DB: `cmba-connect` (ca-central-1)
+
+### 1. Static checks — ✅ GREEN
+`npm run build` (compiles; `/account`, `/coach/pathway`, `/guardian/confirm`,
+`/api/account/export` dynamic; `/privacy` `/terms` `/guardian-consent` static;
+middleware active), `tsc --noEmit` clean, `npm run lint` clean, payload types
+current, Phase 1 migration applied to the live DB.
+
+### 2. Live end-to-end gate — ✅ 22/22 PASS (against ca-central-1 DB)
+Ran a scripted suite against the running app + live DB:
+
+**Consent (server-enforced):**
+- ✅ create without consent → **400 rejected** (front end bypassed)
+- ✅ adult account stores `termsVersion` + `privacyVersion` + `acceptedAt`, status active
+- ✅ minor (DOB < 18) requires guardian fields + `guardianConsentVersion`; minor
+  without them → **400 rejected**
+- ✅ minor account is `isMinor` + **pending**; guardian-confirm link **activates** it
+- ✅ consent audit: `ConsentRecords` written per sign-off; not user-writable (403)
+
+**RBAC adversarial (default deny):**
+- ✅ User A cannot read User B (404); A's user list scoped to self only
+- ✅ non-admin cannot self-escalate `roles` (stays `participant`)
+- ✅ non-admin cannot set `verifiedBy` (admin-only field ignored)
+- ✅ participant cannot read another user's certification (404)
+- ✅ admin reads all users; admin verifying a cert flips status `pending → valid`
+
+**Domain / integration:**
+- ✅ certification auto-status `pending-verification` on create
+- ✅ `/account` (unauth) → **307 redirect** to `/login?redirect=/account` (middleware)
+- ✅ `/coach/pathway` renders **real seeded stages** ("Community Coach"), **not** the
+  static 60% mock; public when signed out
+- ✅ `/privacy` `/terms` `/guardian-consent` render (consent links resolve)
+
+### 3. Self-review — ✅
+- No committed secrets; `.env` gitignored. Least-privilege `payload_app` DB role.
+- Default-deny access on all new collections; verification/roles fields admin-only;
+  certificate files private (owner/super-admin); catalogs public-read only.
+- Fixed: consent-record audit insert now joins the parent transaction (`req`),
+  so the FK to the new user resolves.
+
+### Phase 1 verdict: ✅ core GREEN — remaining wiring tracked below
+
+**Done:** real `/login` auth + exact consent registration (adult + guardian/minor),
+middleware-gated `/account` dashboard (profile edit, compliance banner, cert cards
++ private download, pathway progress, recommended courses, **self-serve data
+export**), header/mobile auth state, `/coach/pathway` on real data, guardian
+confirm flow, legal pages, full data model + seed.
+
+**Remaining Phase 1 wiring (lower-risk reads, not yet done):**
+- `/coach/courses`, `/coach/clinics`, `/ref`, `/ref/*` still read static arrays —
+  to be pointed at the Courses/Pathways collections (seed data already in place).
+- Personalized signed-in strips on `/athlete` and `/parent`.
+- Formal Vitest + Playwright harness (the live scripted suite above covered the
+  same assertions manually this pass).
