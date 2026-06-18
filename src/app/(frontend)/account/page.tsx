@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
+import { isAnyAdmin, isSuperAdmin } from '@/access/index'
 import { getComplianceForUser, getPathwayProgress, getUserProgress } from '@/lib/compliance'
 import { AccountActions } from '@/components/account/AccountActions'
 import type { Certification, CertificationType, Course } from '@/payload-types'
@@ -259,6 +260,20 @@ export default async function AccountPage() {
           <Link href="/coach/pathway" className="block text-center font-mono text-xs text-cmba-grey hover:text-cmba-red uppercase tracking-wider">
             View full certification pathway →
           </Link>
+
+          {isAnyAdmin(user) && (
+            <section className="bg-cmba-black-card border border-cmba-red/20 p-4">
+              <h2 className="font-display font-bold text-white uppercase tracking-wide text-xs mb-2">Admin tools</h2>
+              <div className="space-y-1.5">
+                {/* Hard nav into the Payload admin SPA — not a Next page. */}
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                <a href="/admin" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Management panel (/admin) →</a>
+                {isSuperAdmin(user) && (
+                  <Link href="/compliance/consent-audit" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Consent audit →</Link>
+                )}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>

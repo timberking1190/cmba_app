@@ -161,7 +161,21 @@ rejects unauthenticated + non-admin (403), refuses under legal hold (409),
 succeeds for super-admin and the user is gone (404). Migration applied; build /
 typecheck / lint / 18 unit tests green.
 
+### Consent audit view — ✅ added (Phase 2b)
+Super-admin-gated page `/compliance/consent-audit` lists every account with its
+accepted Terms/Privacy/Guardian versions + date, and flags any account missing a
+**current** sign-off (outdated version or never accepted). Linked from `/account`
+for admins; middleware-gated. Live-verified: no-session → /login; super-admin →
+200 + renders the table; non-super → redirected to /account.
+
+**Cookie-auth + CSRF confirmation (important):** server-side cookie auth
+(`payload.auth`) was proven working — `/account` renders 200 for a signed-in
+user. Payload auto-adds the serverURL to the CSRF allowlist and the cookie is
+only honoured with a browser `Sec-Fetch-Site`/`Origin` (which real browsers
+always send). Headless clients without those are correctly rejected — this is
+CSRF protection, not a bug. Bearer (`Authorization: JWT`) auth is unaffected.
+
 ### Remaining Phase 2
-- Custom admin **compliance dashboard** + **consent audit view** (data exists in
-  `consent-records` + cert `status`; these are bespoke Payload admin views).
+- Custom admin **compliance dashboard** (expiring/lapsed rollup) — a bespoke
+  Payload admin view; the data + per-user `/account` compliance banner exist.
 - Club-admin certification read-scoping (RBAC final polish).

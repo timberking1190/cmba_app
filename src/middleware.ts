@@ -19,5 +19,7 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/account/:path*'],
+  // Presence check only; role is enforced in the page (super-admin pages gate
+  // themselves via getCurrentUser + isSuperAdmin).
+  matcher: ['/account/:path*', '/compliance/:path*'],
 }
