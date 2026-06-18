@@ -9,8 +9,15 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 
 import { CertificateFiles } from './collections/CertificateFiles'
+import { CertificationTypes } from './collections/CertificationTypes'
+import { Certifications } from './collections/Certifications'
+import { Clubs } from './collections/Clubs'
+import { ConsentRecords } from './collections/ConsentRecords'
+import { Courses } from './collections/Courses'
 import { Media } from './collections/Media'
+import { Pathways } from './collections/Pathways'
 import { Users } from './collections/Users'
+import { PolicyVersions } from './globals/PolicyVersions'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -57,7 +64,18 @@ export default buildConfig({
       titleSuffix: '· CMBA Connect',
     },
   },
-  collections: [Users, Media, CertificateFiles],
+  collections: [
+    Users,
+    Clubs,
+    CertificationTypes,
+    Certifications,
+    CertificateFiles,
+    Courses,
+    Pathways,
+    ConsentRecords,
+    Media,
+  ],
+  globals: [PolicyVersions],
   editor: lexicalEditor(),
   db: postgresAdapter({
     pool: {

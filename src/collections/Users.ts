@@ -2,22 +2,28 @@ import type { CollectionConfig } from 'payload'
 
 import { ROLES, isAnyAdmin, superAdminFieldOnly } from '../access/index'
 import { createUsers, deleteUsers, readUsers, updateUsers } from '../access/users'
+import {
+  deriveIsMinor,
+  enforceConsent,
+  guardianFlow,
+  logConsentRecord,
+  sendGuardianConfirmation,
+} from './hooks/users'
 
 /*
  * Users — the auth collection.
  *
- * Phase 0 scope: email/password auth (with password reset + login hardening),
- * roles, and the core profile fields. The consents group, guardian group,
- * isMinor handling, and the server-side consent-enforcement hook are added in
- * Phase 1; public self-registration is opened there too.
+ * Email/password auth with login hardening; core profile; roles (admin-only);
+ * club; the consents group (server-enforced sign-off); the guardian group +
+ * isMinor (guardian-managed minors); and notification prefs. Self-registration
+ * is public but gated by the consent-enforcement hook.
  */
 export const Users: CollectionConfig = {
   slug: 'users',
   auth: {
-    // Auth hardening: lock an account after repeated failed logins.
     maxLoginAttempts: 5,
-    lockTime: 10 * 60 * 1000, // 10 minutes
-    tokenExpiration: 2 * 60 * 60, // 2 hours
+    lockTime: 10 * 60 * 1000,
+    tokenExpiration: 2 * 60 * 60,
     cookies: {
       sameSite: 'Lax',
       secure: process.env.NODE_ENV === 'production',
@@ -28,52 +34,50 @@ export const Users: CollectionConfig = {
     create: createUsers,
     update: updateUsers,
     delete: deleteUsers,
-    // Only admins reach the admin panel; participants use the public /account area.
     admin: ({ req: { user } }) => isAnyAdmin(user),
   },
   admin: {
     useAsTitle: 'email',
-    defaultColumns: ['fullName', 'email', 'roles', 'status'],
+    defaultColumns: ['fullName', 'email', 'roles', 'status', 'isMinor'],
     group: 'People',
   },
+  hooks: {
+    beforeValidate: [deriveIsMinor, enforceConsent],
+    beforeChange: [guardianFlow],
+    afterChange: [sendGuardianConfirmation, logConsentRecord],
+  },
   fields: [
-    {
-      name: 'fullName',
-      type: 'text',
-      required: true,
-      label: 'Full name',
-    },
-    {
-      name: 'preferredName',
-      type: 'text',
-      label: 'Preferred name',
-    },
-    {
-      name: 'pronouns',
-      type: 'text',
-    },
-    {
-      name: 'phone',
-      type: 'text',
-    },
+    { name: 'fullName', type: 'text', required: true, label: 'Full name' },
+    { name: 'preferredName', type: 'text', label: 'Preferred name' },
+    { name: 'pronouns', type: 'text' },
+    { name: 'phone', type: 'text' },
     {
       name: 'dateOfBirth',
       type: 'date',
       required: true,
       admin: {
         description:
-          'Used to determine whether the participant is a minor (under 18). Minors are guardian-managed.',
+          'Determines whether the participant is a minor (under 18). Minors are guardian-managed.',
         date: { pickerAppearance: 'dayOnly', displayFormat: 'yyyy-MM-dd' },
       },
     },
     {
-      name: 'profilePhoto',
-      type: 'upload',
-      relationTo: 'media',
+      name: 'isMinor',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        readOnly: true,
+        description: 'Derived from date of birth on every save.',
+        position: 'sidebar',
+      },
     },
+    { name: 'profilePhoto', type: 'upload', relationTo: 'media' },
+    { name: 'bio', type: 'textarea' },
     {
-      name: 'bio',
-      type: 'textarea',
+      name: 'club',
+      type: 'relationship',
+      relationTo: 'clubs',
+      admin: { position: 'sidebar' },
     },
     {
       name: 'roles',
@@ -82,14 +86,8 @@ export const Users: CollectionConfig = {
       required: true,
       defaultValue: ['participant'],
       options: ROLES,
-      // Role assignment is an admin-only field (privilege escalation guard).
-      access: {
-        create: superAdminFieldOnly,
-        update: superAdminFieldOnly,
-      },
-      admin: {
-        description: 'Role assignment is restricted to super admins.',
-      },
+      access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
+      admin: { position: 'sidebar', description: 'Role assignment is restricted to super admins.' },
     },
     {
       name: 'status',
@@ -101,12 +99,10 @@ export const Users: CollectionConfig = {
         { label: 'Pending', value: 'pending' },
         { label: 'Inactive', value: 'inactive' },
       ],
-      access: {
-        update: superAdminFieldOnly,
-      },
+      access: { update: superAdminFieldOnly },
       admin: {
-        description:
-          'Pending = awaiting guardian confirmation (minors) or admin activation. Set by the system/admins only.',
+        position: 'sidebar',
+        description: 'Pending = awaiting guardian confirmation (minors). System/admin set.',
       },
     },
     {
@@ -116,6 +112,61 @@ export const Users: CollectionConfig = {
         { name: 'name', type: 'text' },
         { name: 'relationship', type: 'text' },
         { name: 'phone', type: 'text' },
+      ],
+    },
+    {
+      name: 'consents',
+      type: 'group',
+      label: 'Consent sign-off',
+      admin: { description: 'Recorded at signup and on re-consent. Audited in ConsentRecords.' },
+      fields: [
+        { name: 'termsVersion', type: 'text' },
+        { name: 'privacyVersion', type: 'text' },
+        { name: 'guardianConsentVersion', type: 'text' },
+        { name: 'acceptedAt', type: 'date' },
+        { name: 'acceptedIp', type: 'text' },
+        { name: 'marketingOptIn', type: 'checkbox', defaultValue: false },
+        { name: 'photoOptIn', type: 'checkbox', defaultValue: false },
+      ],
+    },
+    {
+      name: 'guardian',
+      type: 'group',
+      label: 'Guardian (for minors)',
+      admin: {
+        description: 'Required for participants under 18. The account stays pending until confirmed.',
+        condition: (data) => Boolean(data?.isMinor),
+      },
+      fields: [
+        { name: 'name', type: 'text' },
+        { name: 'email', type: 'email' },
+        { name: 'phone', type: 'text' },
+        { name: 'relationship', type: 'text' },
+        {
+          name: 'confirmed',
+          type: 'checkbox',
+          defaultValue: false,
+          access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
+          admin: { readOnly: true },
+        },
+        {
+          name: 'confirmationToken',
+          type: 'text',
+          access: {
+            read: superAdminFieldOnly,
+            create: superAdminFieldOnly,
+            update: superAdminFieldOnly,
+          },
+          admin: { hidden: true },
+        },
+      ],
+    },
+    {
+      name: 'notificationPrefs',
+      type: 'group',
+      fields: [
+        { name: 'certificationReminders', type: 'checkbox', defaultValue: true },
+        { name: 'generalUpdates', type: 'checkbox', defaultValue: false },
       ],
     },
   ],

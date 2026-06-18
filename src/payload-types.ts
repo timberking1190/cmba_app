@@ -68,8 +68,14 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
-    media: Media;
+    clubs: Club;
+    'certification-types': CertificationType;
+    certifications: Certification;
     'certificate-files': CertificateFile;
+    courses: Course;
+    pathways: Pathway;
+    'consent-records': ConsentRecord;
+    media: Media;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,8 +84,14 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
+    clubs: ClubsSelect<false> | ClubsSelect<true>;
+    'certification-types': CertificationTypesSelect<false> | CertificationTypesSelect<true>;
+    certifications: CertificationsSelect<false> | CertificationsSelect<true>;
     'certificate-files': CertificateFilesSelect<false> | CertificateFilesSelect<true>;
+    courses: CoursesSelect<false> | CoursesSelect<true>;
+    pathways: PathwaysSelect<false> | PathwaysSelect<true>;
+    'consent-records': ConsentRecordsSelect<false> | ConsentRecordsSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -89,8 +101,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'policy-versions': PolicyVersion;
+  };
+  globalsSelect: {
+    'policy-versions': PolicyVersionsSelect<false> | PolicyVersionsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -130,23 +146,55 @@ export interface User {
   pronouns?: string | null;
   phone?: string | null;
   /**
-   * Used to determine whether the participant is a minor (under 18). Minors are guardian-managed.
+   * Determines whether the participant is a minor (under 18). Minors are guardian-managed.
    */
   dateOfBirth: string;
+  /**
+   * Derived from date of birth on every save.
+   */
+  isMinor?: boolean | null;
   profilePhoto?: (number | null) | Media;
   bio?: string | null;
+  club?: (number | null) | Club;
   /**
    * Role assignment is restricted to super admins.
    */
   roles: ('participant' | 'coach' | 'official' | 'club_admin' | 'super_admin')[];
   /**
-   * Pending = awaiting guardian confirmation (minors) or admin activation. Set by the system/admins only.
+   * Pending = awaiting guardian confirmation (minors). System/admin set.
    */
   status: 'active' | 'pending' | 'inactive';
   emergencyContact?: {
     name?: string | null;
     relationship?: string | null;
     phone?: string | null;
+  };
+  /**
+   * Recorded at signup and on re-consent. Audited in ConsentRecords.
+   */
+  consents?: {
+    termsVersion?: string | null;
+    privacyVersion?: string | null;
+    guardianConsentVersion?: string | null;
+    acceptedAt?: string | null;
+    acceptedIp?: string | null;
+    marketingOptIn?: boolean | null;
+    photoOptIn?: boolean | null;
+  };
+  /**
+   * Required for participants under 18. The account stays pending until confirmed.
+   */
+  guardian?: {
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    relationship?: string | null;
+    confirmed?: boolean | null;
+    confirmationToken?: string | null;
+  };
+  notificationPrefs?: {
+    certificationReminders?: boolean | null;
+    generalUpdates?: boolean | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -217,6 +265,140 @@ export interface Media {
   };
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clubs".
+ */
+export interface Club {
+  id: number;
+  name: string;
+  shortName?: string | null;
+  logo?: (number | null) | Media;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  /**
+   * Users who administer this club.
+   */
+  admins?: (number | User)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "certification-types".
+ */
+export interface CertificationType {
+  id: number;
+  name: string;
+  category: 'coach' | 'official' | 'compliance' | 'medical';
+  /**
+   * Roles this certification is relevant to.
+   */
+  appliesToRoles?: ('participant' | 'coach' | 'official' | 'club_admin' | 'super_admin')[] | null;
+  /**
+   * Months a certification of this type stays valid. Blank = does not expire. Used to auto-compute expiry.
+   */
+  validityMonths?: number | null;
+  /**
+   * Is this certification mandatory for its required roles?
+   */
+  isRequired?: boolean | null;
+  /**
+   * Roles for which this certification is mandatory.
+   */
+  requiredForRoles?: ('participant' | 'coach' | 'official' | 'club_admin' | 'super_admin')[] | null;
+  /**
+   * Deep-link to renew / take the course.
+   */
+  renewalUrl?: string | null;
+  /**
+   * Course that fulfills this certification, if any.
+   */
+  relatedCourse?: (number | null) | Course;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses".
+ */
+export interface Course {
+  id: number;
+  title: string;
+  description?: string | null;
+  /**
+   * e.g. Reach360 (CMBA), Coaching Association of Canada, RAMP.
+   */
+  provider?: string | null;
+  /**
+   * e.g. Online, self-paced; In-person clinic.
+   */
+  format?: string | null;
+  level?: string | null;
+  cost?: string | null;
+  duration?: string | null;
+  targetAudience?: string | null;
+  registerUrl?: string | null;
+  mandatory?: boolean | null;
+  requiredForRoles?: ('participant' | 'coach' | 'official' | 'club_admin' | 'super_admin')[] | null;
+  relatedCertificationType?: (number | null) | CertificationType;
+  /**
+   * Provider course id (e.g. Reach360 course UUID), for sync/dedupe.
+   */
+  externalId?: string | null;
+  modules?:
+    | {
+        number?: number | null;
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "certifications".
+ */
+export interface Certification {
+  id: number;
+  user: number | User;
+  type: number | CertificationType;
+  /**
+   * Auto-computed from verification + expiry.
+   */
+  status?: ('pending-verification' | 'valid' | 'expiring' | 'expired') | null;
+  issueDate?: string | null;
+  /**
+   * Auto-filled from the type validity if left blank.
+   */
+  expiryDate?: string | null;
+  /**
+   * Private file (owner + admin only). Never public.
+   */
+  certificateFile?: (number | null) | CertificateFile;
+  issuingBody?: string | null;
+  credentialId?: string | null;
+  /**
+   * Admin who verified this certification. Admin-only.
+   */
+  verifiedBy?: (number | null) | User;
+  /**
+   * Set when an admin verifies. Admin-only.
+   */
+  verifiedAt?: string | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Private certificate files. Downloads are access-controlled; never public.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -239,6 +421,56 @@ export interface CertificateFile {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pathways".
+ */
+export interface Pathway {
+  id: number;
+  name: string;
+  audience: 'coach' | 'official';
+  description?: string | null;
+  stages: {
+    name: string;
+    description?: string | null;
+    /**
+     * Sort order (1 = first stage).
+     */
+    order: number;
+    /**
+     * XP awarded for completing this stage.
+     */
+    xpReward?: number | null;
+    /**
+     * Certifications a user must hold (valid) to complete this stage.
+     */
+    requiredCertificationTypes?: (number | CertificationType)[] | null;
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Immutable consent audit log.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consent-records".
+ */
+export interface ConsentRecord {
+  id: number;
+  user: number | User;
+  kind: 'initial' | 'reconsent';
+  isMinor?: boolean | null;
+  termsVersion?: string | null;
+  privacyVersion?: string | null;
+  guardianConsentVersion?: string | null;
+  marketingOptIn?: boolean | null;
+  photoOptIn?: boolean | null;
+  acceptedAt: string;
+  acceptedIp?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -269,12 +501,36 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
-        relationTo: 'media';
-        value: number | Media;
+        relationTo: 'clubs';
+        value: number | Club;
+      } | null)
+    | ({
+        relationTo: 'certification-types';
+        value: number | CertificationType;
+      } | null)
+    | ({
+        relationTo: 'certifications';
+        value: number | Certification;
       } | null)
     | ({
         relationTo: 'certificate-files';
         value: number | CertificateFile;
+      } | null)
+    | ({
+        relationTo: 'courses';
+        value: number | Course;
+      } | null)
+    | ({
+        relationTo: 'pathways';
+        value: number | Pathway;
+      } | null)
+    | ({
+        relationTo: 'consent-records';
+        value: number | ConsentRecord;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -328,8 +584,10 @@ export interface UsersSelect<T extends boolean = true> {
   pronouns?: T;
   phone?: T;
   dateOfBirth?: T;
+  isMinor?: T;
   profilePhoto?: T;
   bio?: T;
+  club?: T;
   roles?: T;
   status?: T;
   emergencyContact?:
@@ -338,6 +596,33 @@ export interface UsersSelect<T extends boolean = true> {
         name?: T;
         relationship?: T;
         phone?: T;
+      };
+  consents?:
+    | T
+    | {
+        termsVersion?: T;
+        privacyVersion?: T;
+        guardianConsentVersion?: T;
+        acceptedAt?: T;
+        acceptedIp?: T;
+        marketingOptIn?: T;
+        photoOptIn?: T;
+      };
+  guardian?:
+    | T
+    | {
+        name?: T;
+        email?: T;
+        phone?: T;
+        relationship?: T;
+        confirmed?: T;
+        confirmationToken?: T;
+      };
+  notificationPrefs?:
+    | T
+    | {
+        certificationReminders?: T;
+        generalUpdates?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -355,6 +640,148 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clubs_select".
+ */
+export interface ClubsSelect<T extends boolean = true> {
+  name?: T;
+  shortName?: T;
+  logo?: T;
+  contactEmail?: T;
+  contactPhone?: T;
+  admins?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "certification-types_select".
+ */
+export interface CertificationTypesSelect<T extends boolean = true> {
+  name?: T;
+  category?: T;
+  appliesToRoles?: T;
+  validityMonths?: T;
+  isRequired?: T;
+  requiredForRoles?: T;
+  renewalUrl?: T;
+  relatedCourse?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "certifications_select".
+ */
+export interface CertificationsSelect<T extends boolean = true> {
+  user?: T;
+  type?: T;
+  status?: T;
+  issueDate?: T;
+  expiryDate?: T;
+  certificateFile?: T;
+  issuingBody?: T;
+  credentialId?: T;
+  verifiedBy?: T;
+  verifiedAt?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "certificate-files_select".
+ */
+export interface CertificateFilesSelect<T extends boolean = true> {
+  owner?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses_select".
+ */
+export interface CoursesSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  provider?: T;
+  format?: T;
+  level?: T;
+  cost?: T;
+  duration?: T;
+  targetAudience?: T;
+  registerUrl?: T;
+  mandatory?: T;
+  requiredForRoles?: T;
+  relatedCertificationType?: T;
+  externalId?: T;
+  modules?:
+    | T
+    | {
+        number?: T;
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pathways_select".
+ */
+export interface PathwaysSelect<T extends boolean = true> {
+  name?: T;
+  audience?: T;
+  description?: T;
+  stages?:
+    | T
+    | {
+        name?: T;
+        description?: T;
+        order?: T;
+        xpReward?: T;
+        requiredCertificationTypes?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consent-records_select".
+ */
+export interface ConsentRecordsSelect<T extends boolean = true> {
+  user?: T;
+  kind?: T;
+  isMinor?: T;
+  termsVersion?: T;
+  privacyVersion?: T;
+  guardianConsentVersion?: T;
+  marketingOptIn?: T;
+  photoOptIn?: T;
+  acceptedAt?: T;
+  acceptedIp?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -411,24 +838,6 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "certificate-files_select".
- */
-export interface CertificateFilesSelect<T extends boolean = true> {
-  owner?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -466,6 +875,36 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "policy-versions".
+ */
+export interface PolicyVersion {
+  id: number;
+  /**
+   * Current Terms of Use version (e.g. a date or semver).
+   */
+  termsVersion: string;
+  privacyVersion: string;
+  /**
+   * Current Guardian Consent & Children’s Privacy Notice version.
+   */
+  guardianConsentVersion: string;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "policy-versions_select".
+ */
+export interface PolicyVersionsSelect<T extends boolean = true> {
+  termsVersion?: T;
+  privacyVersion?: T;
+  guardianConsentVersion?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

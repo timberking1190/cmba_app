@@ -34,4 +34,8 @@ export const updateUsers: Access = ({ req: { user } }) => {
 
 export const deleteUsers: Access = ({ req: { user } }) => isSuperAdmin(user)
 
-export const createUsers: Access = ({ req: { user } }) => isSuperAdmin(user)
+// Public self-registration is allowed, but the server-side consent-enforcement
+// hook (see collections/hooks/users.ts) REJECTS any create without a valid
+// consent sign-off, and the `roles`/`status` fields are admin-only, so a
+// self-registrant can never escalate privileges or skip the guardian flow.
+export const createUsers: Access = () => true
