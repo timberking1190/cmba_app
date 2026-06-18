@@ -127,9 +127,41 @@ middleware-gated `/account` dashboard (profile edit, compliance banner, cert car
 export**), header/mobile auth state, `/coach/pathway` on real data, guardian
 confirm flow, legal pages, full data model + seed.
 
-**Remaining Phase 1 wiring (lower-risk reads, not yet done):**
-- `/coach/courses`, `/coach/clinics`, `/ref`, `/ref/*` still read static arrays —
-  to be pointed at the Courses/Pathways collections (seed data already in place).
-- Personalized signed-in strips on `/athlete` and `/parent`.
-- Formal Vitest + Playwright harness (the live scripted suite above covered the
-  same assertions manually this pass).
+**Phase 1 remainder — completed in 1c/1d:**
+- ✅ `/coach/courses` reads the Courses collection with real completion; `/ref`
+  rewired to the seeded official pathway (no DEMO/fake profile); `/athlete` +
+  `/parent` signed-in strips. (`/coach`, `/coach/clinics`, `/ref/quick-ref`,
+  `/ref/signals` are reference/resource pages with no mock progress.)
+- ✅ Vitest domain suite (`npm test`): 18 tests — cert status transitions, date
+  math, age gate, reminder selection. (Playwright browser e2e still optional —
+  the live scripted suites cover the same flows.)
+
+---
+
+## Phase 2 — Admin & compliance automation (partial)
+
+Date: 2026-06-18 · Branch: `feat/backend`
+
+### Delivered + verified
+- **Training/admin management** = the Payload admin panel (`/admin`):
+  CertificationTypes / Courses / Pathways CRUD, user directory + filters, and
+  certification verification (admin-only fields) — all live already.
+- **Expiry-reminder cron** `/api/cron/certification-reminders` (daily): refreshes
+  cached status + emails at 60/30/7/lapsed, **no PII** in body.
+- **Retention-review cron** `/api/cron/retention-review` (weekly): flags inactive
+  accounts (no auto-delete).
+- **IncidentLog** collection + **breach runbook** (README) + **Privacy Officer**
+  in **SiteSettings** global.
+- **Admin erasure** `/api/admin/erase-user`: legal-hold check; removes certs +
+  private files (DB + Storage) + consent records + the account.
+
+**Live gate (ca-central-1):** cron rejects missing/bad secret (401) + fails closed
+without `CRON_SECRET`; runs + returns a summary with the correct secret; erasure
+rejects unauthenticated + non-admin (403), refuses under legal hold (409),
+succeeds for super-admin and the user is gone (404). Migration applied; build /
+typecheck / lint / 18 unit tests green.
+
+### Remaining Phase 2
+- Custom admin **compliance dashboard** + **consent audit view** (data exists in
+  `consent-records` + cert `status`; these are bespoke Payload admin views).
+- Club-admin certification read-scoping (RBAC final polish).

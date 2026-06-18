@@ -14,10 +14,12 @@ import { Certifications } from './collections/Certifications'
 import { Clubs } from './collections/Clubs'
 import { ConsentRecords } from './collections/ConsentRecords'
 import { Courses } from './collections/Courses'
+import { IncidentLog } from './collections/IncidentLog'
 import { Media } from './collections/Media'
 import { Pathways } from './collections/Pathways'
 import { Users } from './collections/Users'
 import { PolicyVersions } from './globals/PolicyVersions'
+import { SiteSettings } from './globals/SiteSettings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -73,9 +75,10 @@ export default buildConfig({
     Courses,
     Pathways,
     ConsentRecords,
+    IncidentLog,
     Media,
   ],
-  globals: [PolicyVersions],
+  globals: [PolicyVersions, SiteSettings],
   editor: lexicalEditor(),
   db: postgresAdapter({
     pool: {

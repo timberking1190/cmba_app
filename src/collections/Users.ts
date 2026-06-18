@@ -106,6 +106,16 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'legalHold',
+      type: 'checkbox',
+      defaultValue: false,
+      access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
+      admin: {
+        position: 'sidebar',
+        description: 'When set, this account is exempt from erasure (legal/safety hold).',
+      },
+    },
+    {
       name: 'emergencyContact',
       type: 'group',
       fields: [

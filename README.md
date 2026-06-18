@@ -119,6 +119,43 @@ email. Use a strong, unique password and enable 2FA when available.
 - `npm run seed` — seed catalog data (Clubs, CertificationTypes, Courses,
   Pathways — populated in Phase 1).
 
+### Background jobs (Vercel Cron)
+
+Two protected cron routes (declared in `vercel.json`, region `yul1`). Both require
+`Authorization: Bearer $CRON_SECRET` and **fail closed** if `CRON_SECRET` is unset.
+
+- `GET /api/cron/certification-reminders` (daily): refreshes each certification's
+  cached status from its expiry, and emails the owner at 60 / 30 / 7 days before
+  expiry and on lapse. Emails contain **no PII** — just a portal link.
+- `GET /api/cron/retention-review` (weekly): flags (does not delete) accounts
+  inactive beyond the retention window for Privacy-Officer review.
+
+### Right to erasure
+
+`POST /api/admin/erase-user` (super-admin only) with `{ "userId": <id> }` removes
+a member's certifications, **private certificate files (DB + Supabase Storage)**,
+and consent records, then the account — unless the account is under a **legal
+hold** (`legalHold` on the user), in which case it returns 409. Members can export
+their own data anytime from `/account` (`/api/account/export`).
+
+### Breach / incident runbook (PIPEDA)
+
+Log **every** privacy/security incident in the **Incident Log** (`/admin` →
+Incident Log; super-admin only), whether or not it requires notification.
+
+1. **Contain** the incident; record it in the Incident Log (severity, what
+   happened, when discovered).
+2. **Assess** whether it poses a *real risk of significant harm* (RROSH). If yes,
+   set `realRiskOfSignificantHarm`.
+3. **Notify** (when RROSH): the **Office of the Privacy Commissioner of Canada**
+   and affected individuals as soon as feasible; record `opcNotifiedAt` /
+   `individualsNotifiedAt` and `affectedCount`. Alberta's OIPC where applicable.
+4. **Remediate** and record the fix; move status to Contained → Closed.
+5. **Retain** the record — PIPEDA requires keeping a log of all breaches.
+
+The **Privacy Officer** contact lives in Site Settings (`/admin` → Site Settings)
+and is surfaced in the Privacy Policy.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

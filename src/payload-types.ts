@@ -75,6 +75,7 @@ export interface Config {
     courses: Course;
     pathways: Pathway;
     'consent-records': ConsentRecord;
+    'incident-log': IncidentLog;
     media: Media;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -91,6 +92,7 @@ export interface Config {
     courses: CoursesSelect<false> | CoursesSelect<true>;
     pathways: PathwaysSelect<false> | PathwaysSelect<true>;
     'consent-records': ConsentRecordsSelect<false> | ConsentRecordsSelect<true>;
+    'incident-log': IncidentLogSelect<false> | IncidentLogSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -103,9 +105,11 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     'policy-versions': PolicyVersion;
+    'site-settings': SiteSetting;
   };
   globalsSelect: {
     'policy-versions': PolicyVersionsSelect<false> | PolicyVersionsSelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -164,6 +168,10 @@ export interface User {
    * Pending = awaiting guardian confirmation (minors). System/admin set.
    */
   status: 'active' | 'pending' | 'inactive';
+  /**
+   * When set, this account is exempt from erasure (legal/safety hold).
+   */
+  legalHold?: boolean | null;
   emergencyContact?: {
     name?: string | null;
     relationship?: string | null;
@@ -473,6 +481,34 @@ export interface ConsentRecord {
   createdAt: string;
 }
 /**
+ * Privacy/security incident & breach log (PIPEDA accountability).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "incident-log".
+ */
+export interface IncidentLog {
+  id: number;
+  title: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  status: 'open' | 'investigating' | 'contained' | 'closed';
+  occurredAt: string;
+  discoveredAt?: string | null;
+  /**
+   * If true, OPC + affected individuals must be notified (PIPEDA).
+   */
+  realRiskOfSignificantHarm?: boolean | null;
+  /**
+   * Office of the Privacy Commissioner notification date.
+   */
+  opcNotifiedAt?: string | null;
+  individualsNotifiedAt?: string | null;
+  affectedCount?: number | null;
+  description?: string | null;
+  remediation?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -527,6 +563,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'consent-records';
         value: number | ConsentRecord;
+      } | null)
+    | ({
+        relationTo: 'incident-log';
+        value: number | IncidentLog;
       } | null)
     | ({
         relationTo: 'media';
@@ -590,6 +630,7 @@ export interface UsersSelect<T extends boolean = true> {
   club?: T;
   roles?: T;
   status?: T;
+  legalHold?: T;
   emergencyContact?:
     | T
     | {
@@ -785,6 +826,25 @@ export interface ConsentRecordsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "incident-log_select".
+ */
+export interface IncidentLogSelect<T extends boolean = true> {
+  title?: T;
+  severity?: T;
+  status?: T;
+  occurredAt?: T;
+  discoveredAt?: T;
+  realRiskOfSignificantHarm?: T;
+  opcNotifiedAt?: T;
+  individualsNotifiedAt?: T;
+  affectedCount?: T;
+  description?: T;
+  remediation?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
@@ -896,12 +956,52 @@ export interface PolicyVersion {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  privacyOfficer?: {
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  };
+  contact?: {
+    email?: string | null;
+    phone?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "policy-versions_select".
  */
 export interface PolicyVersionsSelect<T extends boolean = true> {
   termsVersion?: T;
   privacyVersion?: T;
   guardianConsentVersion?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  privacyOfficer?:
+    | T
+    | {
+        name?: T;
+        email?: T;
+        phone?: T;
+      };
+  contact?:
+    | T
+    | {
+        email?: T;
+        phone?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
