@@ -86,9 +86,15 @@ league system of record for registration, schedule, and scores.
    the `S3_*` storage vars (incl. `S3_BUCKET_PUBLIC` / `S3_BUCKET_PRIVATE`), and
    the `SES_*` email vars. Generate a secret with `openssl rand -base64 32`.
 3. `npm install`
-4. `npm run dev` — in development the Postgres schema is auto-pushed. For
-   production, generate and commit a migration with `npm run migrate:create` and
-   apply with `npm run migrate`.
+4. Apply the schema: `npm run migrate` (migrations are the single source of
+   truth — dev push is off). After changing collections, run
+   `npm run migrate:create <name>` then `npm run migrate`. Then `npm run dev`.
+
+> **Connection strings (Supabase):** use the **direct** connection
+> (`db.<ref>.supabase.co:5432`) for local dev/migrations, and the **session
+> pooler** (`postgresql://<role>.<ref>:<pw>@aws-1-ca-central-1.pooler.supabase.com:5432/postgres`)
+> for Vercel serverless. Use a **least-privilege** DB role (not the `postgres`
+> superuser) — see `docs/BACKEND_NOTES.md`.
 
 ### Create the first super-admin
 After `DATABASE_URL` + `PAYLOAD_SECRET` are set:

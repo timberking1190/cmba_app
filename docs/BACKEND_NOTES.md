@@ -87,10 +87,26 @@ the bottom. The source-of-truth specs live in `cmba-backend-build/docs/`.
   super-admin via the Local API (idempotent). See README. Requires
   `DATABASE_URL` + `PAYLOAD_SECRET`.
 
-### Open items / credential pause
-- Running migrations, creating the first super-admin, the seed, and the
-  integration/e2e tests require a **Canadian Postgres** (`DATABASE_URL`) — there
-  is no local Postgres/Docker in this environment. These steps are paused pending
-  that credential (or a decision to run a local Postgres for dev/test). All code,
-  config, and tests are written and the static gate (build/typecheck/lint/types)
-  is green.
+### Database — provisioned (Supabase ca-central-1)
+- Project **`cmba-connect`**, ref **`pdwautioosstdgbbblxl`**, region
+  **ca-central-1** (Montréal), created via the Supabase MCP on 2026-06-18. (An
+  older `cmba_app` Supabase project exists in **us-east-2** — NOT used here; wrong
+  region for personal data.)
+- **Least-privilege DB role `payload_app`** (LOGIN; full privileges on schema
+  `public` only) created via MCP `execute_sql` — Payload connects as this role,
+  not the `postgres` superuser. The password lives only in the gitignored `.env`.
+- **Connection strings:** local dev/migrations use the **direct** host
+  (`db.pdwautioosstdgbbblxl.supabase.co:5432`, IPv6 — works from this machine).
+  Vercel serverless should use the **session pooler**
+  (`aws-1-ca-central-1.pooler.supabase.com:5432`, user `payload_app.<ref>`); the
+  `aws-0-*` pooler host does NOT exist for this project.
+- **Migrations only** (`push: false`): `src/migrations/20260618_195338_initial.ts`
+  is committed and applied; `payload_migrations` records it.
+
+### Storage / SES still pending (operator step)
+- Supabase **S3 access keys** are generated in the dashboard (Storage → S3) and
+  are not exposed by the MCP — `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` are
+  blank in `.env`. Uploads (profile photos, certificate files) need these, plus
+  the two buckets (`cmba-public`, `cmba-private`) created with the private one
+  kept non-public. SES SMTP creds (ca-central-1) likewise pending; email
+  currently uses nodemailer `jsonTransport` (no-op).

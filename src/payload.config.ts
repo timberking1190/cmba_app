@@ -63,8 +63,10 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL,
     },
-    // Dev: auto-push schema for fast iteration. Prod: use committed migrations.
-    push: !isProd,
+    // Migrations are the single source of truth (no dev push) so the schema is
+    // committable, deterministic, and verifiable. Run `npm run migrate:create`
+    // after changing collections, then `npm run migrate`.
+    push: false,
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
   email: nodemailerAdapter({

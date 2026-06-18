@@ -17,15 +17,25 @@ Date: 2026-06-18 · Branch: `feat/backend`
 | Lint | `npm run lint` | ✅ No ESLint warnings or errors |
 | Payload types current | `npm run generate:types` | ✅ No diff (in sync) |
 
-### 2. Automated tests — ⏸️ PAUSED (needs test DB)
-Vitest/Jest + Payload integration + Playwright e2e are introduced in Phase 1
-alongside the profile/auth features they cover. They require a disposable
-Postgres test DB, which is not available in this environment (no local
-Postgres/Docker). See "Credential pause" below.
+### 2. Automated tests — ⏳ harness lands in Phase 1
+The Vitest + Payload integration + Playwright e2e harness is introduced in
+Phase 1 alongside the profile/auth features it covers. For Phase 0 the live API
+was exercised manually against the ca-central-1 DB (see §3) — login, token-auth,
+and default-deny access control all verified.
 
-### 3. Smoke & seed — ⏸️ PAUSED (needs DATABASE_URL)
-`/admin`, the API, and `npm run create-admin` cannot be exercised without a
-Postgres connection. The Phase 0 seed has no catalog data yet (Phase 1).
+### 3. Smoke & migrate & first-admin — ✅ GREEN (live ca-central-1 DB)
+Ran against the provisioned Supabase project `cmba-connect` (ca-central-1):
+| Step | Result |
+|---|---|
+| `npm run migrate` (initial) | ✅ Applied; 11 tables created (users, users_roles, users_sessions, media, certificate_files, payload_*) |
+| `npm run create-admin` | ✅ Created `admin@cmba.ab.ca` as `super_admin`, status active |
+| `GET /` , `/resources`, `/coach/pathway`, `/login` | ✅ 200 |
+| `GET /admin` (Payload panel) | ✅ 200 |
+| `GET /api/users` (unauthenticated) | ✅ **403** "not allowed" — default deny works |
+| `POST /api/users/login` (admin) | ✅ 200, JWT issued, roles `["super_admin"]` |
+| `GET /api/users` (with token) | ✅ 200, returns the admin |
+| dev server log | ✅ no errors/warnings during smoke |
+| Supabase security advisors | ✅ no lints |
 
 ### 4. Self-review — ✅
 - **Committed secrets:** none. Scan of `src/`, `scripts/`, `next.config.mjs`,
@@ -45,17 +55,22 @@ Postgres connection. The Phase 0 seed has no catalog data yet (Phase 1).
 - **Wired pages importing static mock progress:** N/A in Phase 0 (page rewiring
   is Phase 1). Public site verified unaffected by the build.
 
+### Database — provisioned via Supabase MCP
+Resolved the earlier credential pause: a dedicated **`cmba-connect`** project was
+created in **ca-central-1** (ref `pdwautioosstdgbbblxl`) with a least-privilege
+`payload_app` DB role. Migrations, first-admin, and the smoke test all ran
+against it (§3). Details in `docs/BACKEND_NOTES.md`.
+
 ### Residual risks / follow-ups
 - Node 24 is newer than Payload's supported runtime; CLI works via ESM but Node
   22 LTS is the safer choice (installed as fallback). See `docs/BACKEND_NOTES.md`.
 - Gotcha #2 (`/login` real auth) intentionally deferred to Phase 1.
-- DB-dependent gate steps (migrate, create-admin, integration/e2e, smoke) are
-  **paused pending `DATABASE_URL`**.
+- **Storage + email creds pending (operator):** Supabase S3 access keys + the two
+  buckets, and SES SMTP — uploads and real email won't work until set. Not needed
+  for the Phase 0 gate.
+- The full Vitest/Playwright **test harness lands in Phase 1**; Phase 0 auth +
+  access control were verified manually against the live DB.
 
-### ⏸️ Credential pause
-There is no local Postgres or Docker in this environment, and the database is a
-Canadian service the operator must provision. To run migrations, create the first
-super-admin, and execute the integration/e2e tests, the build needs a
-`DATABASE_URL` (Supabase `ca-central-1`) — or a decision to run a local Postgres
-for dev/test only. All Phase 0 code, config, and docs are complete and the static
-gate is green.
+### Phase 0 verdict: ✅ GREEN
+Static gate (build/typecheck/lint/types) + live-DB gate (migrate, first-admin,
+smoke, auth, access control, advisors) all pass. Ready to start Phase 1.
