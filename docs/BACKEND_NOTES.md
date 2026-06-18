@@ -110,3 +110,31 @@ the bottom. The source-of-truth specs live in `cmba-backend-build/docs/`.
   the two buckets (`cmba-public`, `cmba-private`) created with the private one
   kept non-public. SES SMTP creds (ca-central-1) likewise pending; email
   currently uses nodemailer `jsonTransport` (no-op).
+
+---
+
+## Phases 1–3 — summary (detail in docs/VERIFICATION.md)
+
+- **Phase 1:** full data model (Clubs, CertificationTypes, Certifications, Courses,
+  Pathways, ConsentRecords + PolicyVersions global); server-enforced consent
+  sign-off + guardian/minor flow; real `/login` auth + consent registration;
+  middleware-gated `/account` (compliance, cert download, pathway, data export);
+  `/coach/pathway`, `/coach/courses`, `/ref` on live data (no mock progress);
+  athlete/parent strips; legal pages; Vitest suite. Migrations-only throughout.
+- **Phase 2:** expiry-reminder + retention crons (CRON_SECRET, fail-closed);
+  IncidentLog + breach runbook; SiteSettings (Privacy Officer); admin erasure
+  (legal-hold, DB + Storage); consent audit view (`/compliance/consent-audit`).
+- **Phase 3:** Pages CMS (blocks, drafts/versions/autosave, SEO, Live Preview);
+  block library + RenderBlocks; catch-all `/[slug]`; Announcements + homepage
+  strip; HeaderNav/FooterNav globals; legal docs published as CMS pages
+  (markdown→lexical) with static fallback.
+
+### Key cross-cutting decisions
+- **Auth:** Bearer (`Authorization: JWT`) for API; cookie auth for browser/server
+  components. Payload CSRF allowlist auto-includes the serverURL — cookie auth
+  needs a browser `Sec-Fetch-Site`/`Origin` (real browsers send these); headless
+  clients are rejected by design.
+- **Performance:** shared layout (Header/Footer) and the homepage stay static; the
+  announcements strip is client-fetched so the homepage isn't forced dynamic.
+- **Migrations** are the single source of truth (4 committed): initial, phase1,
+  phase2, phase3. Run `npm run migrate` after pulling.
