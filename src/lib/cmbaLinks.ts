@@ -84,8 +84,9 @@ export const DOCS = {
     "https://cloud.rampinteractive.com/calgaryminorbasketball/files/CMBA%20Rules%20and%20Policies/7.4%20U18%20Mods.pdf",
   ruleModsGuide:
     "https://docs.google.com/spreadsheets/d/1h8YH_8uC73gUOVxXkg-L2t2gnqzsQ833/edit",
-  leadership: "https://cmba.ab.ca/content/board-executive-and-committees",
-  boardContacts: "https://cmba.ab.ca/content/executive-and-board-contact-info",
+  leadership: "/leadership", // native Leadership & Board page
+  boardContacts: "/leadership", // native Leadership & Board page
+
   meetingMinutes: "https://cmba.ab.ca/content/meeting-info-amp-minutes",
   sccCodeOfConduct: "/rules", // native — the SCC Code of Conduct is in the Rules hub
 
