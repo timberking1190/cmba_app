@@ -15,8 +15,14 @@ export async function getPayloadClient() {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const payload = await getPayload({ config })
-  const hdrs = await nextHeaders()
-  const { user } = await payload.auth({ headers: hdrs })
-  return (user as User | null) ?? null
+  try {
+    const payload = await getPayload({ config })
+    const hdrs = await nextHeaders()
+    const { user } = await payload.auth({ headers: hdrs })
+    return (user as User | null) ?? null
+  } catch {
+    // If the backend/DB is unreachable, degrade to "signed out" so public pages
+    // still render (gated pages redirect to /login). Never throws.
+    return null
+  }
 }

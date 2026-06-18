@@ -6,6 +6,10 @@ import {
 import { DEV_GUIDES, REPORT_CARDS, COACH, DOCS, REGISTER } from "@/lib/cmbaLinks";
 import { PersonalizedStrip } from "@/components/PersonalizedStrip";
 
+// Auth-dependent (shows a signed-in strip), so render per request — never
+// statically generated (which would hit the DB at build).
+export const dynamic = "force-dynamic";
+
 const pathway = [
   { stage: "01", title: "Tykes", ages: "Ages 5-9", focus: "Fall in love with the game. Fundamental movement, ball skills, and play.", guide: DEV_GUIDES.tykes, card: REPORT_CARDS.tykes },
   { stage: "02", title: "U11", ages: "Ages 9-10", focus: "Physical literacy and core skills: dribbling, layups, passing, and spacing.", guide: DEV_GUIDES.u11, card: REPORT_CARDS.u11 },

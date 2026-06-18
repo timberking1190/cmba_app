@@ -5,6 +5,10 @@ import {
 import { CMBA, COURSES, DOCS, SUPPORT, REGISTER } from "@/lib/cmbaLinks";
 import { PersonalizedStrip } from "@/components/PersonalizedStrip";
 
+// Auth-dependent (shows a signed-in strip), so render per request — never
+// statically generated (which would hit the DB at build).
+export const dynamic = "force-dynamic";
+
 const steps = [
   { n: "01", title: "Spectator Training", required: true, desc: "CMBA's online course on being a positive presence in the stands. Every family should complete it.", href: COURSES.spectator },
   { n: "02", title: "Safe CMBA Interactions", required: true, desc: "Safe-sport expectations for everyone around the game, including parents and volunteers.", href: COURSES.safeInteractions },
