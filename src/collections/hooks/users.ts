@@ -13,16 +13,9 @@ import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook, Collecti
 import { APIError } from 'payload'
 
 import { isSuperAdmin } from '../../access/index'
+import { isUnder18 } from '../../lib/age'
 
-export function isUnder18(dob: string | Date | null | undefined, now: Date = new Date()): boolean {
-  if (!dob) return false
-  const d = new Date(dob)
-  if (Number.isNaN(d.getTime())) return false
-  let age = now.getFullYear() - d.getFullYear()
-  const m = now.getMonth() - d.getMonth()
-  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--
-  return age < 18
-}
+export { isUnder18 }
 
 /** Derive isMinor from dateOfBirth on every write so it can never drift. */
 export const deriveIsMinor: CollectionBeforeValidateHook = ({ data }) => {
