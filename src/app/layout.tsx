@@ -28,6 +28,8 @@ const jetbrains = JetBrains_Mono({
   display: "swap",
 });
 
+// Deploys: this repo (cmba_app) auto-deploys to the cmba_platform Vercel project
+// at cmbaplatform.vercel.app on every push to main.
 export const metadata: Metadata = {
   title: "CMBA+ | Calgary Minor Basketball Association",
   description:
