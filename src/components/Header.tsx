@@ -58,9 +58,11 @@ export function Header() {
             ))}
           </div>
           <div className="flex items-center gap-5">
-            <Link href="/admin"
+            {/* The static "league resources / operations" page moved from /admin
+                to /resources (Payload's management panel now owns /admin). */}
+            <Link href="/resources"
               className="font-mono text-[11px] text-cmba-grey hover:text-cmba-red transition-colors uppercase tracking-[0.18em]">
-              Admin
+              Resources
             </Link>
             <Link href="/login"
               className="flex items-center gap-1.5 font-mono text-[11px] text-cmba-grey hover:text-cmba-red transition-colors uppercase tracking-[0.18em]">

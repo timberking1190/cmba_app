@@ -34,7 +34,7 @@ const footerSections = [
     title: "Organization",
     links: [
       { label: "Game Reports", href: "/game-report" },
-      { label: "Admin Portal", href: "/admin" },
+      { label: "League Operations", href: "/resources" },
       { label: "Sign In", href: "/login" },
     ],
   },
