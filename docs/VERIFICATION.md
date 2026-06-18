@@ -175,10 +175,16 @@ only honoured with a browser `Sec-Fetch-Site`/`Origin` (which real browsers
 always send). Headless clients without those are correctly rejected — this is
 CSRF protection, not a bug. Bearer (`Authorization: JWT`) auth is unaffected.
 
+### Compliance dashboard — ✅ added (Phase 2c)
+`/compliance/dashboard` (admins): lists certifications expiring within 60 days or
+lapsed, with renewal links and lapsed/expiring counts. Super admins see all
+members; **club admins are scoped to their own club**. Status recomputed live.
+Linked from `/account`. Live-verified 5/5: creates an expiring cert → appears for
+super-admin; no-session → /login; non-admin → /account.
+
 ### Remaining Phase 2
-- Custom admin **compliance dashboard** (expiring/lapsed rollup) — a bespoke
-  Payload admin view; the data + per-user `/account` compliance banner exist.
-- Club-admin certification read-scoping (RBAC final polish).
+- (none essential) — club-admin scoping is handled in the dashboard; deeper
+  club-admin cert-list read-scoping on the raw collection is optional polish.
 
 ---
 
