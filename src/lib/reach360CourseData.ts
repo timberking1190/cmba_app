@@ -1,4 +1,10 @@
 /**
+ * @deprecated SEED SOURCE ONLY. As of the Payload backend (Phase 1), the live
+ * Course catalog lives in the `courses` collection and the wired pages
+ * (/coach/courses, /ref) read from Payload, not this file. This data is consumed
+ * by scripts/seed.ts to populate the CMS and kept as a fallback reference. Edit
+ * courses in the admin panel (/admin), not here.
+ *
  * CMBA Reach360 Course Data
  * Extracted from cmba.reach360.com and cmba.ab.ca
  * Organization: Calgary Minor Basketball Association

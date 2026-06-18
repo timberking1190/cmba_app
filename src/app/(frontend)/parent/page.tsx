@@ -3,6 +3,7 @@ import {
   Users, ExternalLink, ArrowRight, PlayCircle, ShieldCheck, Heart, Phone, BookOpen, ChevronRight,
 } from "lucide-react";
 import { CMBA, COURSES, DOCS, SUPPORT, REGISTER } from "@/lib/cmbaLinks";
+import { PersonalizedStrip } from "@/components/PersonalizedStrip";
 
 const steps = [
   { n: "01", title: "Spectator Training", required: true, desc: "CMBA's online course on being a positive presence in the stands. Every family should complete it.", href: COURSES.spectator },
@@ -27,6 +28,7 @@ const support = [
 export default function ParentPage() {
   return (
     <div>
+      <PersonalizedStrip variant="parent" />
       {/* Hero */}
       <section className="bg-hero-gradient border-b-2 border-cmba-red">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">

@@ -4,6 +4,7 @@ import {
   ShieldCheck, ArrowRight, Dumbbell,
 } from "lucide-react";
 import { DEV_GUIDES, REPORT_CARDS, COACH, DOCS, REGISTER } from "@/lib/cmbaLinks";
+import { PersonalizedStrip } from "@/components/PersonalizedStrip";
 
 const pathway = [
   { stage: "01", title: "Tykes", ages: "Ages 5-9", focus: "Fall in love with the game. Fundamental movement, ball skills, and play.", guide: DEV_GUIDES.tykes, card: REPORT_CARDS.tykes },
@@ -28,6 +29,7 @@ const safeSport = [
 export default function AthletePage() {
   return (
     <div>
+      <PersonalizedStrip variant="athlete" />
       {/* Hero */}
       <section className="bg-hero-gradient border-b-2 border-cmba-red">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
