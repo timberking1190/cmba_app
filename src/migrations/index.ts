@@ -1,6 +1,7 @@
 import * as migration_20260618_195338_initial from './20260618_195338_initial';
 import * as migration_20260618_201054_phase1_data_model from './20260618_201054_phase1_data_model';
 import * as migration_20260618_211043_phase2_admin_compliance from './20260618_211043_phase2_admin_compliance';
+import * as migration_20260618_220742_phase3_cms from './20260618_220742_phase3_cms';
 
 export const migrations = [
   {
@@ -16,6 +17,11 @@ export const migrations = [
   {
     up: migration_20260618_211043_phase2_admin_compliance.up,
     down: migration_20260618_211043_phase2_admin_compliance.down,
-    name: '20260618_211043_phase2_admin_compliance'
+    name: '20260618_211043_phase2_admin_compliance',
+  },
+  {
+    up: migration_20260618_220742_phase3_cms.up,
+    down: migration_20260618_220742_phase3_cms.down,
+    name: '20260618_220742_phase3_cms'
   },
 ];

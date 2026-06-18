@@ -12,6 +12,8 @@ import config from '@payload-config'
 
 import { allReach360Courses } from '../src/lib/reach360CourseData'
 import { COURSES as LINKS } from '../src/lib/cmbaLinks'
+import { mdToLexical } from '../src/lib/mdToLexical'
+import { PRIVACY_POLICY, TERMS_OF_USE, GUARDIAN_CONSENT } from '../src/content/legal'
 
 type Role = 'participant' | 'coach' | 'official' | 'club_admin' | 'super_admin'
 
@@ -196,6 +198,106 @@ async function main() {
     },
   )
   log('Pathways seeded')
+
+  // ── Globals: Site Settings + nav ────────────────────────────────────────
+  await payload.updateGlobal({
+    slug: 'site-settings',
+    data: {
+      privacyOfficer: { name: 'CMBA Privacy Officer', email: 'privacy@cmba.ab.ca', phone: '(403) 804-3396' },
+      contact: { email: 'league@cmba.ab.ca', phone: '(403) 804-3396' },
+    },
+  })
+  await payload.updateGlobal({
+    slug: 'header-nav',
+    data: {
+      items: [
+        { label: 'Rules', href: '/rules' },
+        { label: 'Athletes', href: '/athlete' },
+        { label: 'Coaches', href: '/coach', children: [
+          { label: 'Dashboard', href: '/coach' },
+          { label: 'Certification Pathway', href: '/coach/pathway' },
+          { label: 'Courses', href: '/coach/courses' },
+        ] },
+        { label: 'Referees', href: '/ref' },
+        { label: 'Parents', href: '/parent' },
+        { label: 'Schedule', href: '/calendar' },
+        { label: 'Standings', href: '/standings' },
+      ],
+    },
+  })
+  await payload.updateGlobal({
+    slug: 'footer-nav',
+    data: {
+      sections: [
+        { title: 'CMBA+', links: [
+          { label: 'Rules & Info', href: '/rules' },
+          { label: 'Schedule', href: '/calendar' },
+          { label: 'Standings', href: '/standings' },
+          { label: 'FAQ', href: '/faq' },
+        ] },
+        { title: 'Organization', links: [
+          { label: 'League Operations', href: '/resources' },
+          { label: 'Privacy Policy', href: '/privacy' },
+          { label: 'Terms of Use', href: '/terms' },
+        ] },
+      ],
+    },
+  })
+  log('Globals (site settings + nav) seeded')
+
+  // ── Announcement (sample) ───────────────────────────────────────────────
+  await findOrCreate(
+    'announcements',
+    { title: { equals: 'Welcome to CMBA Connect' } },
+    {
+      title: 'Welcome to CMBA Connect',
+      body: 'Your training, certification, and resources hub. Sign in to track your pathway.',
+      tag: 'News',
+      link: '/login',
+      pinned: true,
+      publishedAt: '2026-06-01',
+      _status: 'published',
+    },
+  )
+  log('Announcement seeded')
+
+  // ── Legal docs as published CMS pages ───────────────────────────────────
+  for (const doc of [PRIVACY_POLICY, TERMS_OF_USE, GUARDIAN_CONSENT]) {
+    await findOrCreate(
+      'pages',
+      { slug: { equals: doc.slug } },
+      {
+        title: doc.title,
+        slug: doc.slug,
+        _status: 'published',
+        layout: [{ blockType: 'richText', content: mdToLexical(doc.body) }],
+        seo: { metaTitle: `${doc.title} | CMBA Connect` },
+      },
+    )
+  }
+  log('Legal CMS pages seeded')
+
+  // ── Sample editable page (proves "create pages without code") ───────────
+  await findOrCreate(
+    'pages',
+    { slug: { equals: 'about' } },
+    {
+      title: 'About CMBA Connect',
+      slug: 'about',
+      _status: 'published',
+      seo: { metaTitle: 'About | CMBA Connect' },
+      layout: [
+        { blockType: 'hero', eyebrow: 'About', heading: 'CMBA Connect', subheading: 'People development and website content for Calgary Minor Basketball — built on a Canadian-resident backend.' },
+        { blockType: 'statsGrid', stats: [
+          { value: '5', label: 'Age groups' },
+          { value: '13', label: 'Certifications tracked' },
+          { value: '100%', label: 'Data in Canada' },
+        ] },
+        { blockType: 'cta', heading: 'Ready to get started?', body: 'Create your training account in minutes.', buttonLabel: 'Create account', buttonHref: '/login' },
+      ],
+    },
+  )
+  log('Sample CMS page (/about) seeded')
 
   log('Seed complete.')
   process.exit(0)

@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 
-import { LegalDocView } from '@/components/LegalDocView'
+import { CmsOrLegal } from '@/components/CmsOrLegal'
 import { PRIVACY_POLICY } from '@/content/legal'
 
+export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Privacy Policy | CMBA Connect' }
 
 export default function PrivacyPage() {
-  return <LegalDocView doc={PRIVACY_POLICY} />
+  return <CmsOrLegal doc={PRIVACY_POLICY} />
 }

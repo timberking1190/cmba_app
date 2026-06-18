@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { HeroNetwork } from "@/components/HeroNetwork";
 import { CountUp } from "@/components/CountUp";
+import { AnnouncementsStrip } from "@/components/AnnouncementsStrip";
 import { REGISTER, DOCS, COURSES } from "@/lib/cmbaLinks";
 
 const hubs = [
@@ -42,6 +43,7 @@ const divisions = [
 export default function HomePage() {
   return (
     <div>
+      <AnnouncementsStrip />
       {/* ── HERO ──────────────────────────────────────────── */}
       <section className="px-5 md:px-10 lg:px-14 pt-16 lg:pt-24 pb-20 overflow-hidden">
         <div className="max-w-7xl mx-auto relative">

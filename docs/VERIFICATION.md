@@ -179,3 +179,38 @@ CSRF protection, not a bug. Bearer (`Authorization: JWT`) auth is unaffected.
 - Custom admin **compliance dashboard** (expiring/lapsed rollup) — a bespoke
   Payload admin view; the data + per-user `/account` compliance banner exist.
 - Club-admin certification read-scoping (RBAC final polish).
+
+---
+
+## Phase 3 — Website CMS
+
+Date: 2026-06-18 · Branch: `feat/backend` · DB: `cmba-connect` (ca-central-1)
+
+### Delivered
+- **Pages** collection: block-based `layout`, drafts + version history + autosave,
+  SEO group, unique slug, and **Live Preview** (admin `livePreview.url` + a
+  client `PageRenderer` using `useLivePreview` for in-iframe live updates).
+- **Block library** (`src/blocks/config.ts`) → **`RenderBlocks`** (on-brand):
+  hero, richText (lexical), statsGrid, faq, cta, image, embed (e.g. TeamLinkt).
+- **Catch-all `/[slug]`** route renders published pages (+ draft mode for
+  preview) — admins create pages **without code**. Existing static routes take
+  precedence; unknown slugs 404.
+- **Announcements** collection + a live homepage strip (client-fetched so the
+  homepage stays static); **legal docs published as CMS pages** (markdown→lexical
+  seed) with `/privacy` `/terms` `/guardian-consent` rendering the CMS version and
+  falling back to the built-in static content; legal links added to the footer.
+- **Globals:** SiteSettings (Privacy Officer + contact), HeaderNav, FooterNav
+  (editable in admin). Seed populates site settings, nav, an announcement, the
+  three legal pages, and a sample `/about` page.
+
+### Live gate (ca-central-1) — ✅ 9/9
+`/about` renders hero+stats+cta from CMS via the catch-all; `/privacy` renders the
+CMS-backed legal page (with policy body); announcements API returns the published
+seed; unknown slug → 404; `/rules` (static) still wins; homepage 200. Migration
+applied; build / typecheck / lint / 18 unit tests green; Supabase advisors clean.
+
+### Remaining (content migration, not engineering)
+- Re-authoring the existing bespoke homepage / FAQ / contact / hub pages as CMS
+  block pages is now a content task (the block library + renderer + catch-all
+  exist). The complex app pages (rules engine, schedule) intentionally stay in
+  code per the architecture, and can embed CMS blocks via the EmbedBlock.

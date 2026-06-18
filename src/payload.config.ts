@@ -8,6 +8,7 @@ import { s3Storage } from '@payloadcms/storage-s3'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
 
+import { Announcements } from './collections/Announcements'
 import { CertificateFiles } from './collections/CertificateFiles'
 import { CertificationTypes } from './collections/CertificationTypes'
 import { Certifications } from './collections/Certifications'
@@ -16,8 +17,11 @@ import { ConsentRecords } from './collections/ConsentRecords'
 import { Courses } from './collections/Courses'
 import { IncidentLog } from './collections/IncidentLog'
 import { Media } from './collections/Media'
+import { Pages } from './collections/Pages'
 import { Pathways } from './collections/Pathways'
 import { Users } from './collections/Users'
+import { FooterNav } from './globals/FooterNav'
+import { HeaderNav } from './globals/HeaderNav'
 import { PolicyVersions } from './globals/PolicyVersions'
 import { SiteSettings } from './globals/SiteSettings'
 
@@ -76,9 +80,11 @@ export default buildConfig({
     Pathways,
     ConsentRecords,
     IncidentLog,
+    Pages,
+    Announcements,
     Media,
   ],
-  globals: [PolicyVersions, SiteSettings],
+  globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav],
   editor: lexicalEditor(),
   db: postgresAdapter({
     pool: {
