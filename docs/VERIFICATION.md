@@ -220,3 +220,32 @@ applied; build / typecheck / lint / 18 unit tests green; Supabase advisors clean
   block pages is now a content task (the block library + renderer + catch-all
   exist). The complex app pages (rules engine, schedule) intentionally stay in
   code per the architecture, and can embed CMS blocks via the EmbedBlock.
+
+---
+
+## Production deploy — ✅ LIVE
+
+Date: 2026-06-19 · `main` @ merge `b3c8f5f` · https://cmbaplatform.vercel.app (region `yul1`)
+
+PR #1 merged to `main`; Vercel production deploy **READY**. Required env vars set
+in Vercel (Production + Preview): `PAYLOAD_SECRET`, `DATABASE_URL` (Supabase
+**session pooler** `aws-1-ca-central-1:5432` for serverless), `NEXT_PUBLIC_SERVER_URL`,
+`CRON_SECRET`, `EMAIL_FROM`. (Two earlier preview builds had failed — fixed:
+missing `@payloadcms/live-preview-react` in package.json, and `/athlete`+`/parent`
+hitting the DB during static generation; both resolved.)
+
+**Live prod smoke — 12/12:** `/`, `/coach/managing-the-moment`, `/leadership`,
+`/spring-league`, `/summer-camps`, `/rules`, `/resources` all 200; DB-connected
+(`/api/globals/policy-versions`); `/admin` reachable; unauth `/api/users` → 403;
+admin login (auth + DB) works; CMS catch-all `/about` renders.
+
+**Still operator-only (don't function until set):** Supabase **S3 keys + buckets**
+(uploads) and **AWS SES** creds (real email). Everything else is live.
+
+## Old-site link recreation — ✅ no `cmba.ab.ca` content/form links remain
+Recreated natively: `/coach/managing-the-moment`, `/leadership` (board), and CMS
+pages `/spring-league`, `/summer-camps`, `/women-in-coaching`, `/key-dates`,
+`/meeting-minutes`. Repointed forfeit/SCC code/SCC report DB → `/rules` (native),
+board/calendar/minutes → native pages, and `/game-report` is now a **native form**
+(GameReports collection). Remaining `cmba.ab.ca` refs are only the league email,
+a Google-Sites drills link, and RAMP document hosts (not the old CMS).

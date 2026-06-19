@@ -10,7 +10,7 @@ provider console and sign a DPA before launch** (see
 
 | Layer | Processor | Region (required) | Personal data handled | Region confirmed | DPA signed | Confirmed on |
 |---|---|---|---|---|---|---|
-| Compute / hosting | Vercel | Montréal `yul1` | Request processing (transient); no DB | ⏳ | ⬜ | — |
+| Compute / hosting | Vercel (`cmba_platform`) | Montréal `yul1` | Request processing (transient); no DB | ✅ (deployed to `yul1`) | ⬜ | 2026-06-19 |
 | Database (Postgres) | Supabase (`cmba-connect`, ref `pdwautioosstdgbbblxl`) | `ca-central-1` (Montréal) | Profiles, certifications metadata, consents, audit | ✅ | ⬜ | 2026-06-18 |
 | File storage (public) | Supabase Storage (same project) | `ca-central-1` | Profile photos, page images | ✅ region (buckets ⏳) | ⬜ | 2026-06-18 |
 | File storage (private) | Supabase Storage (same project) | `ca-central-1` | Certificate files (PDF/image) | ✅ region (buckets ⏳) | ⬜ | 2026-06-18 |
