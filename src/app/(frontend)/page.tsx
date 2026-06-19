@@ -55,17 +55,18 @@ export default function HomePage() {
               CMBA+ · Calgary Minor Basketball
             </div>
 
-            <h1 className="font-display font-black uppercase leading-[0.82] tracking-tighter2 text-[clamp(30px,9vw,72px)] lg:text-[clamp(54px,13vw,200px)]">
+            <h1 className="font-display font-black uppercase leading-[0.84] tracking-tighter2 text-[clamp(26px,7.5vw,52px)] lg:text-[clamp(44px,9.5vw,132px)]">
               <span className="rise-line"><span className="block text-white">Every athlete.</span></span>
-              <span className="rise-line"><span className="block text-cmba-red" style={{ animationDelay: ".08s" }}>Every coach.</span></span>
-              <span className="rise-line"><span className="block text-cmba-grey" style={{ animationDelay: ".16s" }}>Every official.</span></span>
+              <span className="rise-line"><span className="block text-cmba-grey-light" style={{ animationDelay: ".08s" }}>Every parent.</span></span>
+              <span className="rise-line"><span className="block text-cmba-red" style={{ animationDelay: ".16s" }}>Every coach.</span></span>
+              <span className="rise-line"><span className="block text-cmba-grey" style={{ animationDelay: ".24s" }}>Every official.</span></span>
             </h1>
 
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-7 mt-10">
               <p className="max-w-[44ch] text-cmba-grey-light/90 text-base md:text-lg leading-relaxed">
-                Calgary Minor Basketball is a community of thousands of athletes, coaches, and
-                officials growing the game across the city, one practice, whistle, and final buzzer
-                at a time.{" "}
+                Calgary Minor Basketball is a community of thousands of athletes, parents, coaches,
+                and officials growing the game across the city, one practice, whistle, and final
+                buzzer at a time.{" "}
                 <span className="text-white font-medium">CMBA+ keeps our rules, coaching, and officiating resources in one place.</span>
               </p>
               <div className="flex flex-col xs:flex-row gap-3">
