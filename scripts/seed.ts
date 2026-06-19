@@ -14,6 +14,7 @@ import { allReach360Courses } from '../src/lib/reach360CourseData'
 import { COURSES as LINKS } from '../src/lib/cmbaLinks'
 import { mdToLexical } from '../src/lib/mdToLexical'
 import { PRIVACY_POLICY, TERMS_OF_USE, GUARDIAN_CONSENT } from '../src/content/legal'
+import { PROGRAM_PAGES } from '../src/content/programPages'
 
 type Role = 'participant' | 'coach' | 'official' | 'club_admin' | 'super_admin'
 
@@ -298,6 +299,23 @@ async function main() {
     },
   )
   log('Sample CMS page (/about) seeded')
+
+  // ── Program/info pages recreated from cmba.ab.ca content (native CMS) ────
+  for (const p of PROGRAM_PAGES) {
+    const layout: Record<string, unknown>[] = [
+      { blockType: 'hero', eyebrow: p.hero.eyebrow, heading: p.hero.heading, subheading: p.hero.subheading },
+      { blockType: 'richText', content: mdToLexical(p.body) },
+    ]
+    if (p.cta) {
+      layout.push({ blockType: 'cta', heading: p.cta.heading, body: p.cta.body, buttonLabel: p.cta.buttonLabel, buttonHref: p.cta.buttonHref })
+    }
+    await findOrCreate(
+      'pages',
+      { slug: { equals: p.slug } },
+      { title: p.title, slug: p.slug, _status: 'published', layout, seo: { metaTitle: `${p.title} | CMBA Connect` } },
+    )
+  }
+  log(`Program pages seeded (${PROGRAM_PAGES.length})`)
 
   log('Seed complete.')
   process.exit(0)
