@@ -91,7 +91,7 @@ export const DOCS = {
   sccCodeOfConduct: "/rules", // native — the SCC Code of Conduct is in the Rules hub
 
   sccReportDatabase: "/rules", // native — SCC code/decisions/appeals are in the Rules hub
-  gameReportForm: "https://cmba.ab.ca/form/1953",
+  gameReportForm: "/game-report", // native game-report form (GameReports collection)
   springLeague: "/spring-league", // native program page
   summerCamps: "/summer-camps", // native program page
 } as const;

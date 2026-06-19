@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Star, Send, Upload, ExternalLink, CheckCircle } from "lucide-react";
-import { CMBA, DOCS } from "@/lib/cmbaLinks";
+import { AlertTriangle, Star, Send, Upload, CheckCircle } from "lucide-react";
+import { CMBA } from "@/lib/cmbaLinks";
 
 const divisions = ["Tykes", "U11 Boys", "U11 Girls", "U13 Boys", "U13 Girls", "U15 Boys", "U15 Girls", "U18 Boys", "U18 Girls"];
 const reportedPartyOptions = ["Officials", "Coaches", "Players", "Spectators", "Gym Monitors", "CMBA Operations"];
@@ -12,34 +12,52 @@ const submitterRoles = ["Parent", "Coach", "Referee", "Player", "Other"];
 export default function GameReportPage() {
   const [reportType, setReportType] = useState<"concern" | "compliment" | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const parties = fd.getAll("reportedParty").join(", ");
-    const lines = [
-      `Report type: ${reportType}`,
-      `About: ${parties || "n/a"}`,
-      reportType === "concern" ? `Officials area: ${fd.get("officialCategory") || "n/a"}` : "",
-      "",
-      `Game date: ${fd.get("gameDate") || "n/a"}`,
-      `Division: ${fd.get("division") || "n/a"}`,
-      `Home team: ${fd.get("homeTeam") || "n/a"}`,
-      `Away team: ${fd.get("awayTeam") || "n/a"}`,
-      `Facility: ${fd.get("facility") || "n/a"}`,
-      "",
-      `Submitted by: ${fd.get("reporterName") || "n/a"} (${fd.get("reporterRole") || "n/a"})`,
-      `Email: ${fd.get("reporterEmail") || "n/a"}`,
-      `Phone: ${fd.get("reporterPhone") || "n/a"}`,
-      `Witnesses: ${fd.get("witnesses") || "n/a"}`,
-      "",
-      "Details:",
-      `${fd.get("description") || ""}`,
-    ].filter((l) => l !== "");
-    const subject = `CMBA Game ${reportType === "concern" ? "Concern" : "Compliment"}${fd.get("division") ? ` - ${fd.get("division")}` : ""}`;
-    const body = lines.join("\n");
-    window.location.href = `${CMBA.emailHref}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setSubmitted(true);
+    const extra = [
+      parties ? `About: ${parties}` : "",
+      reportType === "concern" && fd.get("officialCategory") ? `Officials area: ${fd.get("officialCategory")}` : "",
+      fd.get("reporterPhone") ? `Phone: ${fd.get("reporterPhone")}` : "",
+      fd.get("witnesses") ? `Witnesses: ${fd.get("witnesses")}` : "",
+    ].filter(Boolean).join("\n");
+    const description = `${fd.get("description") || ""}${extra ? `\n\n— — —\n${extra}` : ""}`;
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      // Submits natively to the GameReports collection (reviewed in /admin).
+      const res = await fetch("/api/game-reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reportType,
+          reporterName: fd.get("reporterName"),
+          reporterEmail: fd.get("reporterEmail"),
+          role: fd.get("reporterRole"),
+          gameDate: fd.get("gameDate") || undefined,
+          division: fd.get("division"),
+          homeTeam: fd.get("homeTeam"),
+          awayTeam: fd.get("awayTeam"),
+          location: fd.get("facility"),
+          description,
+        }),
+      });
+      if (!res.ok) {
+        setError(`We couldn't submit your report. Please try again, or email ${CMBA.email}.`);
+        return;
+      }
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      setError(`Something went wrong. Please try again, or email ${CMBA.email}.`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -56,24 +74,26 @@ export default function GameReportPage() {
       </section>
 
       <div className="max-w-3xl mx-auto px-4 lg:px-6 py-8 lg:py-12">
-        {/* Official form banner */}
-        <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-4 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Native intake note */}
+        <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-4 mb-8">
           <p className="text-sm text-cmba-grey">
-            This form emails the league office. You can also use CMBA&apos;s official online form.
+            Reports are submitted directly to CMBA and reviewed by the league. No login required.
+            You&apos;ll get a confirmation here when your report is received.
           </p>
-          <a href={DOCS.gameReportForm} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 shrink-0 font-mono text-xs text-cmba-red hover:text-white border border-cmba-red/30 hover:border-cmba-red px-3 py-1.5 transition-colors">
-            Official CMBA Form <ExternalLink size={12} />
-          </a>
         </div>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/40 text-red-300 text-sm p-4 mb-8">{error}</div>
+        )}
 
         {submitted && (
           <div className="bg-green-500/10 border border-green-500/40 p-6 mb-8 flex items-start gap-3">
             <CheckCircle size={22} className="text-green-400 shrink-0" />
             <div>
-              <h3 className="font-display font-bold text-white uppercase tracking-wider text-sm">Email Drafted</h3>
+              <h3 className="font-display font-bold text-white uppercase tracking-wider text-sm">Report Received</h3>
               <p className="text-sm text-cmba-grey mt-1">
-                Your email app should have opened a pre-filled message to {CMBA.email}. Send it to complete your report. If nothing opened, email {CMBA.email} directly or use the official form above.
+                Thank you — your report was submitted to CMBA and will be reviewed. If you need to add anything,
+                email {CMBA.email}.
               </p>
             </div>
           </div>
@@ -99,7 +119,7 @@ export default function GameReportPage() {
           </button>
         </div>
 
-        {reportType && (
+        {reportType && !submitted && (
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Who is being reported */}
             <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-6">
@@ -236,10 +256,11 @@ export default function GameReportPage() {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-base uppercase tracking-wider py-4 transition-colors flex items-center justify-center gap-2"
+              disabled={submitting}
+              className="w-full bg-cmba-red hover:bg-cmba-hot disabled:opacity-50 text-white font-display font-bold text-base uppercase tracking-wider py-4 transition-colors flex items-center justify-center gap-2"
             >
               <Send size={18} />
-              Submit {reportType === "concern" ? "Concern" : "Compliment"}
+              {submitting ? "Submitting…" : `Submit ${reportType === "concern" ? "Concern" : "Compliment"}`}
             </button>
           </form>
         )}

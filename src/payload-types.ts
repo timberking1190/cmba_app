@@ -76,6 +76,7 @@ export interface Config {
     pathways: Pathway;
     'consent-records': ConsentRecord;
     'incident-log': IncidentLog;
+    'game-reports': GameReport;
     pages: Page;
     announcements: Announcement;
     media: Media;
@@ -95,6 +96,7 @@ export interface Config {
     pathways: PathwaysSelect<false> | PathwaysSelect<true>;
     'consent-records': ConsentRecordsSelect<false> | ConsentRecordsSelect<true>;
     'incident-log': IncidentLogSelect<false> | IncidentLogSelect<true>;
+    'game-reports': GameReportsSelect<false> | GameReportsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     announcements: AnnouncementsSelect<false> | AnnouncementsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -517,6 +519,34 @@ export interface IncidentLog {
   createdAt: string;
 }
 /**
+ * Game / incident reports submitted from /game-report.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "game-reports".
+ */
+export interface GameReport {
+  id: number;
+  reportType: 'incident' | 'ejection' | 'concern' | 'compliment';
+  reporterName: string;
+  reporterEmail: string;
+  /**
+   * Coach, parent, official, etc.
+   */
+  role?: string | null;
+  gameDate?: string | null;
+  division?: string | null;
+  homeTeam?: string | null;
+  awayTeam?: string | null;
+  location?: string | null;
+  description: string;
+  /**
+   * Triage status (admin only).
+   */
+  status?: ('new' | 'reviewing' | 'closed') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
@@ -732,6 +762,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'incident-log';
         value: number | IncidentLog;
+      } | null)
+    | ({
+        relationTo: 'game-reports';
+        value: number | GameReport;
       } | null)
     | ({
         relationTo: 'pages';
@@ -1013,6 +1047,25 @@ export interface IncidentLogSelect<T extends boolean = true> {
   affectedCount?: T;
   description?: T;
   remediation?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "game-reports_select".
+ */
+export interface GameReportsSelect<T extends boolean = true> {
+  reportType?: T;
+  reporterName?: T;
+  reporterEmail?: T;
+  role?: T;
+  gameDate?: T;
+  division?: T;
+  homeTeam?: T;
+  awayTeam?: T;
+  location?: T;
+  description?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -15,6 +15,7 @@ import { Certifications } from './collections/Certifications'
 import { Clubs } from './collections/Clubs'
 import { ConsentRecords } from './collections/ConsentRecords'
 import { Courses } from './collections/Courses'
+import { GameReports } from './collections/GameReports'
 import { IncidentLog } from './collections/IncidentLog'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -80,6 +81,7 @@ export default buildConfig({
     Pathways,
     ConsentRecords,
     IncidentLog,
+    GameReports,
     Pages,
     Announcements,
     Media,

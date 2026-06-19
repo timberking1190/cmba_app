@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Mail, MapPin, Phone, ExternalLink, Clock, Camera, Share2, Video, Users } from "lucide-react";
 import { CMBA, DOCS } from "@/lib/cmbaLinks";
 
@@ -108,9 +109,9 @@ export default function ContactPage() {
                   </a>
                 ))}
               </div>
-              <a href={CMBA.siteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 mt-5 font-mono text-xs text-cmba-red hover:text-white transition-colors">
-                <ExternalLink size={12} /> cmba.ab.ca
-              </a>
+              <Link href="/resources" className="inline-flex items-center gap-1.5 mt-5 font-mono text-xs text-cmba-red hover:text-white transition-colors">
+                <ExternalLink size={12} /> League resources
+              </Link>
             </div>
           </div>
         </div>
