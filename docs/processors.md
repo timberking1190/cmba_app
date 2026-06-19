@@ -12,9 +12,9 @@ provider console and sign a DPA before launch** (see
 |---|---|---|---|---|---|---|
 | Compute / hosting | Vercel (`cmba_platform`) | Montréal `yul1` | Request processing (transient); no DB | ✅ (deployed to `yul1`) | ⬜ | 2026-06-19 |
 | Database (Postgres) | Supabase (`cmba-connect`, ref `pdwautioosstdgbbblxl`) | `ca-central-1` (Montréal) | Profiles, certifications metadata, consents, audit | ✅ | ⬜ | 2026-06-18 |
-| File storage (public) | Supabase Storage (same project) | `ca-central-1` | Profile photos, page images | ✅ region (buckets ⏳) | ⬜ | 2026-06-18 |
-| File storage (private) | Supabase Storage (same project) | `ca-central-1` | Certificate files (PDF/image) | ✅ region (buckets ⏳) | ⬜ | 2026-06-18 |
-| Email | AWS SES | `ca-central-1` | Recipient email + name in headers (no PII in body) | ⏳ | ⬜ | — |
+| File storage (public) | Supabase Storage `cmba-public` | `ca-central-1` | Profile photos, page images | ✅ bucket + S3 keys (live) | ⬜ | 2026-06-19 |
+| File storage (private) | Supabase Storage `cmba-private` | `ca-central-1` | Certificate files (PDF/image) | ✅ bucket + S3 keys; upload/download verified in prod | ⬜ | 2026-06-19 |
+| Email | AWS SES | `ca-central-1` | Recipient email + name in headers (no PII in body) | ⏳ pending creds | ⬜ | — |
 | League system of record | TeamLinkt | (vendor-managed) | Registration, schedule, scores — NOT held by CMBA Connect | n/a | n/a | — |
 
 ## Notes
