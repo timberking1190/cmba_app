@@ -34,10 +34,16 @@ const footerSections = [
     title: "Organization",
     links: [
       { label: "Game Reports", href: "/game-report" },
-      { label: "Admin Portal", href: "/admin" },
+      { label: "League Operations", href: "/resources" },
       { label: "Sign In", href: "/login" },
     ],
   },
+];
+
+const legalLinks = [
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Use", href: "/terms" },
+  { label: "Guardian Consent", href: "/guardian-consent" },
 ];
 
 export function Footer() {
@@ -69,7 +75,14 @@ export function Footer() {
             <Image src="/cmba-logo-sm.png" alt="CMBA" width={120} height={48} className="h-10 w-auto" />
             <Wordmark className="font-display font-black text-white text-2xl uppercase leading-none tracking-tight" />
           </div>
-          <p className="text-xs text-cmba-grey-mid text-center md:text-right">
+          <div className="text-xs text-cmba-grey-mid text-center md:text-right">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 justify-center md:justify-end mb-2">
+              {legalLinks.map((l) => (
+                <Link key={l.href} href={l.href} className="text-cmba-grey hover:text-white transition-colors">
+                  {l.label}
+                </Link>
+              ))}
+            </div>
             &copy; {new Date().getFullYear()} Calgary Minor Basketball Association. All rights reserved.
             <br />
             <span className="text-cmba-grey-dark">
@@ -79,7 +92,7 @@ export function Footer() {
                 Boost Innovation
               </a>
             </span>
-          </p>
+          </div>
         </div>
       </div>
     </footer>

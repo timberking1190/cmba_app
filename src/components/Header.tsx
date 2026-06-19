@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Menu, X, ChevronDown, Search, User, BookOpen, Flag,
   Calendar, HelpCircle, Phone, Shield, BarChart3, Trophy, Users, ClipboardList,
+  LogOut, UserCircle,
 } from "lucide-react";
 import { Wordmark } from "@/components/Wordmark";
+
+type AuthUser = { id: number | string; email: string; fullName?: string } | null;
 
 const navLinks = [
   { label: "RULES", href: "/rules", icon: BookOpen },
@@ -43,6 +47,27 @@ const utilLinks = [
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthUser>(null);
+  const router = useRouter();
+
+  // Reflect auth state (training-account auth lives on our Payload backend).
+  useEffect(() => {
+    let active = true;
+    fetch("/api/users/me", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => { if (active) setUser(d?.user ?? null); })
+      .catch(() => { if (active) setUser(null); });
+    return () => { active = false; };
+  }, []);
+
+  async function signOut() {
+    try {
+      await fetch("/api/users/logout", { method: "POST", credentials: "include" });
+    } catch { /* ignore */ }
+    setUser(null);
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <>
@@ -58,14 +83,29 @@ export function Header() {
             ))}
           </div>
           <div className="flex items-center gap-5">
-            <Link href="/admin"
+            {/* The static "league resources / operations" page moved from /admin
+                to /resources (Payload's management panel now owns /admin). */}
+            <Link href="/resources"
               className="font-mono text-[11px] text-cmba-grey hover:text-cmba-red transition-colors uppercase tracking-[0.18em]">
-              Admin
+              Resources
             </Link>
-            <Link href="/login"
-              className="flex items-center gap-1.5 font-mono text-[11px] text-cmba-grey hover:text-cmba-red transition-colors uppercase tracking-[0.18em]">
-              <User size={12} /> Sign In
-            </Link>
+            {user ? (
+              <>
+                <Link href="/account"
+                  className="flex items-center gap-1.5 font-mono text-[11px] text-cmba-grey hover:text-cmba-red transition-colors uppercase tracking-[0.18em]">
+                  <UserCircle size={12} /> Account
+                </Link>
+                <button onClick={signOut}
+                  className="flex items-center gap-1.5 font-mono text-[11px] text-cmba-grey hover:text-cmba-red transition-colors uppercase tracking-[0.18em]">
+                  <LogOut size={12} /> Sign Out
+                </button>
+              </>
+            ) : (
+              <Link href="/login"
+                className="flex items-center gap-1.5 font-mono text-[11px] text-cmba-grey hover:text-cmba-red transition-colors uppercase tracking-[0.18em]">
+                <User size={12} /> Sign In
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -115,13 +155,20 @@ export function Header() {
             <button aria-label="Search" className="p-2 text-cmba-grey hover:text-cmba-red transition-colors">
               <Search size={20} />
             </button>
-            {/* TODO(teamlinkt): if we move auth fully to TeamLinkt, point Sign In at
-                NEXT_PUBLIC_TEAMLINKT_APP_URL (target=_blank) instead of /login. Left as
-                /login for now so the training-account flow is unchanged this pass. */}
-            <Link href="/login"
-              className="hidden lg:flex items-center gap-1.5 bg-cmba-red hover:bg-cmba-hot text-white font-display font-black text-xs uppercase tracking-[0.06em] px-3.5 py-1.5 transition-colors">
-              <User size={14} /> Sign In
-            </Link>
+            {/* Training-account auth lives on our Payload backend (resolves the
+                earlier TODO about deferring to TeamLinkt). TeamLinkt remains the
+                league system of record; score reporting still deep-links there. */}
+            {user ? (
+              <Link href="/account"
+                className="hidden lg:flex items-center gap-1.5 bg-cmba-red hover:bg-cmba-hot text-white font-display font-black text-xs uppercase tracking-[0.06em] px-3.5 py-1.5 transition-colors">
+                <UserCircle size={14} /> Account
+              </Link>
+            ) : (
+              <Link href="/login"
+                className="hidden lg:flex items-center gap-1.5 bg-cmba-red hover:bg-cmba-hot text-white font-display font-black text-xs uppercase tracking-[0.06em] px-3.5 py-1.5 transition-colors">
+                <User size={14} /> Sign In
+              </Link>
+            )}
             <button onClick={() => setMobileOpen(!mobileOpen)}
               className="lg:hidden p-2 text-cmba-grey-light" aria-label="Toggle menu">
               {mobileOpen ? <X size={24} /> : <Menu size={24} />}
@@ -160,10 +207,27 @@ export function Header() {
                     {link.label}
                   </Link>
                 ))}
-                <Link href="/login" onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 text-sm text-cmba-red font-display font-black uppercase tracking-[0.06em]">
-                  <User size={18} /> Sign In
+                <Link href="/resources" onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 px-3 py-3 font-mono text-sm text-cmba-grey hover:text-cmba-red transition-colors uppercase tracking-[0.1em]">
+                  <BookOpen size={18} className="text-cmba-grey" /> Resources
                 </Link>
+                {user ? (
+                  <>
+                    <Link href="/account" onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-3 text-sm text-cmba-red font-display font-black uppercase tracking-[0.06em]">
+                      <UserCircle size={18} /> Account
+                    </Link>
+                    <button onClick={() => { setMobileOpen(false); signOut(); }}
+                      className="flex w-full items-center gap-3 px-3 py-3 text-sm text-cmba-grey font-display font-black uppercase tracking-[0.06em] hover:text-cmba-red transition-colors">
+                      <LogOut size={18} /> Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link href="/login" onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-3 py-3 text-sm text-cmba-red font-display font-black uppercase tracking-[0.06em]">
+                    <User size={18} /> Sign In
+                  </Link>
+                )}
               </div>
             </div>
           </div>

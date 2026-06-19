@@ -391,7 +391,7 @@ Gym Monitor Duties
 4. Report any incidents to the game sheet – Referee Comment 
 
 
-Note: If there is an ejection of a player, coach, or parent, please submit a game report on-line at the CMBA Website. http://www.cmba.ab.ca/form/1953 
+Note: If there is an ejection of a player, coach, or parent, please submit a game report online through CMBA Connect at /game-report.
 
 
 Thank you for your assistance and we appreciate your support.`,

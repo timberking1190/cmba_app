@@ -57,12 +57,13 @@ export const COURSES = {
     "https://cmba.reach360.com/share/course/2adf207a-4b56-48dd-9154-f671aa5ddbd8",
   safeInteractions:
     "https://cmba.reach360.com/share/course/fc129e16-b677-4be8-b2ab-733ade3ee23a",
-  managingTheMoment: "https://cmba.ab.ca/content/managing-the-moment-course",
+  // Native CMBA Connect page (recreated from the course content), not cmba.ab.ca.
+  managingTheMoment: "/coach/managing-the-moment",
 } as const;
 
 /* Key rules, policies, and calendar documents. */
 export const DOCS = {
-  officialCalendar: "https://cmba.ab.ca/content/cmba-official-calendar",
+  officialCalendar: "/key-dates", // native key-dates page
   rulesOfPlay:
     "https://cloud.rampinteractive.com/calgaryminorbasketball/files/CMBA%20Rules%20and%20Policies/7%20Rules%20of%20Play.pdf",
   fees: "https://cloud.rampinteractive.com/calgaryminorbasketball/files/CMBA%20Rules%20and%20Policies/3%20Fees.pdf",
@@ -70,7 +71,8 @@ export const DOCS = {
     "https://cloud.rampinteractive.com/calgaryminorbasketball/files/CMBA%20Rules%20and%20Policies/CMBA%20Concussion%20Policy%20-%20update%20Jan%202023.pdf",
   mercy40:
     "https://docs.google.com/document/d/1Btp1dkS395yFt0bj3P2461OBvzleZlGTRMhCmbBpUWY/edit",
-  forfeit: "https://cmba.ab.ca/content/policy-forfeit",
+  forfeit: "/rules", // native — the Forfeit policy is published in the Rules hub
+
   ruleOfTwo: "https://coach.ca/understanding-rule-two",
   u11Mods:
     "https://docs.google.com/document/d/1u9YE_P63zV160g1k2Tdt5uDgicFAZZvHVB7rEbi0YTE/edit",
@@ -82,14 +84,16 @@ export const DOCS = {
     "https://cloud.rampinteractive.com/calgaryminorbasketball/files/CMBA%20Rules%20and%20Policies/7.4%20U18%20Mods.pdf",
   ruleModsGuide:
     "https://docs.google.com/spreadsheets/d/1h8YH_8uC73gUOVxXkg-L2t2gnqzsQ833/edit",
-  leadership: "https://cmba.ab.ca/content/board-executive-and-committees",
-  boardContacts: "https://cmba.ab.ca/content/executive-and-board-contact-info",
-  meetingMinutes: "https://cmba.ab.ca/content/meeting-info-amp-minutes",
-  sccCodeOfConduct: "https://cmba.ab.ca/content/scc-code-of-conduct",
-  sccReportDatabase: "https://cmba.ab.ca/content/scc-report-database",
-  gameReportForm: "https://cmba.ab.ca/form/1953",
-  springLeague: "https://cmba.ab.ca/content/2026-spring-league-technical-package",
-  summerCamps: "https://cmba.ab.ca/content/summer-camps-2026-information-package",
+  leadership: "/leadership", // native Leadership & Board page
+  boardContacts: "/leadership", // native Leadership & Board page
+
+  meetingMinutes: "/meeting-minutes", // native governance page
+  sccCodeOfConduct: "/rules", // native — the SCC Code of Conduct is in the Rules hub
+
+  sccReportDatabase: "/rules", // native — SCC code/decisions/appeals are in the Rules hub
+  gameReportForm: "/game-report", // native game-report form (GameReports collection)
+  springLeague: "/spring-league", // native program page
+  summerCamps: "/summer-camps", // native program page
 } as const;
 
 /* Coach's Corner resources. */
@@ -108,7 +112,7 @@ export const COACH = {
     "https://cloud.rampinteractive.com/calgaryminorbasketball/files/CMBA%20Rules%20and%20Policies/Emergency%20Action%20Plan.pdf",
   aedLocations:
     "https://docs.google.com/spreadsheets/d/19C6WRDzhhyiCTuDqGNukwmrcVCPIGm98nUwk0O8ci8k/edit",
-  womenInCoaching: "https://cmba.ab.ca/content/coach-women-in-coaching",
+  womenInCoaching: "/women-in-coaching", // native coach-development page
   blueWhistle:
     "https://docs.google.com/document/d/10zs3kPbEJuGDlJpNOH4F41w9D7V52vExRmwcTcfTSaI/edit",
 } as const;
