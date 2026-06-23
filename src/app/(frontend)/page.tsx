@@ -6,6 +6,8 @@ import {
 import { HeroNetwork } from "@/components/HeroNetwork";
 import { CountUp } from "@/components/CountUp";
 import { AnnouncementsStrip } from "@/components/AnnouncementsStrip";
+import { BentoGrid } from "@/components/home/BentoGrid";
+import { StoryScroll } from "@/components/home/StoryScroll";
 import { REGISTER, DOCS, COURSES } from "@/lib/cmbaLinks";
 
 const hubs = [
@@ -107,6 +109,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── BENTO GRID ─────────────────────────────────────── */}
+      <BentoGrid />
+
       {/* ── HUB INDEX ──────────────────────────────────────── */}
       <section className="reveal px-5 md:px-10 lg:px-14 pb-20 lg:pb-24">
         <div className="max-w-7xl mx-auto">
@@ -145,6 +150,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── DYNAMIC STORYTELLING ───────────────────────────── */}
+      <StoryScroll />
 
       {/* ── DIVISIONS ──────────────────────────────────────── */}
       <section className="reveal px-5 md:px-10 lg:px-14 pb-20 lg:pb-24">
