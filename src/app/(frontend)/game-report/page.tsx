@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { AlertTriangle, Star, Send, Upload, CheckCircle } from "lucide-react";
 import { CMBA } from "@/lib/cmbaLinks";
+import { PhotoBand } from "@/components/media/PhotoBand";
+import { CourtLines } from "@/components/graphics/CourtLines";
 
 const divisions = ["Tykes", "U11 Boys", "U11 Girls", "U13 Boys", "U13 Girls", "U15 Boys", "U15 Girls", "U18 Boys", "U18 Girls"];
 const reportedPartyOptions = ["Officials", "Coaches", "Players", "Spectators", "Gym Monitors", "CMBA Operations"];
@@ -62,12 +64,13 @@ export default function GameReportPage() {
 
   return (
     <div>
-      <section className="bg-hero-gradient border-b-2 border-cmba-red">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
+      <section className="relative overflow-hidden bg-hero-gradient border-b-2 border-cmba-red">
+        <CourtLines className="pointer-events-none absolute -top-4 right-0 w-72 text-cmba-red/[0.06] hidden lg:block" />
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
           <h1 className="font-display font-black text-4xl lg:text-5xl text-white uppercase tracking-tight leading-[0.95]">
             GAME <span className="text-cmba-red">REPORT</span>
           </h1>
-          <p className="text-cmba-grey mt-2 max-w-lg">
+          <p className="reveal text-cmba-grey mt-2 max-w-lg">
             Submit game feedback, whether it&apos;s a concern or a compliment. No login required. Reports are reviewed by CMBA.
           </p>
         </div>
@@ -264,6 +267,17 @@ export default function GameReportPage() {
             </button>
           </form>
         )}
+
+        {/* Why it matters */}
+        <PhotoBand
+          image="swish"
+          side="right"
+          eyebrow="Every report counts"
+          title="A better game for everyone"
+          className="mt-12"
+        >
+          <p>Your feedback helps CMBA recognize great work and address concerns fairly. Every report is read by the league and handled with care.</p>
+        </PhotoBand>
       </div>
     </div>
   );

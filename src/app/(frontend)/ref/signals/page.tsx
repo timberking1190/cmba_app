@@ -1,5 +1,8 @@
 import { BookOpen, ExternalLink } from "lucide-react";
 import { REF } from "@/lib/cmbaLinks";
+import { PhotoHero } from "@/components/media/PhotoHero";
+import { PhotoBand } from "@/components/media/PhotoBand";
+import { CourtLines } from "@/components/graphics/CourtLines";
 
 const officialRefs = [
   { label: "CMBA Referee Handbook", href: REF.handbook },
@@ -61,36 +64,41 @@ const signalCategories = [
 export default function SignalsPage() {
   return (
     <div>
-      <section className="bg-hero-gradient border-b-2 border-cmba-red">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
-          <div className="inline-flex items-center gap-2 bg-cmba-red/10 border border-cmba-red/30 px-3 py-1 mb-4">
-            <BookOpen size={14} className="text-cmba-red" />
-            <span className="font-display font-bold text-xs text-cmba-red uppercase tracking-widest">Visual Reference</span>
-          </div>
-          <h1 className="font-display font-black text-4xl lg:text-5xl text-white uppercase tracking-tight leading-[0.95]">
-            OFFICIATING <span className="text-cmba-red">SIGNALS</span>
-          </h1>
-          <p className="text-cmba-grey mt-2">Visual guide to FIBA officiating hand signals used in CMBA play.</p>
-          <div className="flex flex-wrap gap-2 mt-6">
-            {officialRefs.map((r) => (
-              <a key={r.label} href={r.href} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 font-mono text-xs text-cmba-red hover:text-white border border-cmba-red/30 hover:border-cmba-red px-3 py-1.5 transition-colors">
-                {r.label} <ExternalLink size={12} />
-              </a>
-            ))}
-          </div>
+      <PhotoHero
+        image="hoopNetSky"
+        eyebrow="Officiating · Visual Reference"
+        title="Officiating"
+        accent="Signals"
+        subtitle="Visual guide to FIBA officiating hand signals used in CMBA play. Game control, violations, fouls, scoring — the whole vocabulary on the floor."
+      >
+        <div className="flex flex-wrap gap-2">
+          {officialRefs.map((r) => (
+            <a key={r.label} href={r.href} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-mono text-xs text-cmba-red hover:text-white border border-cmba-red/30 hover:border-cmba-red px-3 py-1.5 transition-colors backdrop-blur-sm">
+              {r.label} <ExternalLink size={12} />
+            </a>
+          ))}
         </div>
-      </section>
+      </PhotoHero>
 
-      <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-12 space-y-8">
-        {signalCategories.map((cat) => (
-          <div key={cat.category} className="bg-cmba-black-card border border-cmba-grey-dark/20">
+      <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-12 space-y-8">
+        <CourtLines className="pointer-events-none absolute -top-4 right-0 w-64 text-cmba-red/[0.06] hidden lg:block" />
+
+        <div className="reveal inline-flex items-center gap-2 bg-cmba-red/10 border border-cmba-red/30 px-3 py-1">
+          <BookOpen size={14} className="text-cmba-red" />
+          <span className="font-display font-bold text-xs text-cmba-red uppercase tracking-widest">FIBA Hand Signals</span>
+        </div>
+
+        {signalCategories.map((cat, ci) => (
+          <div key={cat.category} style={{ transitionDelay: `${ci * 60}ms` }}
+            className="reveal rv-left bg-cmba-black-card border border-cmba-grey-dark/20">
             <div className="px-6 py-4 border-b border-cmba-red/20 bg-cmba-red/5">
               <h2 className="font-display font-bold text-lg text-cmba-red uppercase tracking-wider">{cat.category}</h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px bg-cmba-grey-dark/10">
-              {cat.signals.map((signal) => (
-                <div key={signal.name} className="bg-cmba-black-card p-5 hover:bg-cmba-red/5 transition-colors group">
+              {cat.signals.map((signal, i) => (
+                <div key={signal.name} style={{ transitionDelay: `${i * 60}ms` }}
+                  className="reveal rv-scale bg-cmba-black-card p-5 hover:bg-cmba-red/5 transition-colors group">
                   <div className="text-3xl mb-3">{signal.visual}</div>
                   <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-1 group-hover:text-cmba-red transition-colors">
                     {signal.name}
@@ -101,6 +109,15 @@ export default function SignalsPage() {
             </div>
           </div>
         ))}
+
+        <PhotoBand
+          image="indoorGym"
+          side="right"
+          eyebrow="On the floor"
+          title="Clear signals, fair games"
+        >
+          <p>Consistent mechanics keep every CMBA game readable for players, coaches, and the table. Master the signals here, then put them to work — confident calls make better basketball.</p>
+        </PhotoBand>
       </div>
     </div>
   );

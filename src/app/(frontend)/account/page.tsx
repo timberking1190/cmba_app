@@ -9,6 +9,7 @@ import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { isAnyAdmin, isSuperAdmin } from '@/access/index'
 import { getComplianceForUser, getPathwayProgress, getUserProgress } from '@/lib/compliance'
 import { AccountActions } from '@/components/account/AccountActions'
+import { CalgarySkyline } from '@/components/graphics/CalgarySkyline'
 import type { Certification, CertificationType, Course } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -68,8 +69,9 @@ export default async function AccountPage() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-hero-gradient border-b-2 border-cmba-red">
-        <div className="max-w-6xl mx-auto px-4 lg:px-6 py-8 lg:py-12">
+      <section className="relative overflow-hidden bg-hero-gradient border-b-2 border-cmba-red">
+        <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-20 text-white/5" />
+        <div className="relative max-w-6xl mx-auto px-4 lg:px-6 py-8 lg:py-12">
           <div className="font-mono text-[11px] text-cmba-grey-mid uppercase tracking-[0.18em] mb-1">My Account</div>
           <h1 className="font-display font-black text-3xl lg:text-4xl text-white uppercase tracking-tight">
             {user.fullName}
@@ -87,7 +89,7 @@ export default async function AccountPage() {
       <div className="max-w-6xl mx-auto px-4 lg:px-6 py-8 grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {pending && (
-            <div className="bg-orange-500/10 border border-orange-500/40 p-4 flex items-start gap-3">
+            <div className="reveal bg-orange-500/10 border border-orange-500/40 p-4 flex items-start gap-3">
               <Clock size={18} className="text-orange-400 shrink-0 mt-0.5" />
               <p className="text-sm text-cmba-grey-light">
                 This account is <span className="text-orange-300 font-medium">pending guardian confirmation</span>. Some
@@ -97,7 +99,7 @@ export default async function AccountPage() {
           )}
 
           {/* Compliance banner */}
-          <section className="bg-cmba-black-card border border-white/12 p-5">
+          <section className="reveal bg-cmba-black-card border border-white/12 p-5">
             <div className="flex items-center gap-3">
               <overallChip.icon size={28} className={overallChip.cls} />
               <div>
@@ -144,17 +146,17 @@ export default async function AccountPage() {
 
           {/* Certification cards */}
           <section>
-            <h2 className="font-display font-bold text-white uppercase tracking-wide text-sm mb-3">My certifications</h2>
+            <h2 className="reveal font-display font-bold text-white uppercase tracking-wide text-sm mb-3">My certifications</h2>
             {certs.length === 0 ? (
               <p className="text-sm text-cmba-grey">No certifications yet. Upload one below.</p>
             ) : (
               <div className="grid sm:grid-cols-2 gap-3">
-                {certs.map((c) => {
+                {certs.map((c, i) => {
                   const chip = statusChip[c.status ?? 'pending-verification'] ?? statusChip['pending-verification']
                   const file = c.certificateFile
                   const fileUrl = file && typeof file === 'object' ? file.url : undefined
                   return (
-                    <div key={c.id} className="bg-cmba-black-card border border-white/12 p-4">
+                    <div key={c.id} style={{ transitionDelay: `${i * 60}ms` }} className="reveal rv-scale bg-cmba-black-card border border-white/12 p-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="font-display font-bold text-sm text-white">{nameOf(c.type)}</div>
                         <span className={`font-mono text-[9px] px-1.5 py-0.5 uppercase border ${chip.cls}`}>{chip.label}</span>
@@ -180,12 +182,12 @@ export default async function AccountPage() {
           {/* Pathway progress */}
           {pathways.length > 0 && (
             <section>
-              <h2 className="font-display font-bold text-white uppercase tracking-wide text-sm mb-3 flex items-center gap-2">
+              <h2 className="reveal font-display font-bold text-white uppercase tracking-wide text-sm mb-3 flex items-center gap-2">
                 <Trophy size={14} className="text-cmba-red" /> Pathway progress
               </h2>
               <div className="space-y-4">
-                {pathways.map((p) => (
-                  <div key={p.pathway.id} className="bg-cmba-black-card border border-white/12 p-4">
+                {pathways.map((p, i) => (
+                  <div key={p.pathway.id} style={{ transitionDelay: `${i * 60}ms` }} className="reveal rv-left bg-cmba-black-card border border-white/12 p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="font-display font-bold text-white uppercase tracking-wide text-sm">{p.pathway.name}</div>
                       <div className="font-display font-black text-cmba-red">{p.overallPercent}%</div>
@@ -210,11 +212,11 @@ export default async function AccountPage() {
           {/* Recommended courses */}
           {recommended.length > 0 && (
             <section>
-              <h2 className="font-display font-bold text-white uppercase tracking-wide text-sm mb-3">Recommended courses</h2>
+              <h2 className="reveal font-display font-bold text-white uppercase tracking-wide text-sm mb-3">Recommended courses</h2>
               <div className="space-y-2">
-                {recommended.map((c) => (
-                  <a key={c.id} href={c.registerUrl ?? '#'} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center justify-between gap-3 bg-cmba-black-card border border-white/12 hover:border-cmba-red/40 p-3 transition-colors group">
+                {recommended.map((c, i) => (
+                  <a key={c.id} href={c.registerUrl ?? '#'} target="_blank" rel="noopener noreferrer" style={{ transitionDelay: `${i * 60}ms` }}
+                    className="reveal rv-right flex items-center justify-between gap-3 bg-cmba-black-card border border-white/12 hover:border-cmba-red/40 p-3 transition-colors group">
                     <div>
                       <div className="font-display font-bold text-sm text-white group-hover:text-cmba-red transition-colors">{c.title}</div>
                       {c.provider && <div className="text-[11px] text-cmba-grey">{c.provider}</div>}
@@ -229,7 +231,7 @@ export default async function AccountPage() {
 
         {/* Right column — XP + actions */}
         <div className="space-y-6">
-          <section className="bg-cmba-black-card border border-cmba-red/30 p-5 text-center">
+          <section className="reveal rv-scale bg-cmba-black-card border border-cmba-red/30 p-5 text-center">
             <div className="font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider">Level {progress.level}</div>
             <div className="font-display font-black text-2xl text-white uppercase">{progress.levelTitle}</div>
             <div className="font-mono text-[11px] text-cmba-grey-mid mt-1">{progress.xp} XP</div>
@@ -262,7 +264,7 @@ export default async function AccountPage() {
           </Link>
 
           {isAnyAdmin(user) && (
-            <section className="bg-cmba-black-card border border-cmba-red/20 p-4">
+            <section className="reveal bg-cmba-black-card border border-cmba-red/20 p-4">
               <h2 className="font-display font-bold text-white uppercase tracking-wide text-xs mb-2">Admin tools</h2>
               <div className="space-y-1.5">
                 {/* Hard nav into the Payload admin SPA — not a Next page. */}

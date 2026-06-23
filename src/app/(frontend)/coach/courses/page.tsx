@@ -1,8 +1,12 @@
 import type { Metadata } from 'next'
+import { BookOpen, ArrowDown } from 'lucide-react'
 
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { computeCertStatus } from '@/lib/certStatus'
 import { CourseLibrary, type CourseCard } from '@/components/coach/CourseLibrary'
+import { PhotoHero } from '@/components/media/PhotoHero'
+import { PhotoBand } from '@/components/media/PhotoBand'
+import { CourtLines } from '@/components/graphics/CourtLines'
 import type { Certification, Course, CertificationType } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -64,5 +68,53 @@ export default async function CoachCoursesPage() {
     }
   })
 
-  return <CourseLibrary courses={cards} signedIn={Boolean(user)} />
+  return (
+    <div>
+      {/* Hero */}
+      <PhotoHero
+        image="indoorGym"
+        eyebrow="Coach Hub · Education"
+        title="Course"
+        accent="Library"
+        subtitle="Every CMBA course in one place. Complete the right training to progress your certification — each course links straight to CMBA's official platform."
+      >
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="#course-library"
+            className="inline-flex items-center gap-2 bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors"
+          >
+            <BookOpen size={16} /> Browse Courses
+          </a>
+          <a
+            href="#course-library"
+            className="inline-flex items-center gap-2 border border-white/30 text-white hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors backdrop-blur-sm"
+          >
+            <ArrowDown size={16} /> Jump to Library
+          </a>
+        </div>
+      </PhotoHero>
+
+      {/* The interactive library (filters + course cards) — unchanged */}
+      <div id="course-library" className="relative">
+        <CourtLines className="pointer-events-none absolute top-24 right-0 w-64 text-cmba-red/[0.06] hidden lg:block" />
+        <CourseLibrary courses={cards} signedIn={Boolean(user)} />
+      </div>
+
+      {/* Photo band */}
+      <div className="max-w-7xl mx-auto px-4 lg:px-6 pb-12 lg:pb-16">
+        <PhotoBand
+          image="swish"
+          side="right"
+          eyebrow="Keep certified"
+          title="Training that travels with you"
+        >
+          <p>
+            Coaching certification is a journey, not a one-off. Work through the courses above at your own
+            pace — your completed training stays on your CMBA Connect profile so you always know what to
+            tackle next.
+          </p>
+        </PhotoBand>
+      </div>
+    </div>
+  )
 }

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  Trophy,
   BookOpen,
   FileText,
   ChevronRight,
@@ -11,6 +10,10 @@ import {
   Brain,
 } from "lucide-react";
 import { COURSES, DEV_GUIDES, COACH, DOCS } from "@/lib/cmbaLinks";
+import { PhotoHero } from "@/components/media/PhotoHero";
+import { PhotoBand } from "@/components/media/PhotoBand";
+import { CourtLines } from "@/components/graphics/CourtLines";
+import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
 
 const LTAD_URL = "https://sportforlife.ca/long-term-development/";
 
@@ -145,60 +148,48 @@ export default function CoachDashboard() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-hero-gradient border-b-2 border-cmba-red">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-cmba-red/10 border border-cmba-red/30 px-3 py-1 mb-4">
-                <Trophy size={14} className="text-cmba-red" />
-                <span className="font-display font-bold text-xs text-cmba-red uppercase tracking-widest">
-                  Coach Education Hub
-                </span>
-              </div>
-              <h1 className="font-display font-black text-4xl lg:text-5xl text-white uppercase tracking-tight leading-[0.95]">
-                ATHLETE <span className="text-cmba-red">DEVELOPMENT</span>
-              </h1>
-              <p className="text-cmba-grey mt-2 max-w-xl">
-                CMBA&apos;s approach to developing basketball players is built on
-                the Long-Term Athlete Development (LTAD) framework and four
-                core pillars of development.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3">
-              <a
-                href={COURSES.coachTrainingRegister}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors"
-              >
-                <ExternalLink size={16} />
-                Start Mandatory Training
-              </a>
-              <Link
-                href="/coach/clinics"
-                className="border border-cmba-grey-dark text-cmba-grey-light hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors text-center"
-              >
-                Training & Clinics
-              </Link>
-            </div>
-          </div>
+      <PhotoHero
+        image="indoorGym"
+        eyebrow="Coach Education Hub"
+        title="Athlete"
+        accent="Development"
+        subtitle="CMBA's approach to developing basketball players is built on the Long-Term Athlete Development (LTAD) framework and four core pillars of development."
+      >
+        <div className="flex flex-wrap gap-3">
+          <a
+            href={COURSES.coachTrainingRegister}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors"
+          >
+            <ExternalLink size={16} />
+            Start Mandatory Training
+          </a>
+          <Link
+            href="/coach/clinics"
+            className="inline-flex items-center gap-2 border border-white/30 text-white hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors backdrop-blur-sm text-center"
+          >
+            Training & Clinics
+          </Link>
         </div>
-      </section>
+      </PhotoHero>
 
       {/* Four Pillars */}
-      <section className="bg-cmba-black/70">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
-          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
+      <section className="relative bg-cmba-black/70 overflow-hidden">
+        <CourtLines className="pointer-events-none absolute top-0 right-0 w-64 text-cmba-red/[0.06] hidden lg:block" />
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
+          <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
             Four Pillars of <span className="text-cmba-red">Development</span>
           </h2>
-          <p className="text-cmba-grey text-sm mb-8">
+          <p className="reveal text-cmba-grey text-sm mb-8">
             Every CMBA coach should build their approach on these four research-backed principles.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {pillars.map((p) => (
+            {pillars.map((p, i) => (
               <div
                 key={p.title}
-                className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/30 p-5 transition-colors"
+                style={{ transitionDelay: `${i * 70}ms` }}
+                className="reveal rv-scale bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/30 p-5 transition-colors"
               >
                 <p.icon size={28} className="text-cmba-red mb-3" />
                 <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-2">
@@ -213,11 +204,25 @@ export default function CoachDashboard() {
         </div>
       </section>
 
+      {/* Photo band */}
+      <section className="bg-cmba-black-light/70 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 pt-12 lg:pt-16">
+          <PhotoBand
+            image="kidsOnCourt"
+            side="right"
+            eyebrow="In the gym"
+            title="Coach the long game"
+          >
+            <p>Great coaching meets every athlete where they are. CMBA&apos;s stage-based pathway gives you the outcomes, drills, and language to build skills progressively — so practice today sets up the player they become.</p>
+          </PhotoBand>
+        </div>
+      </section>
+
       {/* LTAD Development Stages */}
-      <section className="bg-cmba-black-light/70 border-y border-white/10">
+      <section className="bg-cmba-black-light/70 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">
+            <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight">
               Development <span className="text-cmba-red">Stages</span>
             </h2>
             <a
@@ -229,15 +234,16 @@ export default function CoachDashboard() {
               Master Guide <ExternalLink size={12} />
             </a>
           </div>
-          <p className="text-cmba-grey text-sm mb-8">
+          <p className="reveal text-cmba-grey text-sm mb-8">
             Each stage maps to CMBA&apos;s Athlete Development Guide for that age group, with specific learning outcomes, coaching approaches, and skill focuses.
           </p>
 
           <div className="space-y-4">
-            {developmentStages.map((stage) => (
+            {developmentStages.map((stage, i) => (
               <div
                 key={stage.stage}
-                className={`bg-cmba-black-card/80 backdrop-blur-sm border-l-4 ${stage.borderColor} border border-white/12`}
+                style={{ transitionDelay: `${i * 60}ms` }}
+                className={`reveal rv-left bg-cmba-black-card/80 backdrop-blur-sm border-l-4 ${stage.borderColor} border border-white/12`}
               >
                 <div className="p-5 lg:p-6">
                   <div className="flex flex-col lg:flex-row lg:items-start gap-4">
@@ -305,31 +311,34 @@ export default function CoachDashboard() {
       {/* Key coach resources */}
       <section className="bg-cmba-black/70">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
-          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
+          <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
             Essential <span className="text-cmba-red">Resources</span>
           </h2>
-          <p className="text-cmba-grey text-sm mb-8">
+          <p className="reveal text-cmba-grey text-sm mb-8">
             The documents and training every CMBA coach should have on hand.
           </p>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {coachResources.map((r) => (
+          <div className="bento">
+            {coachResources.map((r, i) => (
               <a
                 key={r.title}
                 href={r.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/30 p-4 transition-colors group"
+                style={{ transitionDelay: `${i * 70}ms` }}
+                className="bento-tile bento-c2 reveal rv-scale group"
               >
-                <div className="w-10 h-10 bg-cmba-red/10 flex items-center justify-center shrink-0">
-                  <BookOpen size={20} className="text-cmba-red" />
+                <div className="relative z-10 flex items-center gap-4">
+                  <div className="w-10 h-10 bg-cmba-red/10 flex items-center justify-center shrink-0">
+                    <BookOpen size={20} className="text-cmba-red" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">
+                      {r.title}
+                    </h3>
+                    <p className="text-xs text-cmba-grey">{r.desc}</p>
+                  </div>
+                  <ExternalLink size={16} className="text-cmba-grey-dark shrink-0" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">
-                    {r.title}
-                  </h3>
-                  <p className="text-xs text-cmba-grey">{r.desc}</p>
-                </div>
-                <ExternalLink size={16} className="text-cmba-grey-dark shrink-0" />
               </a>
             ))}
           </div>
@@ -340,24 +349,25 @@ export default function CoachDashboard() {
       <section className="bg-cmba-black-light/70 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">
+            <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight">
               Rules & <span className="text-cmba-red">Policies</span>
             </h2>
             <Link href="/rules" className="text-xs text-cmba-red font-display font-bold uppercase tracking-wider flex items-center gap-1 hover:text-white transition-colors">
               Search All Rules <ChevronRight size={14} />
             </Link>
           </div>
-          <p className="text-cmba-grey text-sm mb-8">
+          <p className="reveal text-cmba-grey text-sm mb-8">
             Key rules documents every coach should know. You can also search the full rulebook in the app.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {ruleLinks.map((rule) => (
+            {ruleLinks.map((rule, i) => (
               <a
                 key={rule.title}
                 href={rule.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/30 p-3 transition-colors group"
+                style={{ transitionDelay: `${i * 60}ms` }}
+                className="reveal rv-right flex items-center gap-3 bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/30 p-3 transition-colors group"
               >
                 <FileText size={16} className="text-cmba-red shrink-0" />
                 <span className="flex-1 font-display font-bold text-xs text-cmba-grey-light uppercase tracking-wider group-hover:text-cmba-red transition-colors">
@@ -371,8 +381,9 @@ export default function CoachDashboard() {
       </section>
 
       {/* CTA */}
-      <section className="bg-cmba-red">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 text-center">
+      <section className="relative bg-cmba-red overflow-hidden">
+        <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-20 text-black/10" />
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-8 text-center">
           <p className="text-white/90 text-sm mb-4">
             Thank you for volunteering to coach in CMBA and for taking the time
             to grow and develop by utilizing these resources.

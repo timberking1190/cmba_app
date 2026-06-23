@@ -1,10 +1,14 @@
 import Link from "next/link";
 import {
-  Trophy, ExternalLink, ChevronRight, BookOpen, ClipboardCheck, PlayCircle,
+  ExternalLink, ChevronRight, BookOpen, ClipboardCheck, PlayCircle,
   ShieldCheck, ArrowRight, Dumbbell,
 } from "lucide-react";
 import { DEV_GUIDES, REPORT_CARDS, COACH, DOCS, REGISTER } from "@/lib/cmbaLinks";
 import { PersonalizedStrip } from "@/components/PersonalizedStrip";
+import { PhotoHero } from "@/components/media/PhotoHero";
+import { PhotoBand } from "@/components/media/PhotoBand";
+import { CourtLines } from "@/components/graphics/CourtLines";
+import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
 
 // Auth-dependent (shows a signed-in strip), so render per request — never
 // statically generated (which would hit the DB at build).
@@ -34,42 +38,39 @@ export default function AthletePage() {
   return (
     <div>
       <PersonalizedStrip variant="athlete" />
+
       {/* Hero */}
-      <section className="bg-hero-gradient border-b-2 border-cmba-red">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
-          <div className="inline-flex items-center gap-2 bg-cmba-red/10 border border-cmba-red/30 px-3 py-1 mb-4">
-            <Trophy size={14} className="text-cmba-red" />
-            <span className="font-display font-bold text-xs text-cmba-red uppercase tracking-widest">Athlete Hub · Training</span>
-          </div>
-          <h1 className="font-display font-black text-4xl lg:text-5xl text-white uppercase tracking-tight leading-[0.95]">
-            ATHLETE <span className="text-cmba-red">DEVELOPMENT</span>
-          </h1>
-          <p className="text-cmba-grey mt-2 max-w-xl">
-            Your path through CMBA, stage by stage. Each level has a development guide and a report card so you always know what to work on next.
-          </p>
-          <div className="flex flex-wrap gap-3 mt-6">
-            <a href={DEV_GUIDES.master} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors">
-              <BookOpen size={16} /> Open Master Guide
-            </a>
-            <a href={COACH.drillsYouTube} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border border-white/20 text-white hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors">
-              <PlayCircle size={16} /> Watch Drills
-            </a>
-          </div>
+      <PhotoHero
+        image="youthOutdoor"
+        eyebrow="Athlete Hub · Training"
+        title="Athlete"
+        accent="Development"
+        subtitle="Your path through CMBA, stage by stage. Each level has a development guide and a report card so you always know what to work on next."
+      >
+        <div className="flex flex-wrap gap-3">
+          <a href={DEV_GUIDES.master} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors">
+            <BookOpen size={16} /> Open Master Guide
+          </a>
+          <a href={COACH.drillsYouTube} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 border border-white/30 text-white hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors backdrop-blur-sm">
+            <PlayCircle size={16} /> Watch Drills
+          </a>
         </div>
-      </section>
+      </PhotoHero>
 
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-12 space-y-12">
         {/* Development pathway */}
-        <div>
-          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
+        <div className="relative">
+          <CourtLines className="pointer-events-none absolute -top-6 right-0 w-64 text-cmba-red/[0.06] hidden lg:block" />
+          <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
             Your Development <span className="text-cmba-red">Pathway</span>
           </h2>
-          <p className="text-cmba-grey text-sm mb-6">Five stages from first dribble to senior basketball. Open your guide and report card for your age group.</p>
+          <p className="reveal text-cmba-grey text-sm mb-6">Five stages from first dribble to senior basketball. Open your guide and report card for your age group.</p>
           <div className="space-y-3">
-            {pathway.map((p) => (
-              <div key={p.title} className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/40 transition-colors">
+            {pathway.map((p, i) => (
+              <div key={p.title} style={{ transitionDelay: `${i * 60}ms` }}
+                className="reveal rv-left bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/40 transition-colors">
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4 p-5 lg:p-6">
                   <div className="flex items-center gap-4 lg:w-72 shrink-0">
                     <span className="font-display font-black text-3xl text-cmba-red/30">{p.stage}</span>
@@ -95,16 +96,26 @@ export default function AthletePage() {
           </div>
         </div>
 
+        {/* Photo band */}
+        <PhotoBand
+          image="kidsOnCourt"
+          side="right"
+          eyebrow="On the court"
+          title="Every rep counts"
+        >
+          <p>From first dribble to final buzzer, CMBA athletes grow with structured stages, filmed drills, and report cards — so progress is something you can see, not guess at.</p>
+        </PhotoBand>
+
         {/* Skills & drills */}
         <div>
-          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2 flex items-center gap-2">
+          <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight mb-2 flex items-center gap-2">
             <Dumbbell size={22} className="text-cmba-red" /> Skills & Drills
           </h2>
-          <p className="text-cmba-grey text-sm mb-6">Practice on your own time with CMBA&apos;s filmed drills and skill resources.</p>
+          <p className="reveal text-cmba-grey text-sm mb-6">Practice on your own time with CMBA&apos;s filmed drills and skill resources.</p>
           <div className="grid sm:grid-cols-3 gap-3">
-            {drills.map((d) => (
-              <a key={d.title} href={d.href} target="_blank" rel="noopener noreferrer"
-                className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/40 p-5 transition-colors group">
+            {drills.map((d, i) => (
+              <a key={d.title} href={d.href} target="_blank" rel="noopener noreferrer" style={{ transitionDelay: `${i * 70}ms` }}
+                className="reveal rv-scale bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/40 p-5 transition-colors group">
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">{d.title}</h3>
                   <ExternalLink size={14} className="text-cmba-grey-dark shrink-0" />
@@ -117,14 +128,14 @@ export default function AthletePage() {
 
         {/* Play the right way */}
         <div>
-          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2 flex items-center gap-2">
+          <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight mb-2 flex items-center gap-2">
             <ShieldCheck size={22} className="text-cmba-red" /> Play the Right Way
           </h2>
-          <p className="text-cmba-grey text-sm mb-6">Basketball is better when everyone plays safe and plays fair.</p>
+          <p className="reveal text-cmba-grey text-sm mb-6">Basketball is better when everyone plays safe and plays fair.</p>
           <div className="grid sm:grid-cols-3 gap-3">
-            {safeSport.map((s) => (
-              <a key={s.title} href={s.href} target="_blank" rel="noopener noreferrer"
-                className="flex items-start gap-3 bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/40 p-4 transition-colors group">
+            {safeSport.map((s, i) => (
+              <a key={s.title} href={s.href} target="_blank" rel="noopener noreferrer" style={{ transitionDelay: `${i * 70}ms` }}
+                className="reveal rv-right flex items-start gap-3 bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/40 p-4 transition-colors group">
                 <ChevronRight size={16} className="text-cmba-red shrink-0 mt-0.5" />
                 <div>
                   <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">{s.title}</h3>
@@ -137,8 +148,9 @@ export default function AthletePage() {
       </div>
 
       {/* CTA */}
-      <section className="bg-cmba-red">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 text-center">
+      <section className="relative bg-cmba-red overflow-hidden">
+        <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-20 text-black/10" />
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-8 text-center">
           <p className="text-white/90 text-sm mb-4">Ready to get on the court? League registration happens on TeamLinkt.</p>
           <div className="flex flex-wrap justify-center gap-3">
             <a href={REGISTER.player} target="_blank" rel="noopener noreferrer"

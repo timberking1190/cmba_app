@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { CheckCircle2, XCircle } from 'lucide-react'
 
 import { getPayloadClient } from '@/lib/auth'
+import { CourtLines } from '@/components/graphics/CourtLines'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,8 +39,9 @@ export default async function GuardianConfirmPage({
 
   const ok = result === 'ok' || result === 'already'
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md bg-cmba-black-card border border-white/12 p-8 text-center">
+    <div className="relative min-h-[70vh] flex items-center justify-center overflow-hidden px-4 py-12">
+      <CourtLines className="pointer-events-none absolute -bottom-10 -right-10 w-80 text-cmba-red/[0.05] hidden lg:block" />
+      <div className="reveal rv-scale relative w-full max-w-md bg-cmba-black-card border border-white/12 p-8 text-center">
         {ok ? (
           <CheckCircle2 size={44} className="text-cmba-red mx-auto mb-4" />
         ) : (

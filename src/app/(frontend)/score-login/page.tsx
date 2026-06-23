@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ExternalLink, ClipboardList, MessageCircle, ArrowRight } from "lucide-react";
+import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
 
 /*
  * TeamLinkt Score Report Login. Final scores are reported in TeamLinkt, so this
@@ -10,8 +11,9 @@ const APP_URL = process.env.NEXT_PUBLIC_TEAMLINKT_APP_URL || "https://app.teamli
 
 export default function ScoreLoginPage() {
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="relative min-h-[80vh] flex items-center justify-center px-4 py-12 overflow-hidden">
+      <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-24 text-white/[0.035]" />
+      <div className="relative w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-6">
           <Image src="/cmba-logo-md.png" alt="CMBA" width={200} height={80} className="h-16 w-auto mx-auto mb-4" priority />
@@ -22,7 +24,7 @@ export default function ScoreLoginPage() {
         </div>
 
         {/* Sign in to TeamLinkt */}
-        <div className="bg-cmba-black-card border border-cmba-red/30 p-6 mb-6">
+        <div className="reveal rv-scale bg-cmba-black-card border border-cmba-red/30 p-6 mb-6">
           <div className="flex items-start gap-3 mb-5">
             <ClipboardList size={20} className="text-cmba-red shrink-0 mt-0.5" />
             <p className="text-sm text-cmba-grey-light leading-relaxed">
@@ -43,7 +45,7 @@ export default function ScoreLoginPage() {
         </div>
 
         {/* Concern/compliment (not a score) */}
-        <div className="bg-cmba-black-card border border-white/12 p-4 mb-6">
+        <div className="reveal bg-cmba-black-card border border-white/12 p-4 mb-6" style={{ transitionDelay: "80ms" }}>
           <div className="flex items-start gap-3">
             <MessageCircle size={18} className="text-cmba-grey-mid shrink-0 mt-0.5" />
             <div>
@@ -57,7 +59,7 @@ export default function ScoreLoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-cmba-grey-mid">
+        <p className="reveal text-center text-xs text-cmba-grey-mid" style={{ transitionDelay: "160ms" }}>
           Looking for training, courses, and resources?{" "}
           <Link href="/login" className="text-cmba-red hover:text-cmba-red-dark">CMBA+ Login</Link>
         </p>

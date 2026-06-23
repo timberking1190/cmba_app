@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { HelpCircle, ChevronDown, Search, ExternalLink } from "lucide-react";
+import { ChevronDown, Search, ExternalLink } from "lucide-react";
 import { CMBA, REGISTER, COURSES, DOCS, REF } from "@/lib/cmbaLinks";
+import { PhotoHero } from "@/components/media/PhotoHero";
+import { CourtLines } from "@/components/graphics/CourtLines";
 
 type Q = { q: string; a: string; link?: { label: string; href: string; internal?: boolean } };
 
@@ -67,33 +69,44 @@ export default function FAQPage() {
       .filter((cat) => cat.questions.length > 0);
   }, [query]);
 
+  // Rows remount when the search filter changes; the global .reveal observer
+  // only snapshots on route change, so reveal any rows it didn't catch to
+  // ensure filtered/restored content is never left stuck at opacity:0.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      document
+        .querySelectorAll(".faq-reveal:not(.in)")
+        .forEach((el) => el.classList.add("in"));
+    });
+    return () => cancelAnimationFrame(id);
+  }, [filtered]);
+
   return (
     <div>
-      <section className="bg-hero-gradient border-b-2 border-cmba-red">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
-          <div className="inline-flex items-center gap-2 bg-cmba-red/10 border border-cmba-red/30 px-3 py-1 mb-4">
-            <HelpCircle size={14} className="text-cmba-red" />
-            <span className="font-display font-bold text-xs text-cmba-red uppercase tracking-widest">Help Center</span>
-          </div>
-          <h1 className="font-display font-black text-4xl lg:text-5xl text-white uppercase tracking-tight leading-[0.95]">
-            FREQUENTLY ASKED <span className="text-cmba-red">QUESTIONS</span>
-          </h1>
-          <div className="max-w-lg mt-6">
-            <div className="flex items-center gap-3 bg-cmba-black-card border border-white/12 px-4 py-3">
-              <Search size={18} className="text-cmba-grey-mid" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search questions..."
-                className="flex-1 bg-transparent text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark outline-none"
-              />
-            </div>
+      <PhotoHero
+        image="skylineNight"
+        eyebrow="Help Center"
+        title="Frequently Asked"
+        accent="Questions"
+        subtitle="Registration, divisions, coaching, officiating, and conduct — answered. Search below or browse by category."
+        className="min-h-[clamp(300px,42vh,440px)]"
+      >
+        <div className="max-w-lg">
+          <div className="flex items-center gap-3 bg-cmba-black-card border border-white/12 px-4 py-3 backdrop-blur-sm">
+            <Search size={18} className="text-cmba-grey-mid" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search questions..."
+              className="flex-1 bg-transparent text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark outline-none"
+            />
           </div>
         </div>
-      </section>
+      </PhotoHero>
 
-      <div className="max-w-4xl mx-auto px-4 lg:px-6 py-8 lg:py-12 space-y-8">
+      <div className="relative max-w-4xl mx-auto px-4 lg:px-6 py-8 lg:py-12 space-y-8">
+        <CourtLines className="pointer-events-none absolute -top-6 right-0 w-64 text-cmba-red/[0.06] hidden lg:block" />
         {filtered.length === 0 && (
           <p className="text-sm text-cmba-grey">
             No questions match &quot;{query}&quot;. Try a different term, or email{" "}
@@ -102,15 +115,15 @@ export default function FAQPage() {
         )}
         {filtered.map((cat) => (
           <div key={cat.category}>
-            <h2 className="font-display font-black text-xl text-white uppercase tracking-wider mb-4 flex items-center gap-3">
+            <h2 className="reveal font-display font-black text-xl text-white uppercase tracking-wider mb-4 flex items-center gap-3">
               <span className="text-cmba-red">{"//  "}</span>{cat.category}
             </h2>
             <div className="space-y-2">
-              {cat.questions.map((item) => {
+              {cat.questions.map((item, i) => {
                 const id = `${cat.category}-${item.q}`;
                 const isOpen = openItems.includes(id) || query.trim().length > 0;
                 return (
-                  <div key={id} className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12">
+                  <div key={id} style={{ transitionDelay: `${i * 60}ms` }} className="reveal rv-left faq-reveal bg-cmba-black-card/80 backdrop-blur-sm border border-white/12">
                     <button onClick={() => toggle(id)} className="w-full flex items-center justify-between px-5 py-4 text-left group">
                       <span className="font-display font-bold text-sm text-cmba-grey-light uppercase tracking-wide group-hover:text-cmba-red transition-colors pr-4">
                         {item.q}

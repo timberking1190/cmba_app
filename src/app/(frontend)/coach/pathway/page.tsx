@@ -4,6 +4,9 @@ import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { computeCertStatus } from '@/lib/certStatus'
 import { COACH_BADGES, getLevelForXP } from '@/lib/gamification'
 import { CoachPathwayView, type PathwayLevel } from '@/components/coach/CoachPathwayView'
+import { PhotoHero } from '@/components/media/PhotoHero'
+import { PhotoBand } from '@/components/media/PhotoBand'
+import { CourtLines } from '@/components/graphics/CourtLines'
 import type { Certification, CertificationType, Pathway } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -84,16 +87,40 @@ export default async function CoachPathwayPage() {
   const lockedBadges = COACH_BADGES.slice(earnedBadges.length)
 
   return (
-    <CoachPathwayView
-      levels={levels}
-      signedIn={Boolean(user)}
-      xp={xp}
-      level={lvl.level}
-      levelTitle={lvl.title}
-      nextLevelXp={lvl.nextLevelXp}
-      progress={lvl.progress}
-      earnedBadges={earnedBadges}
-      lockedBadges={lockedBadges}
-    />
+    <div>
+      <PhotoHero
+        image="swish"
+        eyebrow="Coach Hub · Certification"
+        title="Certification"
+        accent="Pathway"
+        subtitle="Climb the CMBA coaching levels stage by stage. Each level lists the certifications you need, the XP you earn, and a direct link to get what's missing."
+      />
+
+      <div className="relative">
+        <CourtLines className="pointer-events-none absolute top-24 right-0 w-64 text-cmba-red/[0.06] hidden lg:block" />
+        <CoachPathwayView
+          levels={levels}
+          signedIn={Boolean(user)}
+          xp={xp}
+          level={lvl.level}
+          levelTitle={lvl.title}
+          nextLevelXp={lvl.nextLevelXp}
+          progress={lvl.progress}
+          earnedBadges={earnedBadges}
+          lockedBadges={lockedBadges}
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 lg:px-6 pb-12 lg:pb-16">
+        <PhotoBand
+          image="indoorGym"
+          side="right"
+          eyebrow="On the floor"
+          title="Coach with confidence"
+        >
+          <p>Every level you clear is a verified certification behind your name — earned, not assumed. Work through the pathway and you&apos;ll always know exactly what to renew next and where to get it.</p>
+        </PhotoBand>
+      </div>
+    </div>
   )
 }

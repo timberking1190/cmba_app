@@ -7,6 +7,7 @@ import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { isAnyAdmin, isSuperAdmin, clubIdOf } from '@/access/index'
 import { computeCertStatus, daysUntil } from '@/lib/certStatus'
 import type { Certification, CertificationType, User } from '@/payload-types'
+import { CalgarySkyline } from '@/components/graphics/CalgarySkyline'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Compliance Dashboard | CMBA Connect' }
@@ -77,30 +78,31 @@ export default async function ComplianceDashboardPage() {
   const expiring = rows.filter((r) => r.status === 'expiring').length
 
   return (
-    <div className="max-w-6xl mx-auto px-4 lg:px-6 py-10">
+    <div className="relative max-w-6xl mx-auto px-4 lg:px-6 py-10">
+      <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-16 text-white/[0.03]" />
       <h1 className="font-display font-black text-3xl text-white uppercase tracking-tight">Compliance Dashboard</h1>
       <p className="text-sm text-cmba-grey mt-1">
         {superAdmin ? 'All members.' : 'Your club’s members.'} Certifications expiring within 60 days or already lapsed.
       </p>
 
       <div className="flex gap-4 mt-4 mb-6">
-        <div className="bg-cmba-black-card border border-red-500/40 px-4 py-2">
+        <div className="reveal rv-scale bg-cmba-black-card border border-red-500/40 px-4 py-2">
           <div className="font-display font-black text-2xl text-red-400">{expired}</div>
           <div className="font-mono text-[10px] text-cmba-grey-mid uppercase">Lapsed</div>
         </div>
-        <div className="bg-cmba-black-card border border-orange-500/40 px-4 py-2">
+        <div className="reveal rv-scale bg-cmba-black-card border border-orange-500/40 px-4 py-2" style={{ transitionDelay: '60ms' }}>
           <div className="font-display font-black text-2xl text-orange-400">{expiring}</div>
           <div className="font-mono text-[10px] text-cmba-grey-mid uppercase">Expiring</div>
         </div>
       </div>
 
       {rows.length === 0 ? (
-        <div className="bg-cmba-black-card border border-green-500/30 p-6 flex items-center gap-3">
+        <div className="reveal bg-cmba-black-card border border-green-500/30 p-6 flex items-center gap-3">
           <ShieldCheck size={24} className="text-green-400" />
           <p className="text-sm text-cmba-grey-light">Nothing expiring or lapsed. All tracked certifications are current.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto bg-cmba-black-card border border-white/12">
+        <div className="reveal overflow-x-auto bg-cmba-black-card border border-white/12">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider border-b border-white/10">
@@ -143,7 +145,7 @@ export default async function ComplianceDashboardPage() {
         </div>
       )}
 
-      <div className="mt-6">
+      <div className="reveal mt-6">
         <Link href="/account" className="font-mono text-xs text-cmba-grey hover:text-cmba-red uppercase tracking-wider">← Back to account</Link>
       </div>
     </div>

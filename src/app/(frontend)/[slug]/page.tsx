@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { getPayloadClient } from '@/lib/auth'
 import { PageRenderer } from '@/components/PageRenderer'
+import { CalgarySkyline } from '@/components/graphics/CalgarySkyline'
 import type { Page } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -42,8 +43,14 @@ export default async function CmsPage({ params }: { params: Promise<{ slug: stri
   const page = await fetchPage(slug)
   if (!page) notFound()
   return (
-    <div className="min-h-[60vh]">
-      <PageRenderer initialData={page} />
+    <div className="relative min-h-[60vh]">
+      <div className="reveal">
+        <PageRenderer initialData={page} />
+      </div>
+      {/* Faint Calgary skyline footer accent */}
+      <div className="relative h-16 overflow-hidden" aria-hidden="true">
+        <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-16 text-white/5" />
+      </div>
     </div>
   )
 }

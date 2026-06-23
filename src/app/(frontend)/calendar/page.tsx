@@ -4,6 +4,7 @@ import { ScheduleView } from "@/components/ScheduleView";
 import { TeamLinktActions } from "@/components/TeamLinktActions";
 import { TeamLinktEmbed } from "@/components/TeamLinktEmbed";
 import { DOCS } from "@/lib/cmbaLinks";
+import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
 
 export const revalidate = 3600;
 
@@ -48,13 +49,14 @@ export default async function SchedulePage() {
   return (
     <div>
       {/* Editorial header */}
-      <section className="px-4 md:px-10 lg:px-14 pt-12 lg:pt-20 pb-8 overflow-hidden">
-        <div className="max-w-7xl mx-auto">
-          <div className="label-xs text-cmba-grey mb-4">2025-26 Season</div>
+      <section className="relative px-4 md:px-10 lg:px-14 pt-12 lg:pt-20 pb-8 overflow-hidden">
+        <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-24 text-white/5" />
+        <div className="relative max-w-7xl mx-auto">
+          <div className="reveal label-xs text-cmba-grey mb-4">2025-26 Season</div>
           <h1 className="font-display font-black uppercase leading-[0.85] tracking-tighter2 text-[clamp(40px,12vw,120px)]">
             Game <span className="text-stroke">Schedule</span>
           </h1>
-          <p className="text-cmba-grey mt-4 max-w-xl text-sm md:text-base leading-relaxed">
+          <p className="reveal text-cmba-grey mt-4 max-w-xl text-sm md:text-base leading-relaxed">
             Game times, venues, and scores come straight from TeamLinkt. Account actions and full standings live in the TeamLinkt app.
           </p>
         </div>

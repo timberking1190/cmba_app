@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, Printer, ExternalLink } from "lucide-react";
+import { Printer, ExternalLink } from "lucide-react";
 import { REF, DOCS } from "@/lib/cmbaLinks";
+import { PhotoHero } from "@/components/media/PhotoHero";
+import { PhotoBand } from "@/components/media/PhotoBand";
+import { CourtLines } from "@/components/graphics/CourtLines";
+import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
 
 const violations = [
   { name: "Travelling", rule: "Player moves one or both feet illegally while holding the ball", signal: "Rotate fists" },
@@ -41,35 +45,27 @@ const resources = [
 export default function QuickRefPage() {
   return (
     <div>
-      <section className="bg-hero-gradient border-b-2 border-cmba-red">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-cmba-red/10 border border-cmba-red/30 px-3 py-1 mb-4">
-                <FileText size={14} className="text-cmba-red" />
-                <span className="font-display font-bold text-xs text-cmba-red uppercase tracking-widest">Pre-Game Reference</span>
-              </div>
-              <h1 className="font-display font-black text-4xl lg:text-5xl text-white uppercase tracking-tight leading-[0.95]">
-                QUICK <span className="text-cmba-red">REF</span> CARD
-              </h1>
-              <p className="text-cmba-grey mt-2">Common call situations and CMBA division rules. Designed for pre-game review.</p>
-            </div>
-            <button
-              onClick={() => window.print()}
-              className="flex items-center gap-2 border border-cmba-grey-dark text-cmba-grey-light hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors print:hidden"
-            >
-              <Printer size={16} />Print Card
-            </button>
-          </div>
-        </div>
-      </section>
+      <PhotoHero
+        image="swish"
+        eyebrow="Pre-Game Reference"
+        title="Quick Ref"
+        accent="Card"
+        subtitle="Common call situations and CMBA division rules. Designed for pre-game review."
+      >
+        <button
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-2 border border-white/30 text-white hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors backdrop-blur-sm print:hidden"
+        >
+          <Printer size={16} />Print Card
+        </button>
+      </PhotoHero>
 
       {/* Official references */}
       <div className="max-w-7xl mx-auto px-4 lg:px-6 pt-8 print:hidden">
         <div className="flex flex-wrap gap-2">
-          {resources.map((r) => (
-            <a key={r.label} href={r.href} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-mono text-xs text-cmba-red hover:text-white border border-cmba-red/30 hover:border-cmba-red px-3 py-1.5 transition-colors">
+          {resources.map((r, i) => (
+            <a key={r.label} href={r.href} target="_blank" rel="noopener noreferrer" style={{ transitionDelay: `${i * 60}ms` }}
+              className="reveal rv-scale inline-flex items-center gap-1.5 font-mono text-xs text-cmba-red hover:text-white border border-cmba-red/30 hover:border-cmba-red px-3 py-1.5 transition-colors">
               {r.label} <ExternalLink size={12} />
             </a>
           ))}
@@ -78,13 +74,15 @@ export default function QuickRefPage() {
 
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-12 space-y-8">
         {/* Common Violations */}
-        <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12">
-          <div className="px-6 py-4 border-b border-cmba-red/20 bg-cmba-red/5">
+        <div className="reveal relative bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 overflow-hidden">
+          <CourtLines className="pointer-events-none absolute -top-8 right-0 w-56 text-cmba-red/[0.06] hidden lg:block" />
+          <div className="relative px-6 py-4 border-b border-cmba-red/20 bg-cmba-red/5">
             <h2 className="font-display font-bold text-lg text-cmba-red uppercase tracking-wider">Common Violations</h2>
           </div>
-          <div className="divide-y divide-white/10">
-            {violations.map((v) => (
-              <div key={v.name} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-6 py-3">
+          <div className="relative divide-y divide-white/10">
+            {violations.map((v, i) => (
+              <div key={v.name} style={{ transitionDelay: `${i * 60}ms` }}
+                className="reveal rv-left flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-6 py-3">
                 <div className="sm:w-40 shrink-0">
                   <span className="font-display font-bold text-sm text-white uppercase tracking-wider">{v.name}</span>
                 </div>
@@ -98,13 +96,14 @@ export default function QuickRefPage() {
         </div>
 
         {/* Foul Types */}
-        <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12">
+        <div className="reveal bg-cmba-black-card/80 backdrop-blur-sm border border-white/12">
           <div className="px-6 py-4 border-b border-cmba-red/20 bg-cmba-red/5">
             <h2 className="font-display font-bold text-lg text-cmba-red uppercase tracking-wider">Foul Types & Penalties</h2>
           </div>
           <div className="divide-y divide-white/10">
-            {fouls.map((f) => (
-              <div key={f.name} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-6 py-3">
+            {fouls.map((f, i) => (
+              <div key={f.name} style={{ transitionDelay: `${i * 60}ms` }}
+                className="reveal rv-left flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-6 py-3">
                 <div className="sm:w-40 shrink-0">
                   <span className="font-display font-bold text-sm text-white uppercase tracking-wider">{f.name}</span>
                 </div>
@@ -117,8 +116,18 @@ export default function QuickRefPage() {
           </div>
         </div>
 
+        {/* Photo band */}
+        <PhotoBand
+          image="indoorGym"
+          side="right"
+          eyebrow="On the floor"
+          title="Know the gym before tip-off"
+        >
+          <p>Division rules shift by age group. Walk the floor, check the press and defense modifications for the level you&apos;re calling, and confirm against the official mods before the first whistle.</p>
+        </PhotoBand>
+
         {/* Division Modifications */}
-        <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12">
+        <div className="reveal bg-cmba-black-card/80 backdrop-blur-sm border border-white/12">
           <div className="px-6 py-4 border-b border-cmba-red/20 bg-cmba-red/5 flex items-center justify-between">
             <h2 className="font-display font-bold text-lg text-cmba-red uppercase tracking-wider">CMBA Division Modifications</h2>
             <span className="font-mono text-[10px] text-cmba-grey-mid uppercase">Always confirm with official mods</span>
@@ -152,12 +161,13 @@ export default function QuickRefPage() {
         </div>
 
         {/* Emergency Contacts */}
-        <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-yellow-500/30">
-          <div className="px-6 py-4 border-b border-yellow-500/20 bg-yellow-500/5">
+        <div className="reveal relative bg-cmba-black-card/80 backdrop-blur-sm border border-yellow-500/30 overflow-hidden">
+          <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-16 text-white/[0.04]" />
+          <div className="relative px-6 py-4 border-b border-yellow-500/20 bg-yellow-500/5">
             <h2 className="font-display font-bold text-lg text-yellow-400 uppercase tracking-wider">Emergency & Game Procedures</h2>
           </div>
-          <div className="p-6 grid md:grid-cols-2 gap-4">
-            <div>
+          <div className="relative p-6 grid md:grid-cols-2 gap-4">
+            <div className="reveal rv-left">
               <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-2">Injury Protocol</h3>
               <ol className="space-y-1.5 text-xs text-cmba-grey list-decimal list-inside">
                 <li>Stop play immediately</li>
@@ -167,7 +177,7 @@ export default function QuickRefPage() {
                 <li>Complete an incident report post-game</li>
               </ol>
             </div>
-            <div>
+            <div className="reveal rv-right" style={{ transitionDelay: "80ms" }}>
               <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-2">Ejection Procedure</h3>
               <ol className="space-y-1.5 text-xs text-cmba-grey list-decimal list-inside">
                 <li>Issue 2nd technical foul or flagrant foul</li>

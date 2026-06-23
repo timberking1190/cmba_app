@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 
 import { managingTheMoment as course } from '@/lib/reach360CourseData'
+import { PhotoBand } from '@/components/media/PhotoBand'
+import { CalgarySkyline } from '@/components/graphics/CalgarySkyline'
 
 export const metadata: Metadata = {
   title: 'Managing the Moment | CMBA Connect',
@@ -75,7 +77,7 @@ export default function ManagingTheMomentPage() {
 
       {/* Who it's for */}
       <section className="bg-cmba-black-light border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="reveal max-w-7xl mx-auto px-4 lg:px-6 py-6 flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex items-center gap-2 shrink-0">
             <Users size={18} className="text-cmba-red" />
             <span className="font-display font-bold text-xs text-white uppercase tracking-wider">Who it&apos;s for</span>
@@ -91,16 +93,16 @@ export default function ManagingTheMomentPage() {
 
       {/* Module timeline */}
       <section className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
-        <h2 className="font-display font-black text-2xl lg:text-3xl text-white uppercase tracking-tight mb-2">
+        <h2 className="reveal font-display font-black text-2xl lg:text-3xl text-white uppercase tracking-tight mb-2">
           What you&apos;ll <span className="text-cmba-red">learn</span>
         </h2>
-        <p className="text-cmba-grey mb-8 max-w-2xl">Seven connected modules build from understanding pressure to leading through it — and recovering after.</p>
+        <p className="reveal text-cmba-grey mb-8 max-w-2xl">Seven connected modules build from understanding pressure to leading through it — and recovering after.</p>
 
         <ol className="relative border-l-2 border-cmba-red/30 ml-3 space-y-5">
           {course.modules.map((m, i) => {
             const Icon = moduleIcons[i] ?? Brain
             return (
-              <li key={m.number} className="relative pl-8 group">
+              <li key={m.number} style={{ transitionDelay: `${i * 60}ms` }} className="reveal rv-left relative pl-8 group">
                 <span className="absolute -left-[1.30rem] top-0 w-9 h-9 rounded-full bg-cmba-black-card border-2 border-cmba-red/40 flex items-center justify-center group-hover:border-cmba-red group-hover:bg-cmba-red/10 transition-colors">
                   <Icon size={16} className="text-cmba-red" />
                 </span>
@@ -117,14 +119,26 @@ export default function ManagingTheMomentPage() {
         </ol>
       </section>
 
+      {/* Photo band */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-6 pb-2">
+        <PhotoBand
+          image="indoorGym"
+          side="right"
+          eyebrow="On the bench"
+          title="Composure is coachable"
+        >
+          <p>The hardest minutes of a season happen on the sideline. These modules give you a repeatable way to steady yourself first — so the bench, and the floor, follow your lead.</p>
+        </PhotoBand>
+      </section>
+
       {/* S.I.M.P.L.E. spotlight */}
       <section className="bg-cmba-black-light border-y border-white/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="reveal flex items-center gap-2 mb-2">
             <Flame size={18} className="text-cmba-red" />
             <span className="font-mono text-[11px] text-cmba-red uppercase tracking-[0.18em]">From Module 6</span>
           </div>
-          <h2 className="font-display font-black text-2xl lg:text-3xl text-white uppercase tracking-tight mb-6">
+          <h2 className="reveal font-display font-black text-2xl lg:text-3xl text-white uppercase tracking-tight mb-6">
             The <span className="text-cmba-red">S.I.M.P.L.E.</span> reset
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -136,13 +150,14 @@ export default function ManagingTheMomentPage() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-cmba-grey-mid mt-4">A teachable, repeatable reset athletes can use under pressure — practiced in the course with downloadable tools.</p>
+          <p className="reveal text-xs text-cmba-grey-mid mt-4">A teachable, repeatable reset athletes can use under pressure — practiced in the course with downloadable tools.</p>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="max-w-5xl mx-auto px-4 lg:px-6 py-12">
-        <div className="bg-cmba-red/10 border border-cmba-red/30 p-6 lg:p-8 flex flex-col lg:flex-row lg:items-center gap-5">
+      <section className="relative max-w-5xl mx-auto px-4 lg:px-6 py-12">
+        <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-20 text-white/5" />
+        <div className="reveal rv-scale relative bg-cmba-red/10 border border-cmba-red/30 p-6 lg:p-8 flex flex-col lg:flex-row lg:items-center gap-5">
           <div className="flex-1">
             <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">Ready to lead the moment?</h2>
             <p className="text-cmba-grey mt-1">Free, self-paced, and certificate-backed. Earn it toward your coaching pathway.</p>

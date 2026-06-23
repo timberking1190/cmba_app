@@ -15,6 +15,8 @@ import {
 import { rulesDocuments, RULES_DRIVE_URL } from "@/lib/rulesData";
 import { answerQuestion } from "@/lib/rulesQA";
 import type { QAResult } from "@/lib/rulesQA";
+import { PhotoBand } from "@/components/media/PhotoBand";
+import { CourtLines } from "@/components/graphics/CourtLines";
 
 const ruleDocuments = rulesDocuments.filter((d) =>
   /^(Section |7\.\d|FIBA)/.test(d.title) || d.title.startsWith("7.")
@@ -269,22 +271,24 @@ export default function RulesPage() {
       </section>
 
       {/* Core Rules */}
-      <section className="bg-cmba-black">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
-          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
+      <section className="relative bg-cmba-black overflow-hidden">
+        <CourtLines className="pointer-events-none absolute top-0 right-0 w-64 text-cmba-red/[0.06] hidden lg:block" />
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
+          <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
             Core <span className="text-cmba-red">Rules</span>
           </h2>
-          <p className="text-cmba-grey text-sm mb-8">
+          <p className="reveal text-cmba-grey text-sm mb-8">
             Foundational rules governing CMBA operations, games, and discipline.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {ruleDocuments.map((doc) => (
+            {ruleDocuments.map((doc, i) => (
               <a
                 key={doc.id}
                 href={doc.driveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-4 transition-colors group"
+                style={{ transitionDelay: `${i * 60}ms` }}
+                className="reveal flex items-center gap-4 bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-4 transition-colors group"
               >
                 <div className="w-10 h-10 bg-cmba-red/10 flex items-center justify-center shrink-0">
                   <FileText size={20} className="text-cmba-red" />
@@ -310,14 +314,14 @@ export default function RulesPage() {
       {/* Division Modifications */}
       <section className="bg-cmba-black-light border-y border-cmba-grey-dark/20">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
-          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
+          <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
             Division <span className="text-cmba-red">Modifications</span>
           </h2>
-          <p className="text-cmba-grey text-sm mb-8">
+          <p className="reveal text-cmba-grey text-sm mb-8">
             Each age division has specific rule modifications.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {divisionMods.map((doc) => {
+            {divisionMods.map((doc, i) => {
               const division =
                 doc.title.match(/U\d+/)?.[0] || "Division";
               return (
@@ -326,7 +330,8 @@ export default function RulesPage() {
                   href={doc.driveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/50 p-6 text-center transition-all card-hover group"
+                  style={{ transitionDelay: `${i * 60}ms` }}
+                  className="reveal rv-scale bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/50 p-6 text-center transition-all card-hover group"
                 >
                   <div className="font-display font-black text-4xl text-cmba-red/30 group-hover:text-cmba-red/60 transition-colors mb-2">
                     {division}
@@ -350,20 +355,21 @@ export default function RulesPage() {
       {/* Policies */}
       <section className="bg-cmba-black">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-16">
-          <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
+          <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight mb-2">
             Policies <span className="text-cmba-red">& Special Rules</span>
           </h2>
-          <p className="text-cmba-grey text-sm mb-8">
+          <p className="reveal text-cmba-grey text-sm mb-8">
             Additional policies covering specific situations.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[...policyDocuments, ...otherDocuments].map((doc) => (
+            {[...policyDocuments, ...otherDocuments].map((doc, i) => (
               <a
                 key={doc.id}
                 href={doc.driveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-4 transition-colors group"
+                style={{ transitionDelay: `${i * 60}ms` }}
+                className="reveal flex items-center gap-4 bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/30 p-4 transition-colors group"
               >
                 <div className="w-10 h-10 bg-cmba-red/10 flex items-center justify-center shrink-0">
                   <FileText size={20} className="text-cmba-red" />
@@ -383,6 +389,20 @@ export default function RulesPage() {
               </a>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Closing photo band */}
+      <section className="bg-cmba-black">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 pb-12 lg:pb-16">
+          <PhotoBand
+            image="swish"
+            side="right"
+            eyebrow="Know the game"
+            title="One rulebook, one standard"
+          >
+            <p>From U11 press rules to overtime and mercy policies, every CMBA decision traces back to the official rulebook. Search it above, or open the full set of documents on Google Drive.</p>
+          </PhotoBand>
         </div>
       </section>
     </div>
