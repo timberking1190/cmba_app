@@ -33,9 +33,15 @@ export default async function StandingsPage() {
           <div className="grid lg:grid-cols-[1fr_300px] gap-10">
             <div className="reveal min-w-0">
               <StandingsTable rows={rows} />
-              <p className="mt-8 pt-4 border-t border-white/10 font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider flex items-center gap-1.5">
-                <Info size={11} /> Live standings data via TeamLinkt
-              </p>
+              <div className="mt-8 pt-4 border-t border-white/10">
+                <h2 className="font-display font-bold text-white uppercase tracking-wide text-xs mb-2">How standings are calculated</h2>
+                <ul className="text-[11px] text-cmba-grey leading-relaxed space-y-1 max-w-2xl">
+                  <li>Teams earn points for each final game: a win, a tie, and a loss are each worth a set number of points for the season.</li>
+                  <li>Ties in the table are broken in order, usually by head to head record, then point differential, then points scored.</li>
+                  <li>A mercy cap limits how much a single lopsided game can change a team&apos;s point differential, so one blowout does not distort the table.</li>
+                  <li>Standings move only on final results. Reported and contested games do not count until they are confirmed or resolved.</li>
+                </ul>
+              </div>
             </div>
             <aside className="lg:sticky lg:top-24 lg:self-start">
               <div className="reveal rv-right bg-cmba-black-card/80 backdrop-blur-sm border border-cmba-red/30 p-5">

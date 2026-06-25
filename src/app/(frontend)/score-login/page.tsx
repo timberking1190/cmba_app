@@ -1,50 +1,49 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ExternalLink, ClipboardList, MessageCircle, ArrowRight } from "lucide-react";
+import { redirect } from "next/navigation";
+import { ClipboardList, MessageCircle, ArrowRight } from "lucide-react";
+
+import { getCurrentUser } from "@/lib/auth";
 import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
 
-/*
- * TeamLinkt Score Report Login. Final scores are reported in TeamLinkt, so this
- * deep-links there. We never collect TeamLinkt credentials or proxy their auth.
- */
-const APP_URL = process.env.NEXT_PUBLIC_TEAMLINKT_APP_URL || "https://app.teamlinkt.com";
+export const dynamic = "force-dynamic";
 
-export default function ScoreLoginPage() {
+/*
+ * Score reporting now lives in CMBA Connect (this app is the source of truth). A
+ * signed-in user is sent straight to their rep dashboard; a signed-out user gets a
+ * sign-in prompt. The concern or compliment link still points at the game report.
+ */
+export default async function ScoreLoginPage() {
+  const user = await getCurrentUser();
+  if (user) redirect("/rep");
+
   return (
     <div className="relative min-h-[80vh] flex items-center justify-center px-4 py-12 overflow-hidden">
       <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-24 text-white/[0.035]" />
       <div className="relative w-full max-w-md">
-        {/* Header */}
         <div className="text-center mb-6">
           <Image src="/cmba-logo-md.png" alt="CMBA" width={200} height={80} className="h-16 w-auto mx-auto mb-4" priority />
-          <div className="font-mono text-[11px] text-cmba-grey-mid uppercase tracking-[0.2em] mb-2">TeamLinkt · Coaches & Officials</div>
+          <div className="font-mono text-[11px] text-cmba-grey-mid uppercase tracking-[0.2em] mb-2">Team representatives</div>
           <h1 className="font-display font-black text-3xl text-white uppercase tracking-tight">
-            Score Report <span className="text-cmba-red">Login</span>
+            Report a <span className="text-cmba-red">Score</span>
           </h1>
         </div>
 
-        {/* Sign in to TeamLinkt */}
         <div className="reveal rv-scale bg-cmba-black-card border border-cmba-red/30 p-6 mb-6">
           <div className="flex items-start gap-3 mb-5">
             <ClipboardList size={20} className="text-cmba-red shrink-0 mt-0.5" />
             <p className="text-sm text-cmba-grey-light leading-relaxed">
-              Final game scores are reported in <span className="text-white font-medium">TeamLinkt</span>. Sign in with your TeamLinkt account to submit a score for your game.
+              Scores are reported in CMBA Connect. Sign in to your account to report your game and confirm the other team&apos;s result.
             </p>
           </div>
-          <a
-            href={APP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/login?redirect=/rep"
             className="w-full inline-flex items-center justify-center gap-2 bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-sm uppercase tracking-wider py-3 transition-colors"
           >
-            Sign in to TeamLinkt <ExternalLink size={16} />
-          </a>
-          <p className="mt-3 font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider flex items-center justify-center gap-1">
-            <ExternalLink size={10} /> Opens in TeamLinkt
-          </p>
+            Sign in to report <ArrowRight size={16} />
+          </Link>
         </div>
 
-        {/* Concern/compliment (not a score) */}
         <div className="reveal bg-cmba-black-card border border-white/12 p-4 mb-6" style={{ transitionDelay: "80ms" }}>
           <div className="flex items-start gap-3">
             <MessageCircle size={18} className="text-cmba-grey-mid shrink-0 mt-0.5" />
@@ -58,11 +57,6 @@ export default function ScoreLoginPage() {
             </div>
           </div>
         </div>
-
-        <p className="reveal text-center text-xs text-cmba-grey-mid" style={{ transitionDelay: "160ms" }}>
-          Looking for training, courses, and resources?{" "}
-          <Link href="/login" className="text-cmba-red hover:text-cmba-red-dark">CMBA+ Login</Link>
-        </p>
       </div>
     </div>
   );

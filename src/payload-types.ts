@@ -258,6 +258,18 @@ export interface User {
      */
     gameReminders?: boolean | null;
   };
+  /**
+   * Registered device push tokens for the native apps. Self-managed.
+   */
+  pushDevices?:
+    | {
+        token: string;
+        platform?: ('ios' | 'android' | 'web') | null;
+        registeredAt?: string | null;
+        lastSeenAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1649,6 +1661,15 @@ export interface UsersSelect<T extends boolean = true> {
         certificationReminders?: T;
         generalUpdates?: T;
         gameReminders?: T;
+      };
+  pushDevices?:
+    | T
+    | {
+        token?: T;
+        platform?: T;
+        registeredAt?: T;
+        lastSeenAt?: T;
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;

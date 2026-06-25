@@ -1,5 +1,6 @@
-import { createHash, randomBytes } from 'crypto'
+import { createHash, randomBytes, randomUUID } from 'crypto'
 
+import { SignJWT } from 'jose'
 import type { Payload } from 'payload'
 
 import type { User } from '@/payload-types'
@@ -45,6 +46,50 @@ export function decideRefresh(record: RefreshRecord | null | undefined, now: Dat
   if (record.replacedBy) return 'reuse-detected'
   if (record.expiresAt && new Date(record.expiresAt).getTime() < now.getTime()) return 'expired'
   return 'rotate'
+}
+
+/*
+ * Mint a Payload-compatible access JWT for a user. Matches Payload's own signing:
+ * HS256 over the raw secret, claims { id, collection, email, sid }. Payload uses
+ * sessions, so the token carries the session id (sid) the auth strategy validates
+ * against the user's sessions.
+ */
+export async function mintAccessToken(
+  user: { id: string | number; email?: string | null },
+  secret: string,
+  ttlSeconds = 2 * 60 * 60,
+  sid?: string,
+): Promise<{ token: string; exp: number }> {
+  const secretKey = new TextEncoder().encode(secret)
+  const iat = Math.floor(Date.now() / 1000)
+  const exp = iat + ttlSeconds
+  const claims: Record<string, unknown> = { id: user.id, collection: 'users', email: user.email ?? undefined }
+  if (sid) claims.sid = sid
+  const token = await new SignJWT(claims).setProtectedHeader({ alg: 'HS256', typ: 'JWT' }).setIssuedAt(iat).setExpirationTime(exp).sign(secretKey)
+  return { token, exp }
+}
+
+/*
+ * Issue a fresh access token for a user by creating a server session and minting a
+ * token bound to it (so it passes Payload's session check). Used by the refresh
+ * route to hand a native client a new access token without a password.
+ */
+export async function issueAccessTokenForUser(
+  payload: Payload,
+  userId: string | number,
+  ttlSeconds = 2 * 60 * 60,
+): Promise<{ token: string; exp: number; user: User } | null> {
+  const user = (await payload.findByID({ collection: 'users', id: userId, depth: 0, overrideAccess: true }).catch(() => null)) as
+    | (User & { sessions?: Array<{ id: string; createdAt: string; expiresAt: string }> })
+    | null
+  if (!user) return null
+  const sid = randomUUID()
+  const now = new Date()
+  const session = { id: sid, createdAt: now.toISOString(), expiresAt: new Date(now.getTime() + ttlSeconds * 1000).toISOString() }
+  const sessions = [...(user.sessions ?? []), session]
+  await payload.update({ collection: 'users', id: userId, data: { sessions } as never, overrideAccess: true })
+  const { token, exp } = await mintAccessToken({ id: user.id, email: user.email }, payload.secret, ttlSeconds, sid)
+  return { token, exp, user }
 }
 
 /* Resolve the signed-in user from an Authorization: JWT <token> header (or cookie). */

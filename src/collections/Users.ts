@@ -185,5 +185,17 @@ export const Users: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'pushDevices',
+      type: 'array',
+      labels: { singular: 'Device', plural: 'Push devices' },
+      admin: { description: 'Registered device push tokens for the native apps. Self-managed.', position: 'sidebar' },
+      fields: [
+        { name: 'token', type: 'text', required: true },
+        { name: 'platform', type: 'select', options: [{ label: 'iOS', value: 'ios' }, { label: 'Android', value: 'android' }, { label: 'Web', value: 'web' }] },
+        { name: 'registeredAt', type: 'date' },
+        { name: 'lastSeenAt', type: 'date' },
+      ],
+    },
   ],
 }

@@ -550,3 +550,47 @@ public; an admin override finalizes a game with a score and recomputes standings
 Static + 141 tests + an additive migration on live ca-central-1 + a 14-check
 import/generator/override integration smoke all green. Public site unaffected.
 Ready for B4.
+
+## Phase B4 - Public/rep front end and the /api/v1 surface
+
+Date: 2026-06-25 · Branch: `feat/backend` · DB: `cmba-connect` (ca-central-1)
+
+### Delivered
+- Token auth for the native apps: /api/v1/auth/login (issues an access JWT + a
+  rotating refresh token), /auth/refresh (rotates with reuse detection and mints a
+  fresh session-bound access token), /auth/logout (revokes the family). Users gain
+  a pushDevices array and /api/v1/devices to register tokens.
+- Read API: /api/v1/config (soft min-version, no PII), /api/v1/games (cursor
+  paginated, published for anonymous, team drafts for a verified rep),
+  /api/v1/games/:id (404 not 403 for a non-participant draft), /api/v1/standings
+  (precomputed cache + legend), /api/v1/me/dashboard, /api/v1/me/assignments.
+- Web: a rep dashboard at /rep (report scores, confirm the opposing report with the
+  photo, request a review) fed by the same data function as the native endpoint;
+  /score-login now routes a signed-in user to /rep and a signed-out user to sign in
+  (the TeamLinkt deep-link is gone); a plain-language standings legend on /standings.
+- docs/API.md documents the full v1 surface, the token + Idempotency-Key contract,
+  the error ladder, and cursor pagination.
+
+### 1. Static + tests - GREEN
+build, typecheck, lint, types clean; 141 tests still pass.
+
+### 2. Migration - GREEN (additive on live ca-central-1)
+`stageb4_push_devices` (users_push_devices). The session model was kept ON (no
+destructive sessions drop); the refresh route creates a session and mints a
+session-bound token.
+
+### 3. HTTP token-lifecycle smoke - 8/8 GREEN (built app)
+login returns an access + refresh token; the JWT authenticates /me/dashboard (200);
+no auth is 401; /config, /games, /standings are public 200; refresh returns a NEW
+access token AND a rotated refresh token; the new access token authenticates 200
+(proving the mint-with-session path); reusing the OLD refresh token is 401 (reuse
+detection revokes the family). No server errors.
+
+### Note on the public cutover
+The public /schedule and /standings already read our data (B1) with the
+FEATURE_LEGACY_TEAMLINKT fallback, so they never go blank pre-seed. Flipping the
+flag to false (the full cutover) is an operator step once a real season is imported.
+
+### Phase B4 verdict: GREEN
+Static + 141 tests + an additive migration + an 8-check token-lifecycle HTTP smoke
+all green. Public site unaffected. Ready for B5.

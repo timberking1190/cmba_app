@@ -259,6 +259,10 @@ export default async function AccountPage() {
             certTypes={certTypes.map((t) => ({ id: t.id, name: t.name }))}
           />
 
+          <Link href="/rep" className="block text-center font-mono text-xs text-cmba-red hover:text-white uppercase tracking-wider">
+            My team: report and confirm scores →
+          </Link>
+
           <Link href="/coach/pathway" className="block text-center font-mono text-xs text-cmba-grey hover:text-cmba-red uppercase tracking-wider">
             View full certification pathway →
           </Link>
