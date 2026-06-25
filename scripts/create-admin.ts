@@ -60,6 +60,10 @@ async function main() {
         status: 'active',
       },
       overrideAccess: true,
+      // Operator bootstrap: a super admin created from the CLI has no signup
+      // consent flow, so bypass the consent-enforcement hook (as documented in
+      // collections/hooks/users.ts). The account is adult and active.
+      context: { skipConsentEnforcement: true },
     })
     console.log(`Created super_admin ${email}.`)
   }
