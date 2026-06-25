@@ -1,4 +1,4 @@
-import type { Payload } from 'payload'
+import type { Payload, PayloadRequest } from 'payload'
 
 import type { ForfeitOutcome } from '../gameStateMachine'
 import type { StandingRow } from '../scheduleUtils'
@@ -74,8 +74,8 @@ function toInput(g: GameDoc): StandingsGame {
   }
 }
 
-export async function recomputeDivision(payload: Payload, divisionId: string | number): Promise<void> {
-  const division = await payload.findByID({ collection: 'divisions', id: divisionId, depth: 1, overrideAccess: true }).catch(() => null)
+export async function recomputeDivision(payload: Payload, divisionId: string | number, req?: PayloadRequest): Promise<void> {
+  const division = await payload.findByID({ collection: 'divisions', id: divisionId, depth: 1, overrideAccess: true, req }).catch(() => null)
   if (!division) return
 
   const season = (typeof division.season === 'object' ? division.season : null) as SeasonDoc | null
@@ -91,18 +91,19 @@ export async function recomputeDivision(payload: Payload, divisionId: string | n
     depth: 1,
     limit: 1000,
     overrideAccess: true,
+    req,
   })
   const games = (res.docs as unknown as GameDoc[]).map(toInput)
   const hash = buildInputsHash(games, config, seasonSeed)
 
-  const existing = await payload.find({ collection: 'standings-cache', where: { division: { equals: divisionId } }, limit: 1, overrideAccess: true })
+  const existing = await payload.find({ collection: 'standings-cache', where: { division: { equals: divisionId } }, limit: 1, overrideAccess: true, req })
   const cur = existing.docs[0] as { id: string | number; inputsHash?: string; seasonStatus?: string } | undefined
   if (cur && cur.inputsHash === hash && cur.seasonStatus === seasonStatus) return // nothing relevant changed
 
   const rows = computeStandings(games, config, seasonSeed).map((r) => ({ ...r, division: displayLabel }))
   const data = { division: divisionId, rows, inputsHash: hash, computedAt: new Date().toISOString(), legend, seasonStatus } as never
-  if (cur) await payload.update({ collection: 'standings-cache', id: cur.id, data, overrideAccess: true })
-  else await payload.create({ collection: 'standings-cache', data, overrideAccess: true })
+  if (cur) await payload.update({ collection: 'standings-cache', id: cur.id, data, overrideAccess: true, req })
+  else await payload.create({ collection: 'standings-cache', data, overrideAccess: true, req })
 }
 
 export async function getDivisionStandings(payload: Payload, divisionId: string | number): Promise<StandingRow[]> {

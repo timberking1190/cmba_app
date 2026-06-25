@@ -14,20 +14,25 @@ import { CertificateFiles } from './collections/CertificateFiles'
 import { CertificationTypes } from './collections/CertificationTypes'
 import { Certifications } from './collections/Certifications'
 import { Clubs } from './collections/Clubs'
+import { Confirmations } from './collections/Confirmations'
 import { ConsentRecords } from './collections/ConsentRecords'
 import { Courses } from './collections/Courses'
 import { Courts } from './collections/Courts'
+import { Disputes } from './collections/Disputes'
 import { Divisions } from './collections/Divisions'
 import { GameReports } from './collections/GameReports'
 import { Games } from './collections/Games'
 import { IdempotencyKeys } from './collections/IdempotencyKeys'
 import { ImportBatches } from './collections/ImportBatches'
+import { IncidentFiles } from './collections/IncidentFiles'
 import { IncidentLog } from './collections/IncidentLog'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Pathways } from './collections/Pathways'
 import { RateLimitHits } from './collections/RateLimitHits'
 import { RefreshTokens } from './collections/RefreshTokens'
+import { ScoreReports } from './collections/ScoreReports'
+import { ScoresheetFiles } from './collections/ScoresheetFiles'
 import { Seasons } from './collections/Seasons'
 import { StandingsCache } from './collections/StandingsCache'
 import { TeamMemberships } from './collections/TeamMemberships'
@@ -106,10 +111,15 @@ export default buildConfig({
     Courts,
     TeamMemberships,
     Games,
+    ScoreReports,
+    ScoresheetFiles,
+    Confirmations,
+    Disputes,
     StandingsCache,
     ImportBatches,
     // Compliance + system records for Stage B.
     AuditLog,
+    IncidentFiles,
     IdempotencyKeys,
     RefreshTokens,
     RateLimitHits,
@@ -159,11 +169,14 @@ export default buildConfig({
       bucket: publicBucket,
       config: s3ClientConfig,
     }),
-    // PRIVATE bucket: certificate files keep Payload access control (gated
-    // downloads via Payload's access-checked endpoint; never public).
+    // PRIVATE bucket: certificate files, scoresheet photos, and incident photos
+    // keep Payload access control (gated downloads via Payload's access-checked
+    // endpoint; never public). EXIF/GPS is stripped from the photos on upload.
     s3Storage({
       collections: {
         [CertificateFiles.slug]: true,
+        [ScoresheetFiles.slug]: true,
+        [IncidentFiles.slug]: true,
       },
       bucket: privateBucket,
       config: s3ClientConfig,

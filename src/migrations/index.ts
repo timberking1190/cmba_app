@@ -5,6 +5,8 @@ import * as migration_20260618_220742_phase3_cms from './20260618_220742_phase3_
 import * as migration_20260619_012655_phase3_game_reports from './20260619_012655_phase3_game_reports';
 import * as migration_20260625_063707_stageb0_scheduling_foundation from './20260625_063707_stageb0_scheduling_foundation';
 import * as migration_20260625_070400_stageb1_games from './20260625_070400_stageb1_games';
+import * as migration_20260625_072109_stageb2_reporting from './20260625_072109_stageb2_reporting';
+import * as migration_20260625_075326_stageb2_fixes from './20260625_075326_stageb2_fixes';
 
 export const migrations = [
   {
@@ -40,6 +42,16 @@ export const migrations = [
   {
     up: migration_20260625_070400_stageb1_games.up,
     down: migration_20260625_070400_stageb1_games.down,
-    name: '20260625_070400_stageb1_games'
+    name: '20260625_070400_stageb1_games',
+  },
+  {
+    up: migration_20260625_072109_stageb2_reporting.up,
+    down: migration_20260625_072109_stageb2_reporting.down,
+    name: '20260625_072109_stageb2_reporting',
+  },
+  {
+    up: migration_20260625_075326_stageb2_fixes.up,
+    down: migration_20260625_075326_stageb2_fixes.down,
+    name: '20260625_075326_stageb2_fixes'
   },
 ];

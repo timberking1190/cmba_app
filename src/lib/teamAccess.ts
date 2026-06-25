@@ -23,3 +23,22 @@ export async function getVerifiedTeamIds(payload: Payload, userId: string | numb
   }
   return ids
 }
+
+/*
+ * The game ids a user can see private content for: every game one of their
+ * verified teams plays in. Used by the scoresheet-photo read scope so a rep can
+ * view photos for their own games and no others. Re-derived per request from the
+ * CURRENT verified memberships, so a rep who is un-verified loses access at once.
+ */
+export async function getVerifiedGameIds(payload: Payload, userId: string | number): Promise<(string | number)[]> {
+  const teamIds = await getVerifiedTeamIds(payload, userId)
+  if (!teamIds.length) return []
+  const res = await payload.find({
+    collection: 'games',
+    where: { or: [{ homeTeam: { in: teamIds } }, { awayTeam: { in: teamIds } }] },
+    limit: 2000,
+    depth: 0,
+    overrideAccess: true,
+  })
+  return res.docs.map((d) => d.id)
+}

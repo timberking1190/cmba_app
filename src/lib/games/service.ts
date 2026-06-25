@@ -1,9 +1,15 @@
-import type { Payload } from 'payload'
+import type { Payload, PayloadRequest } from 'payload'
 
 import type { ForfeitOutcome } from '../gameStateMachine'
 import { isFinalized } from '../gameStateMachine'
 import type { GameStatus } from '../scheduleUtils'
 import { recomputeDivision } from '../standings'
+
+// When called from inside a collection hook, the parent request (and its open
+// transaction) is threaded through so nested writes join the same transaction.
+// Without this, a nested write runs on a separate connection and deadlocks on the
+// row the parent transaction already locked.
+type Req = PayloadRequest | undefined
 
 /*
  * The games service is the ONLY writer of a game's status, scores, publish state,
@@ -28,10 +34,12 @@ const relId = (r: unknown): string | number | undefined => {
 export async function writeAudit(
   payload: Payload,
   args: { actor?: ActorUser | null; action: string; entity: string; entityId: string | number; before?: unknown; after?: unknown; reason?: string },
+  req?: Req,
 ): Promise<void> {
   await payload.create({
     collection: 'audit-log',
     overrideAccess: true,
+    req,
     data: {
       actor: args.actor?.id,
       actorEmail: args.actor?.email ?? null,
@@ -46,11 +54,11 @@ export async function writeAudit(
   })
 }
 
-export async function recomputeForGame(payload: Payload, gameId: string | number): Promise<void> {
-  const game = await payload.findByID({ collection: 'games', id: gameId, depth: 0, overrideAccess: true }).catch(() => null)
+export async function recomputeForGame(payload: Payload, gameId: string | number, req?: Req): Promise<void> {
+  const game = await payload.findByID({ collection: 'games', id: gameId, depth: 0, overrideAccess: true, req }).catch(() => null)
   if (!game) return
   const divId = relId((game as { division?: unknown }).division)
-  if (divId != null) await recomputeDivision(payload, divId)
+  if (divId != null) await recomputeDivision(payload, divId, req)
 }
 
 /*
@@ -62,12 +70,14 @@ export async function recomputeForGame(payload: Payload, gameId: string | number
 export async function transitionGame(
   payload: Payload,
   opts: { gameId: string | number; expectedVersion: number; fromStatus: GameStatus; toStatus: GameStatus; extraData?: Record<string, unknown> },
+  req?: Req,
 ): Promise<{ ok: boolean }> {
   const res = await payload.update({
     collection: 'games',
     where: { and: [{ id: { equals: opts.gameId } }, { version: { equals: opts.expectedVersion } }, { status: { equals: opts.fromStatus } }] },
     data: { ...(opts.extraData ?? {}), status: opts.toStatus, version: opts.expectedVersion + 1 } as never,
     overrideAccess: true,
+    req,
   })
   return { ok: Boolean((res as { docs?: unknown[] }).docs?.length) }
 }

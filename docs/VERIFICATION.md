@@ -422,3 +422,82 @@ The page-facing data layer (cmbaSchedule, teamlinkt) keeps `server-only`.
 Static + 134 tests + additive Games migration on live ca-central-1 + a 6-check
 live recompute integration smoke + HTTP smoke all pass. Public site unaffected.
 Ready for B2.
+
+## Phase B2 - Verified reporting, confirmation, contested flow, private photos
+
+Date: 2026-06-25 · Branch: `feat/backend` · DB: `cmba-connect` (ca-central-1)
+
+### Delivered
+- Collections: ScoreReports (verified-rep gate in beforeChange), Confirmations
+  (four-rule opposing-rep gate), Disputes (contested + unsuppressable escalation),
+  ScoresheetFiles (private youth photos), IncidentFiles (admin-only private). Both
+  photo collections are in the private bucket with Payload access ON.
+- Orchestration: src/lib/games/reporting.ts (reconcile-with-retry dual entry,
+  finalize-on-confirm, dispute-on-mismatch), all threading the hook req so nested
+  writes join the parent transaction; emailEvents (report request, contested,
+  schedule change, assignment) with NO PII.
+- API: /api/v1/games/:id/report, /confirm, /dispute, and the shared multipart
+  /api/v1/uploads/scoresheet, with token auth, Idempotency-Key, rate limiting, and
+  safe error mapping. Account erasure now also cascades scoresheet + incident files.
+
+### 1. Static checks - GREEN
+build, `tsc --noEmit`, lint, `generate:types` clean.
+
+### 2. Automated tests - 138/138 PASS (4 new: EXIF strip + rejections)
+
+### 3. Migrations - GREEN (additive on live ca-central-1)
+`stageb2_reporting` (6 tables: confirmations, disputes, incident_files,
+score_reports + period_scores, scoresheet_files; both composite uniques) and
+`stageb2_fixes` (scoresheet game NOT NULL).
+
+### 4. Adversarial integration smoke - 24/24 GREEN (npm run smoke:b2)
+Builds a season with two teams and six users (two reps, a stranger, a
+dual-membership user, a club admin, a super admin) and asserts at runtime against
+the live DB: non-rep rejected by the hook even on a direct create; rep cannot
+report for the wrong team; a side cannot stack a second report (unique index); the
+reporter cannot self-confirm; a dual-membership user is routed to an admin; a
+stranger cannot confirm; opposing confirm finalizes and recomputes standings; a
+report on a finalized game is rejected (status gate); a club admin with no
+membership cannot report (no admin bypass); dual-entry mismatch goes contested with
+a dispute and the scheduling-admin snapshot; dual-entry match auto-finalizes; a
+club admin cannot change a finalized score but a super admin can; the STORED
+scoresheet bytes (read back from the S3 bucket) have NO EXIF; a stranger cannot read
+a scoresheet photo but the opposing rep can; a rep cannot attach a scoresheet to a
+game they are not on; the audit log is append-only even via overrideAccess.
+
+### 5. Red-team pass - 13 findings, all material ones fixed
+A four-lens adversarial workflow reviewed the diff and found 1 critical, 4 high, 5
+medium, 3 low. Fixed and re-verified:
+- CRITICAL: EXIF strip ran in beforeChange, AFTER Payload's generateFileData
+  captured the stored buffer, so it never reached the bucket. Moved to a
+  beforeOperation hook (runs before the buffer is captured) plus a guaranteed strip
+  in the upload route; proven by reading the stored S3 bytes in the smoke.
+- HIGH: club_admin bypassed the rep gate on any league game (admin branch used
+  isAnyAdmin). Restricted the bypass to super_admin; club admins use the override
+  route (B4), scoped to their club.
+- HIGH: dual-entry write-skew left a game stuck at reported with a hidden mismatch.
+  Rewrote reporting as a reconcile-with-retry over committed state via the
+  conditional version+status transition.
+- HIGH: a dispute could revert a finalized game (unconditional update). Made the
+  contested transition a conditional update guarded on version + status in
+  (scheduled, reported); the escalation still always sends.
+- MEDIUM/LOW: forced identity fields (submittedBy/raisedBy/confirmingUser) always;
+  added game-status preconditions on report/confirm/dispute; validated a referenced
+  scoresheet belongs to the same game; required the scoresheet game backref;
+  deduped open disputes per game; Content-Length DoS guard on the upload route;
+  safe client error mapping (only intentional APIError messages pass through).
+- Accepted residuals (documented): idempotency-key write is not in the same
+  transaction as the work, but the composite unique indexes are the authoritative
+  double-count backstop for report and confirm, and disputes are deduped; the rate
+  limiter fails open on an infra blip (a soft DoS guard; the security-critical
+  actions are backstopped by the unique indexes and auth).
+
+### Note on SES
+SES is still not provisioned, so report-request and contested-escalation emails use
+the dev jsonTransport (no real delivery) until SES_SMTP_* is set. The code path,
+recipients, and no-PII bodies are exercised; only delivery is pending the operator.
+
+### Phase B2 verdict: GREEN
+Static + 138 tests + two additive migrations on live ca-central-1 + a 24-check
+adversarial integration smoke + a folded-in red-team pass all green. Public site
+unaffected. Ready for B3.

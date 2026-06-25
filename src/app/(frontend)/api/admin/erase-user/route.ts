@@ -48,6 +48,15 @@ export async function POST(req: Request) {
   for (const cr of consents.docs) {
     await payload.delete({ collection: 'consent-records', id: cr.id, overrideAccess: true })
   }
+  // Private scoresheet and incident photos owned by this user (delete cascades to Storage).
+  const scoresheets = await payload.find({ collection: 'scoresheet-files', where: { owner: { equals: userId } }, depth: 0, limit: 1000, overrideAccess: true })
+  for (const f of scoresheets.docs) {
+    await payload.delete({ collection: 'scoresheet-files', id: f.id, overrideAccess: true })
+  }
+  const incidentFiles = await payload.find({ collection: 'incident-files', where: { owner: { equals: userId } }, depth: 0, limit: 1000, overrideAccess: true })
+  for (const f of incidentFiles.docs) {
+    await payload.delete({ collection: 'incident-files', id: f.id, overrideAccess: true })
+  }
   await payload.delete({ collection: 'users', id: userId, overrideAccess: true })
 
   const summary = {
@@ -55,6 +64,8 @@ export async function POST(req: Request) {
     certificationsDeleted: certs.docs.length,
     certificateFilesDeleted: files.docs.length,
     consentRecordsDeleted: consents.docs.length,
+    scoresheetFilesDeleted: scoresheets.docs.length,
+    incidentFilesDeleted: incidentFiles.docs.length,
   }
   payload.logger.info(`[erasure] super-admin ${actor.id} erased user ${userId}: ${JSON.stringify(summary)}`)
   return NextResponse.json({ ok: true, ...summary })

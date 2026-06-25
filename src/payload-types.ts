@@ -87,9 +87,14 @@ export interface Config {
     courts: Court;
     'team-memberships': TeamMembership;
     games: Game;
+    'score-reports': ScoreReport;
+    'scoresheet-files': ScoresheetFile;
+    confirmations: Confirmation;
+    disputes: Dispute;
     'standings-cache': StandingsCache;
     'import-batches': ImportBatch;
     'audit-log': AuditLog;
+    'incident-files': IncidentFile;
     'idempotency-keys': IdempotencyKey;
     'refresh-tokens': RefreshToken;
     'rate-limit-hits': RateLimitHit;
@@ -120,9 +125,14 @@ export interface Config {
     courts: CourtsSelect<false> | CourtsSelect<true>;
     'team-memberships': TeamMembershipsSelect<false> | TeamMembershipsSelect<true>;
     games: GamesSelect<false> | GamesSelect<true>;
+    'score-reports': ScoreReportsSelect<false> | ScoreReportsSelect<true>;
+    'scoresheet-files': ScoresheetFilesSelect<false> | ScoresheetFilesSelect<true>;
+    confirmations: ConfirmationsSelect<false> | ConfirmationsSelect<true>;
+    disputes: DisputesSelect<false> | DisputesSelect<true>;
     'standings-cache': StandingsCacheSelect<false> | StandingsCacheSelect<true>;
     'import-batches': ImportBatchesSelect<false> | ImportBatchesSelect<true>;
     'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
+    'incident-files': IncidentFilesSelect<false> | IncidentFilesSelect<true>;
     'idempotency-keys': IdempotencyKeysSelect<false> | IdempotencyKeysSelect<true>;
     'refresh-tokens': RefreshTokensSelect<false> | RefreshTokensSelect<true>;
     'rate-limit-hits': RateLimitHitsSelect<false> | RateLimitHitsSelect<true>;
@@ -1054,6 +1064,104 @@ export interface Game {
   createdAt: string;
 }
 /**
+ * Submitted scores. The verified-rep gate is enforced in the beforeChange hook.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "score-reports".
+ */
+export interface ScoreReport {
+  id: number;
+  game: number | Game;
+  /**
+   * The reporting user. Forced to the signed-in user.
+   */
+  submittedBy: number | User;
+  submittedForTeam: number | Team;
+  homeScore: number;
+  awayScore: number;
+  periodScores?:
+    | {
+        period?: number | null;
+        home?: number | null;
+        away?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Private photo (the two teams and admins only).
+   */
+  scoresheetPhoto?: (number | null) | ScoresheetFile;
+  notes?: string | null;
+  source?: ('web' | 'mobile') | null;
+  submittedAt?: string | null;
+  idempotencyKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Private scoresheet photos. Downloads are access-controlled; never public.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scoresheet-files".
+ */
+export interface ScoresheetFile {
+  id: number;
+  owner: number | User;
+  /**
+   * The game this scoresheet belongs to. Set at upload and locked.
+   */
+  game: number | Game;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * Opposing-team confirmations. The four-rule gate is enforced in the beforeChange hook.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "confirmations".
+ */
+export interface Confirmation {
+  id: number;
+  game: number | Game;
+  scoreReport: number | ScoreReport;
+  confirmingUser: number | User;
+  confirmingTeam: number | Team;
+  decision: 'confirmed' | 'disputed';
+  photoAcknowledged?: boolean | null;
+  notes?: string | null;
+  createdAt: string;
+  idempotencyKey?: string | null;
+  updatedAt: string;
+}
+/**
+ * Contested-game review requests. Opening one escalates to the scheduling admin.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "disputes".
+ */
+export interface Dispute {
+  id: number;
+  game: number | Game;
+  raisedBy: number | User;
+  reason: string;
+  status: 'open' | 'resolved';
+  assignedAdminEmail?: string | null;
+  resolvedBy?: (number | null) | User;
+  resolution?: string | null;
+  createdAt: string;
+  resolvedAt?: string | null;
+  updatedAt: string;
+}
+/**
  * Derived standings cache. Recomputed by the standings service; never edited by hand.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1134,6 +1242,28 @@ export interface AuditLog {
   at: string;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Private incident photos. Admin-only download; never public.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "incident-files".
+ */
+export interface IncidentFile {
+  id: number;
+  owner: number | User;
+  game?: (number | null) | Game;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * System dedupe store for the Idempotency-Key header. Not user editable.
@@ -1320,6 +1450,22 @@ export interface PayloadLockedDocument {
         value: number | Game;
       } | null)
     | ({
+        relationTo: 'score-reports';
+        value: number | ScoreReport;
+      } | null)
+    | ({
+        relationTo: 'scoresheet-files';
+        value: number | ScoresheetFile;
+      } | null)
+    | ({
+        relationTo: 'confirmations';
+        value: number | Confirmation;
+      } | null)
+    | ({
+        relationTo: 'disputes';
+        value: number | Dispute;
+      } | null)
+    | ({
         relationTo: 'standings-cache';
         value: number | StandingsCache;
       } | null)
@@ -1330,6 +1476,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'audit-log';
         value: number | AuditLog;
+      } | null)
+    | ({
+        relationTo: 'incident-files';
+        value: number | IncidentFile;
       } | null)
     | ({
         relationTo: 'idempotency-keys';
@@ -1997,6 +2147,83 @@ export interface GamesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "score-reports_select".
+ */
+export interface ScoreReportsSelect<T extends boolean = true> {
+  game?: T;
+  submittedBy?: T;
+  submittedForTeam?: T;
+  homeScore?: T;
+  awayScore?: T;
+  periodScores?:
+    | T
+    | {
+        period?: T;
+        home?: T;
+        away?: T;
+        id?: T;
+      };
+  scoresheetPhoto?: T;
+  notes?: T;
+  source?: T;
+  submittedAt?: T;
+  idempotencyKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scoresheet-files_select".
+ */
+export interface ScoresheetFilesSelect<T extends boolean = true> {
+  owner?: T;
+  game?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "confirmations_select".
+ */
+export interface ConfirmationsSelect<T extends boolean = true> {
+  game?: T;
+  scoreReport?: T;
+  confirmingUser?: T;
+  confirmingTeam?: T;
+  decision?: T;
+  photoAcknowledged?: T;
+  notes?: T;
+  createdAt?: T;
+  idempotencyKey?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "disputes_select".
+ */
+export interface DisputesSelect<T extends boolean = true> {
+  game?: T;
+  raisedBy?: T;
+  reason?: T;
+  status?: T;
+  assignedAdminEmail?: T;
+  resolvedBy?: T;
+  resolution?: T;
+  createdAt?: T;
+  resolvedAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "standings-cache_select".
  */
 export interface StandingsCacheSelect<T extends boolean = true> {
@@ -2045,6 +2272,25 @@ export interface AuditLogSelect<T extends boolean = true> {
   at?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "incident-files_select".
+ */
+export interface IncidentFilesSelect<T extends boolean = true> {
+  owner?: T;
+  game?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
