@@ -9,6 +9,7 @@ import * as migration_20260625_072109_stageb2_reporting from './20260625_072109_
 import * as migration_20260625_075326_stageb2_fixes from './20260625_075326_stageb2_fixes';
 import * as migration_20260625_080712_stageb3_officials from './20260625_080712_stageb3_officials';
 import * as migration_20260625_082918_stageb4_push_devices from './20260625_082918_stageb4_push_devices';
+import * as migration_20260625_084235_stageb5_brackets_incidents_scaffolds from './20260625_084235_stageb5_brackets_incidents_scaffolds';
 
 export const migrations = [
   {
@@ -64,6 +65,11 @@ export const migrations = [
   {
     up: migration_20260625_082918_stageb4_push_devices.up,
     down: migration_20260625_082918_stageb4_push_devices.down,
-    name: '20260625_082918_stageb4_push_devices'
+    name: '20260625_082918_stageb4_push_devices',
+  },
+  {
+    up: migration_20260625_084235_stageb5_brackets_incidents_scaffolds.up,
+    down: migration_20260625_084235_stageb5_brackets_incidents_scaffolds.down,
+    name: '20260625_084235_stageb5_brackets_incidents_scaffolds'
   },
 ];

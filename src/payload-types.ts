@@ -93,9 +93,15 @@ export interface Config {
     disputes: Dispute;
     officials: Official;
     'game-officials': GameOfficial;
+    'playoff-brackets': PlayoffBracket;
+    'bracket-series': BracketSery;
     'standings-cache': StandingsCache;
     'import-batches': ImportBatch;
+    sanctions: Sanction;
+    availability: Availability;
+    'player-stats': PlayerStat;
     'audit-log': AuditLog;
+    'game-incidents': GameIncident;
     'incident-files': IncidentFile;
     'idempotency-keys': IdempotencyKey;
     'refresh-tokens': RefreshToken;
@@ -133,9 +139,15 @@ export interface Config {
     disputes: DisputesSelect<false> | DisputesSelect<true>;
     officials: OfficialsSelect<false> | OfficialsSelect<true>;
     'game-officials': GameOfficialsSelect<false> | GameOfficialsSelect<true>;
+    'playoff-brackets': PlayoffBracketsSelect<false> | PlayoffBracketsSelect<true>;
+    'bracket-series': BracketSeriesSelect<false> | BracketSeriesSelect<true>;
     'standings-cache': StandingsCacheSelect<false> | StandingsCacheSelect<true>;
     'import-batches': ImportBatchesSelect<false> | ImportBatchesSelect<true>;
+    sanctions: SanctionsSelect<false> | SanctionsSelect<true>;
+    availability: AvailabilitySelect<false> | AvailabilitySelect<true>;
+    'player-stats': PlayerStatsSelect<false> | PlayerStatsSelect<true>;
     'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
+    'game-incidents': GameIncidentsSelect<false> | GameIncidentsSelect<true>;
     'incident-files': IncidentFilesSelect<false> | IncidentFilesSelect<true>;
     'idempotency-keys': IdempotencyKeysSelect<false> | IdempotencyKeysSelect<true>;
     'refresh-tokens': RefreshTokensSelect<false> | RefreshTokensSelect<true>;
@@ -1229,6 +1241,59 @@ export interface GameOfficial {
   createdAt: string;
 }
 /**
+ * Playoff bracket seeded from a division standings.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "playoff-brackets".
+ */
+export interface PlayoffBracket {
+  id: number;
+  name: string;
+  division: number | Division;
+  season?: (number | null) | Season;
+  format: 'single_elim' | 'double_elim';
+  status?: ('draft' | 'published' | 'complete') | null;
+  /**
+   * Ordered team ids frozen at seed time.
+   */
+  seedSnapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  seededAt?: string | null;
+  publishState?: ('draft' | 'published') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * A matchup in a playoff bracket.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bracket-series".
+ */
+export interface BracketSery {
+  id: number;
+  bracket: number | PlayoffBracket;
+  round: number;
+  slot: number;
+  homeSeed?: number | null;
+  awaySeed?: number | null;
+  homeTeam?: (number | null) | Team;
+  awayTeam?: (number | null) | Team;
+  game?: (number | null) | Game;
+  feedsInto?: (number | null) | BracketSery;
+  feedsIntoSlot?: ('home' | 'away') | null;
+  isLosersBracket?: boolean | null;
+  winner?: (number | null) | Team;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Derived standings cache. Recomputed by the standings service; never edited by hand.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1262,6 +1327,63 @@ export interface StandingsCache {
    * Denormalized parent season status for the public read gate.
    */
   seasonStatus?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Scaffold: disciplinary records. Not yet wired into eligibility.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sanctions".
+ */
+export interface Sanction {
+  id: number;
+  subjectMembership?: (number | null) | TeamMembership;
+  game?: (number | null) | Game;
+  type?: ('suspension' | 'warning' | 'technical_accumulation' | 'ejection') | null;
+  gamesSuspended?: number | null;
+  status?: ('active' | 'served' | 'overturned') | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * Scaffold: per-game availability. Admin-only until member scoping is built.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "availability".
+ */
+export interface Availability {
+  id: number;
+  membership: number | TeamMembership;
+  game: number | Game;
+  response?: ('yes' | 'no' | 'maybe' | 'unknown') | null;
+  note?: string | null;
+  respondedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Scaffold: per-player box scores. Disabled until a consent model exists.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "player-stats".
+ */
+export interface PlayerStat {
+  id: number;
+  game: number | Game;
+  team?: (number | null) | Team;
+  membership: number | TeamMembership;
+  points?: number | null;
+  fouls?: number | null;
+  rebounds?: number | null;
+  assists?: number | null;
+  minutes?: number | null;
+  enteredBy?: (number | null) | User;
+  /**
+   * Feature flag. Off until a consent model for sharing individual minor stats exists.
+   */
+  enabled?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1309,6 +1431,29 @@ export interface AuditLog {
   at: string;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Game-linked incident reports. Admin-only; youth-safety data.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "game-incidents".
+ */
+export interface GameIncident {
+  id: number;
+  game: number | Game;
+  filedBy: number | User;
+  filedByRole: 'rep' | 'coach' | 'official' | 'admin';
+  type: 'injury' | 'conduct' | 'ejection' | 'other';
+  involvedTeam?: (number | null) | Team;
+  description: string;
+  occurredAt?: string | null;
+  /**
+   * Private, admin-only photo.
+   */
+  attachment?: (number | null) | IncidentFile;
+  status?: ('new' | 'reviewing' | 'closed') | null;
+  createdAt: string;
+  updatedAt: string;
 }
 /**
  * Private incident photos. Admin-only download; never public.
@@ -1541,6 +1686,14 @@ export interface PayloadLockedDocument {
         value: number | GameOfficial;
       } | null)
     | ({
+        relationTo: 'playoff-brackets';
+        value: number | PlayoffBracket;
+      } | null)
+    | ({
+        relationTo: 'bracket-series';
+        value: number | BracketSery;
+      } | null)
+    | ({
         relationTo: 'standings-cache';
         value: number | StandingsCache;
       } | null)
@@ -1549,8 +1702,24 @@ export interface PayloadLockedDocument {
         value: number | ImportBatch;
       } | null)
     | ({
+        relationTo: 'sanctions';
+        value: number | Sanction;
+      } | null)
+    | ({
+        relationTo: 'availability';
+        value: number | Availability;
+      } | null)
+    | ({
+        relationTo: 'player-stats';
+        value: number | PlayerStat;
+      } | null)
+    | ({
         relationTo: 'audit-log';
         value: number | AuditLog;
+      } | null)
+    | ({
+        relationTo: 'game-incidents';
+        value: number | GameIncident;
       } | null)
     | ({
         relationTo: 'incident-files';
@@ -2341,6 +2510,42 @@ export interface GameOfficialsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "playoff-brackets_select".
+ */
+export interface PlayoffBracketsSelect<T extends boolean = true> {
+  name?: T;
+  division?: T;
+  season?: T;
+  format?: T;
+  status?: T;
+  seedSnapshot?: T;
+  seededAt?: T;
+  publishState?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bracket-series_select".
+ */
+export interface BracketSeriesSelect<T extends boolean = true> {
+  bracket?: T;
+  round?: T;
+  slot?: T;
+  homeSeed?: T;
+  awaySeed?: T;
+  homeTeam?: T;
+  awayTeam?: T;
+  game?: T;
+  feedsInto?: T;
+  feedsIntoSlot?: T;
+  isLosersBracket?: T;
+  winner?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "standings-cache_select".
  */
 export interface StandingsCacheSelect<T extends boolean = true> {
@@ -2375,6 +2580,51 @@ export interface ImportBatchesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sanctions_select".
+ */
+export interface SanctionsSelect<T extends boolean = true> {
+  subjectMembership?: T;
+  game?: T;
+  type?: T;
+  gamesSuspended?: T;
+  status?: T;
+  notes?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "availability_select".
+ */
+export interface AvailabilitySelect<T extends boolean = true> {
+  membership?: T;
+  game?: T;
+  response?: T;
+  note?: T;
+  respondedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "player-stats_select".
+ */
+export interface PlayerStatsSelect<T extends boolean = true> {
+  game?: T;
+  team?: T;
+  membership?: T;
+  points?: T;
+  fouls?: T;
+  rebounds?: T;
+  assists?: T;
+  minutes?: T;
+  enteredBy?: T;
+  enabled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-log_select".
  */
 export interface AuditLogSelect<T extends boolean = true> {
@@ -2389,6 +2639,23 @@ export interface AuditLogSelect<T extends boolean = true> {
   at?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "game-incidents_select".
+ */
+export interface GameIncidentsSelect<T extends boolean = true> {
+  game?: T;
+  filedBy?: T;
+  filedByRole?: T;
+  type?: T;
+  involvedTeam?: T;
+  description?: T;
+  occurredAt?: T;
+  attachment?: T;
+  status?: T;
+  createdAt?: T;
+  updatedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -69,6 +69,23 @@ export async function emailScheduleChange(payload: Payload, args: { toEmails: Ar
   }
 }
 
+/*
+ * A targeted announcement to one recipient. Sent as a single-recipient envelope
+ * (never multi-recipient To/Cc, so families are not exposed to each other), with a
+ * portal link. The caller suppresses recipients who opted out of general updates.
+ */
+export async function emailTargetedAnnouncement(payload: Payload, args: { toEmail: string; subject: string; message: string }): Promise<void> {
+  try {
+    await payload.sendEmail({
+      to: args.toEmail,
+      subject: args.subject,
+      text: `${args.message}\n\nSee the latest in CMBA Connect:\n${base()}/schedule\n\nTo change your email preferences, sign in and visit your account.`,
+    })
+  } catch (err) {
+    payload.logger.error(`Targeted announcement email failed: ${String(err)}`)
+  }
+}
+
 export async function emailAssignment(payload: Payload, args: { toEmail?: string | null }): Promise<void> {
   if (!args.toEmail) return
   try {

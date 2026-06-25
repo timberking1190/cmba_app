@@ -594,3 +594,91 @@ flag to false (the full cutover) is an operator step once a real season is impor
 ### Phase B4 verdict: GREEN
 Static + 141 tests + an additive migration + an 8-check token-lifecycle HTTP smoke
 all green. Public site unaffected. Ready for B5.
+
+## Phase B5 - Brackets, ICS, announcements, incidents, scaffolds, crons
+
+Date: 2026-06-25 · Branch: `feat/backend` · DB: `cmba-connect` (ca-central-1)
+
+### Delivered
+- Playoff brackets: PlayoffBrackets + BracketSeries, a pure single-elimination
+  generator (seeded by rank, byes for the top seeds, unit-tested), a seed service
+  that freezes the standings order, advancement that sets the winner and wires it
+  forward when a bracket game finals, the seed + read API, and a public
+  /bracket/[divisionId] page.
+- ICS calendar feeds: a pure builder (RFC 5545 with DTSTAMP + embedded VTIMEZONE)
+  and an unguessable HMAC capability token; /api/v1/ics/:scope/:token.ics serves
+  division and league feeds live, team feeds behind FEATURE_TEAM_ICS.
+- Targeted announcements: /api/v1/announcements/targeted sends one single-recipient
+  email per verified rep of a division or team, suppressing the general-updates
+  opt-out and deduping by email.
+- GameIncidents (admin-only, the filer must be a verified rep, assigned official,
+  or admin; attachment in the admin-only IncidentFiles bucket).
+- Scaffolds (model only, admin-only read, feature-gated per the youth-leak note):
+  Sanctions, Availability, PlayerStats.
+- Crons (vercel.json, yul1): score-reminders (report nudge, confirm nudge,
+  contested escalation to super admins), standings-nightly (self-heals the cache on
+  drift), ttl-sweep (idempotency + rate-limit rows over 24h). Bracket advancement is
+  wired into the finalize path.
+
+### 1. Static + tests - GREEN
+build, typecheck, lint, types clean; 146 unit tests (5 new: the bracket generator
+and the ICS builder + token).
+
+### 2. Migration - GREEN (additive on live ca-central-1)
+`stageb5_brackets_incidents_scaffolds` (playoff_brackets, bracket_series,
+game_incidents, sanctions, availability + composite unique, player_stats).
+
+### 3. Integration smoke - 8/8 GREEN (npm run smoke:b5)
+Four-team division with final games -> ranked standings -> seed a single-elim
+bracket (2 round-1 series + a final, seeded by rank) -> finalize a round-1 game ->
+the winner advances and is wired into the final -> a stranger cannot file a game
+incident but an admin can.
+
+## Stage B final gate - GREEN
+
+Re-ran the whole module to confirm no regressions:
+- 146 unit tests pass.
+- All four live integration smokes pass with 52 adversarial checks total:
+  smoke:b1 (6, recompute both directions), smoke:b2 (24, the full reporting and
+  private-photo attack matrix including the stored-bytes EXIF proof), smoke:b3 (14,
+  the import and override pipeline on the real templates), smoke:b5 (8, brackets and
+  incidents).
+- build, typecheck, lint clean; five additive migrations applied to live
+  ca-central-1; the public site is unaffected throughout.
+
+## Definition of Done (Stage B)
+
+- The scheduling, scores, standings, and officials module is built and connected:
+  this app is the source of truth, with TeamLinkt kept only for the one-time CSV
+  import and registration deep-links (behind FEATURE_LEGACY_TEAMLINKT so the public
+  pages never go blank pre-seed).
+- A working CSV import path (four real templates) with a dry-run preview, conflict
+  detection, an acknowledge gate, a single-transaction commit, and undo; plus a
+  round-robin generator.
+- Verified team-rep score reporting with a safe, private, EXIF-stripped scoresheet
+  photo; opposing confirmation; dual-entry match and mismatch; the contested flow
+  that emails the scheduling admin; auto-updating standings with configurable
+  tiebreakers and the mercy cap; team stats; and the officials roster + assigning.
+- The adversarial matrix passes as live integration tests (the red-team findings,
+  including the critical EXIF leak, were fixed and proven).
+- API-first: /api/v1 is documented (docs/API.md) with token auth (Authorization:
+  JWT), a refresh flow with reuse detection, and Idempotency-Key on writes; logic is
+  in services and pure libs; shared types are generated; a device push-token field
+  exists; media upload is one shared endpoint.
+- Youth data is private and Canadian resident (Supabase Postgres + Storage
+  ca-central-1, SES ca-central-1, Vercel yul1); every account still has a recorded,
+  server-enforced consent sign-off (Stage A); append-only AuditLog.
+- Docs: docs/SCHEDULING_BUILD_PLAN.md, docs/FEATURE_GAP_ANALYSIS.md, docs/API.md,
+  docs/SEASON_GUIDE.md, and this verification log.
+
+### What the operator must still provision
+- AWS SES (ca-central-1) SMTP: SES_SMTP_HOST/PORT/USER/PASS and a verified
+  EMAIL_FROM. Until then, report requests, contested escalations, and official
+  assignment emails are logged but not delivered (dev jsonTransport).
+- Set the scheduling admin email in Site Settings (the contested escalation target).
+- Decide FEATURE_TEAM_ICS (team-level calendar feeds) and the source-of-truth
+  cutover (FEATURE_LEGACY_TEAMLINKT=false) once a real season is imported.
+- Storage and DB are already provisioned (ca-central-1); CRON_SECRET is set so the
+  new crons run.
+
+### Phase B5 verdict: GREEN. Stage B complete.

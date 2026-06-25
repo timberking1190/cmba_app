@@ -1,5 +1,6 @@
 import type { Payload, PayloadRequest } from 'payload'
 
+import { advanceBracketOnFinal } from '../brackets/service'
 import type { ForfeitOutcome } from '../gameStateMachine'
 import { isFinalized } from '../gameStateMachine'
 import type { GameStatus } from '../scheduleUtils'
@@ -59,6 +60,10 @@ export async function recomputeForGame(payload: Payload, gameId: string | number
   if (!game) return
   const divId = relId((game as { division?: unknown }).division)
   if (divId != null) await recomputeDivision(payload, divId, req)
+  // When a game becomes final, advance any playoff bracket it belongs to.
+  if (isFinalized((game as { status?: GameStatus }).status ?? 'scheduled')) {
+    await advanceBracketOnFinal(payload, gameId, req)
+  }
 }
 
 /*

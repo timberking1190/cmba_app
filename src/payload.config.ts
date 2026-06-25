@@ -10,6 +10,8 @@ import sharp from 'sharp'
 
 import { Announcements } from './collections/Announcements'
 import { AuditLog } from './collections/AuditLog'
+import { Availability } from './collections/Availability'
+import { BracketSeries } from './collections/BracketSeries'
 import { CertificateFiles } from './collections/CertificateFiles'
 import { CertificationTypes } from './collections/CertificationTypes'
 import { Certifications } from './collections/Certifications'
@@ -20,6 +22,7 @@ import { Courses } from './collections/Courses'
 import { Courts } from './collections/Courts'
 import { Disputes } from './collections/Disputes'
 import { Divisions } from './collections/Divisions'
+import { GameIncidents } from './collections/GameIncidents'
 import { GameOfficials } from './collections/GameOfficials'
 import { GameReports } from './collections/GameReports'
 import { Games } from './collections/Games'
@@ -31,8 +34,11 @@ import { Officials } from './collections/Officials'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Pathways } from './collections/Pathways'
+import { PlayerStats } from './collections/PlayerStats'
+import { PlayoffBrackets } from './collections/PlayoffBrackets'
 import { RateLimitHits } from './collections/RateLimitHits'
 import { RefreshTokens } from './collections/RefreshTokens'
+import { Sanctions } from './collections/Sanctions'
 import { ScoreReports } from './collections/ScoreReports'
 import { ScoresheetFiles } from './collections/ScoresheetFiles'
 import { Seasons } from './collections/Seasons'
@@ -119,10 +125,17 @@ export default buildConfig({
     Disputes,
     Officials,
     GameOfficials,
+    PlayoffBrackets,
+    BracketSeries,
     StandingsCache,
     ImportBatches,
+    // Gap-analysis scaffolds (model only, feature-gated).
+    Sanctions,
+    Availability,
+    PlayerStats,
     // Compliance + system records for Stage B.
     AuditLog,
+    GameIncidents,
     IncidentFiles,
     IdempotencyKeys,
     RefreshTokens,

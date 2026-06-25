@@ -170,3 +170,23 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Stage B: Scheduling, Scores, Standings, Officials
+
+CMBA Connect is the source of truth for the schedule, scores, standings, and
+officials. See `docs/SCHEDULING_BUILD_PLAN.md` (the build blueprint),
+`docs/FEATURE_GAP_ANALYSIS.md`, `docs/API.md` (the `/api/v1` contract),
+`docs/SEASON_GUIDE.md` (how to run a season), and `docs/VERIFICATION.md`.
+
+Admin scheduling consoles live under `/manage` (import, schedule, contested,
+officials); team reps report and confirm scores at `/rep`. The native apps use the
+versioned `/api/v1` with `Authorization: JWT` token auth and an `Idempotency-Key`
+header on writes.
+
+Operator scripts:
+
+- `npm run smoke:b1` ... `npm run smoke:b5` run live integration smokes against the
+  ca-central-1 DB (they create and clean up their own test data).
+- New env: `FEATURE_LEGACY_TEAMLINKT` (keep the TeamLinkt fallback until a season is
+  seeded), `FEATURE_TEAM_ICS` (team calendar feeds), `MIN_SUPPORTED_APP_VERSION`,
+  and the SES_SMTP_* values for real email delivery. See `.env.example`.
