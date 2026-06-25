@@ -160,10 +160,30 @@ function GameRow({ g }: { g: Game }) {
   );
 }
 
+const chipBase = "font-mono text-[10px] uppercase tracking-wider px-2 py-0.5";
+
+// Exhaustive over every GameStatus literal. The default branch assigns to a
+// `never`, so adding a new status without a chip here is a compile error rather
+// than silently rendering as "Scheduled".
 function StatusChip({ status }: { status: GameStatus }) {
-  if (status === "cancelled")
-    return <span className="font-mono text-[10px] uppercase tracking-wider bg-red-500/15 text-red-400 px-2 py-0.5 line-through">Cancelled</span>;
-  if (status === "final")
-    return <span className="font-mono text-[10px] uppercase tracking-wider bg-white/10 text-cmba-grey-light px-2 py-0.5">Final</span>;
-  return <span className="font-mono text-[10px] uppercase tracking-wider bg-cmba-red/15 text-cmba-red px-2 py-0.5">Scheduled</span>;
+  switch (status) {
+    case "scheduled":
+      return <span className={`${chipBase} bg-cmba-red/15 text-cmba-red`}>Scheduled</span>;
+    case "reported":
+      return <span className={`${chipBase} bg-orange-500/15 text-orange-400`}>Reported</span>;
+    case "contested":
+      return <span className={`${chipBase} bg-orange-500/15 text-orange-400`}>Contested</span>;
+    case "final":
+      return <span className={`${chipBase} bg-green-500/15 text-green-400`}>Final</span>;
+    case "forfeit":
+      return <span className={`${chipBase} bg-red-500/15 text-red-400`}>Forfeit</span>;
+    case "postponed":
+      return <span className={`${chipBase} bg-white/10 text-cmba-grey-light`}>Postponed</span>;
+    case "cancelled":
+      return <span className={`${chipBase} bg-red-500/15 text-red-400 line-through`}>Cancelled</span>;
+    default: {
+      const _exhaustive: never = status;
+      return _exhaustive;
+    }
+  }
 }

@@ -249,3 +249,86 @@ pages `/spring-league`, `/summer-camps`, `/women-in-coaching`, `/key-dates`,
 board/calendar/minutes → native pages, and `/game-report` is now a **native form**
 (GameReports collection). Remaining `cmba.ab.ca` refs are only the league email,
 a Google-Sites drills link, and RAMP document hosts (not the old CMS).
+
+---
+
+# Stage B - Scheduling, Scores, Standings, Officials
+
+Authoritative build blueprint: `docs/SCHEDULING_BUILD_PLAN.md` (synthesized from a
+multi-lens design pass and folding in all 41 adversarial red-team findings).
+Feature comparison: `docs/FEATURE_GAP_ANALYSIS.md`.
+
+## Phase B0 - Foundations + auth + idempotency
+
+Date: 2026-06-25 · Branch: `feat/backend` · DB: `cmba-connect` (ca-central-1)
+
+### Delivered
+- 12 new collections with explicit default-deny access and field-level locks:
+  Seasons (standingsConfig + immutable seasonSeed, both super-admin locked),
+  Divisions (canonical fullPath + displayLabel), Teams (club-admin scoped, club
+  and division update-locked), Venues, Courts (separate so conflict checks key on
+  a stable court id), TeamMemberships (the verified-rep gate: self-claim lands
+  unverified, verified/role/user admin-locked), StandingsCache (derived, user
+  write denied), ImportBatches, AuditLog (append-only), IdempotencyKeys,
+  RefreshTokens, RateLimitHits (the last three fully sealed, system-only).
+- SiteSettings gains a schedulingAdmin group (the unsuppressable contested
+  escalation address; update stays super-admin only). Users gains a
+  notificationPrefs.gameReminders opt-out.
+- Front end (one PR): GameStatus extended to the full 7-state union; StatusChip
+  rewritten as an exhaustive switch with a `never` guard so a missing chip is a
+  compile error; filterUpcoming/filterResults updated to categorize all 7 states;
+  StandingRow gains a server-assigned `rank`.
+- Service infrastructure: src/lib/api/idempotency.ts (pure decide + stable hash +
+  server withIdempotency, fail-closed 503), src/lib/api/auth.ts (token auth +
+  net-new rotate-on-use refresh with reuse-detection family revoke), and
+  src/lib/rateLimit.ts (durable, serverless-safe, fail-open).
+
+### 1. Static checks - GREEN
+| Check | Result |
+|---|---|
+| `npm run build` | Compiles; all existing routes intact; public site unaffected |
+| `npx tsc --noEmit` | Clean |
+| `npm run lint` | No ESLint warnings or errors |
+| `npm run generate:types` | Regenerated; all 12 collections valid |
+
+### 2. Automated tests - 68/68 PASS (50 new)
+- Authorization-contract layer (build plan section 12): every B0 collection access
+  fn and field-lock asserted per role. Proven: a participant cannot read another
+  user's membership (scoped Where), cannot self-verify (verified/role/user locked),
+  cannot write Seasons/Divisions/Venues/Courts; a club admin is scoped to their own
+  club for Teams and cannot move a team's division/club; the three system
+  collections deny all four ops to everyone; AuditLog denies create/update/delete to
+  all and its hooks THROW on update and delete even via overrideAccess; a structural
+  test asserts all four access ops are defined on every new collection.
+- idempotency: run/replay/403-different-user/409-different-body; hash is
+  key-order-independent and path/body-sensitive.
+- auth refresh: rotate/reuse-detected/expired/invalid; hashToken never returns
+  plaintext; tokens are unique.
+- rate limit threshold; schedule status partition (all 7 statuses land in exactly
+  one of upcoming/results/neither, cancelled in neither).
+
+### 3. Migration + composite-index inspection - GREEN
+- `migrate:create` then `migrate` applied `20260625_063707_stageb0_scheduling_foundation`
+  to the live ca-central-1 DB (269ms). Purely additive: 14 new tables, plus fast
+  nullable/defaulted columns on users and site_settings; no drops in up().
+- SQL inspection confirmed all 7 unique indexes are real `CREATE UNIQUE INDEX`:
+  divisions(season,fullPath), teams(division,name), venues(name), courts(venue,name),
+  team_memberships(user,team), standings_cache(division), idempotency_keys(key,scope).
+- Verified on the live DB via Supabase: 12 tables present, 6 named composite/unique
+  indexes unique, site_settings + users columns added.
+
+### 4. Live smoke (built app, ca-central-1) - GREEN
+`/`, `/standings`, `/admin` -> 200 (public site intact); `/api/seasons`,
+`/api/teams` -> 200 (public reference reads); `/api/team-memberships`,
+`/api/idempotency-keys`, `/api/audit-log` -> 403 (default-deny / sealed / admin-only
+hold over real HTTP). No server errors.
+
+### Residual / follow-ups
+- The full report/confirm/standings flows, the private-photo EXIF strip, and the
+  /api/v1 routes land in B1 and B2 with their adversarial integration tests.
+- SES SMTP still not provisioned: contested and assignment emails will use the dev
+  jsonTransport (no real send) until SES_SMTP_* is set. Tracked for the operator.
+
+### Phase B0 verdict: GREEN
+Static + 68 tests + additive migration on live ca-central-1 + live default-deny
+smoke all pass. Public site unaffected. Ready for B1.

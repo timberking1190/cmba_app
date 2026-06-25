@@ -9,18 +9,30 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 
 import { Announcements } from './collections/Announcements'
+import { AuditLog } from './collections/AuditLog'
 import { CertificateFiles } from './collections/CertificateFiles'
 import { CertificationTypes } from './collections/CertificationTypes'
 import { Certifications } from './collections/Certifications'
 import { Clubs } from './collections/Clubs'
 import { ConsentRecords } from './collections/ConsentRecords'
 import { Courses } from './collections/Courses'
+import { Courts } from './collections/Courts'
+import { Divisions } from './collections/Divisions'
 import { GameReports } from './collections/GameReports'
+import { IdempotencyKeys } from './collections/IdempotencyKeys'
+import { ImportBatches } from './collections/ImportBatches'
 import { IncidentLog } from './collections/IncidentLog'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Pathways } from './collections/Pathways'
+import { RateLimitHits } from './collections/RateLimitHits'
+import { RefreshTokens } from './collections/RefreshTokens'
+import { Seasons } from './collections/Seasons'
+import { StandingsCache } from './collections/StandingsCache'
+import { TeamMemberships } from './collections/TeamMemberships'
+import { Teams } from './collections/Teams'
 import { Users } from './collections/Users'
+import { Venues } from './collections/Venues'
 import { FooterNav } from './globals/FooterNav'
 import { HeaderNav } from './globals/HeaderNav'
 import { PolicyVersions } from './globals/PolicyVersions'
@@ -85,6 +97,20 @@ export default buildConfig({
     Pages,
     Announcements,
     Media,
+    // Competition (Stage B): scheduling, scores, standings, officials.
+    Seasons,
+    Divisions,
+    Teams,
+    Venues,
+    Courts,
+    TeamMemberships,
+    StandingsCache,
+    ImportBatches,
+    // Compliance + system records for Stage B.
+    AuditLog,
+    IdempotencyKeys,
+    RefreshTokens,
+    RateLimitHits,
   ],
   globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav],
   editor: lexicalEditor(),

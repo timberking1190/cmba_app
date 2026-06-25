@@ -177,6 +177,12 @@ export const Users: CollectionConfig = {
       fields: [
         { name: 'certificationReminders', type: 'checkbox', defaultValue: true },
         { name: 'generalUpdates', type: 'checkbox', defaultValue: false },
+        {
+          name: 'gameReminders',
+          type: 'checkbox',
+          defaultValue: true,
+          admin: { description: 'Reminders to report or confirm a game score. Transactional escalations are always sent.' },
+        },
       ],
     },
   ],

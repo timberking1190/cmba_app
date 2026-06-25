@@ -80,6 +80,18 @@ export interface Config {
     pages: Page;
     announcements: Announcement;
     media: Media;
+    seasons: Season;
+    divisions: Division;
+    teams: Team;
+    venues: Venue;
+    courts: Court;
+    'team-memberships': TeamMembership;
+    'standings-cache': StandingsCache;
+    'import-batches': ImportBatch;
+    'audit-log': AuditLog;
+    'idempotency-keys': IdempotencyKey;
+    'refresh-tokens': RefreshToken;
+    'rate-limit-hits': RateLimitHit;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -100,6 +112,18 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     announcements: AnnouncementsSelect<false> | AnnouncementsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    seasons: SeasonsSelect<false> | SeasonsSelect<true>;
+    divisions: DivisionsSelect<false> | DivisionsSelect<true>;
+    teams: TeamsSelect<false> | TeamsSelect<true>;
+    venues: VenuesSelect<false> | VenuesSelect<true>;
+    courts: CourtsSelect<false> | CourtsSelect<true>;
+    'team-memberships': TeamMembershipsSelect<false> | TeamMembershipsSelect<true>;
+    'standings-cache': StandingsCacheSelect<false> | StandingsCacheSelect<true>;
+    'import-batches': ImportBatchesSelect<false> | ImportBatchesSelect<true>;
+    'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
+    'idempotency-keys': IdempotencyKeysSelect<false> | IdempotencyKeysSelect<true>;
+    'refresh-tokens': RefreshTokensSelect<false> | RefreshTokensSelect<true>;
+    'rate-limit-hits': RateLimitHitsSelect<false> | RateLimitHitsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -213,6 +237,10 @@ export interface User {
   notificationPrefs?: {
     certificationReminders?: boolean | null;
     generalUpdates?: boolean | null;
+    /**
+     * Reminders to report or confirm a game score. Transactional escalations are always sent.
+     */
+    gameReminders?: boolean | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -704,6 +732,412 @@ export interface Announcement {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * A competition season. Owns standings configuration and the immutable tiebreaker seed.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seasons".
+ */
+export interface Season {
+  id: number;
+  name: string;
+  sport?: string | null;
+  status: 'setup' | 'active' | 'playoffs' | 'complete' | 'archived';
+  startDate: string;
+  endDate: string;
+  /**
+   * League time zone for game times.
+   */
+  timezone?: string | null;
+  defaultGameLengthMinutes?: number | null;
+  /**
+   * Added to game length for conflict windows.
+   */
+  bufferMinutes?: number | null;
+  /**
+   * Stable final standings tiebreaker key. Set once at create, never recomputed.
+   */
+  seasonSeed?: number | null;
+  /**
+   * How standings points and tiebreakers are computed. Super admin only.
+   */
+  standingsConfig?: {
+    pointsWin?: number | null;
+    pointsLoss?: number | null;
+    pointsTie?: number | null;
+    /**
+     * Applied in order, only among teams still tied. The final tiebreaker is always the season seed.
+     */
+    tiebreakers?:
+      | {
+          criterion: 'headToHead' | 'winPct' | 'pointDiff' | 'pointsFor' | 'fewestPointsAgainst' | 'wins';
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Mercy cap. A single game cannot move differential by more than this.
+     */
+    pointDiffCap?: number | null;
+    mercyEnabled?: boolean | null;
+    includeForfeits?: boolean | null;
+    forfeitScoreFor?: number | null;
+    forfeitScoreAgainst?: number | null;
+    forfeitWinPoints?: number | null;
+    forfeitPenaltyPoints?: number | null;
+    /**
+     * Whether the points-for tiebreaker uses capped or raw points.
+     */
+    pointsForBasis?: ('capped' | 'raw') | null;
+    /**
+     * Plain language explanation of how standings are calculated, shown to families.
+     */
+    legend?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * A division within a season. fullPath is the import match key.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "divisions".
+ */
+export interface Division {
+  id: number;
+  /**
+   * Exact import match key, for example "Weekend Rec League / U13 Boys / A".
+   */
+  fullPath: string;
+  /**
+   * Short label for chips and dropdowns, for example "U13 Boys A".
+   */
+  displayLabel?: string | null;
+  leagueName: string;
+  ageGroup: string;
+  gender?: ('boys' | 'girls' | 'coed') | null;
+  tier?: string | null;
+  season: number | Season;
+  scheduleType?: ('round_robin_single' | 'round_robin_double' | 'custom') | null;
+  /**
+   * Officials below this RAMP level get an eligibility warning when assigned.
+   */
+  requiredRampLevel?: ('none' | 'level1' | 'level2' | 'level3') | null;
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * A team in a division. Names are unique within a division.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teams".
+ */
+export interface Team {
+  id: number;
+  name: string;
+  club?: (number | null) | Club;
+  division: number | Division;
+  /**
+   * Hex value or simple color name.
+   */
+  color?: string | null;
+  logo?: (number | null) | Media;
+  /**
+   * Prior system id (for example TeamLinkt) kept for migration.
+   */
+  externalId?: string | null;
+  active?: boolean | null;
+  importBatch?: (number | null) | ImportBatch;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Audit record and undo manifest for a CSV import.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "import-batches".
+ */
+export interface ImportBatch {
+  id: number;
+  kind: 'teams' | 'venues' | 'officials' | 'games';
+  fileName?: string | null;
+  /**
+   * Ready / warnings / errors / imported counts.
+   */
+  counts?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  publishMode?: ('draft' | 'published') | null;
+  status: 'pending' | 'committed' | 'undone';
+  /**
+   * Undo manifest: the collections and ids created by this import.
+   */
+  createdRecords?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  committedBy?: (number | null) | User;
+  committedAt?: string | null;
+  undoneBy?: (number | null) | User;
+  undoneAt?: string | null;
+  undoExpiresAt?: string | null;
+  undoWindowMinutes?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * A facility. Courts are modeled separately so conflict checks key on a stable court id.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "venues".
+ */
+export interface Venue {
+  id: number;
+  name: string;
+  address?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postalCode?: string | null;
+  /**
+   * Full map link. If blank, the app builds a search link from the address.
+   */
+  mapsUrl?: string | null;
+  /**
+   * Parking or entry notes shown to families.
+   */
+  notes?: string | null;
+  /**
+   * Dates this venue is unavailable for scheduling.
+   */
+  blackoutDates?:
+    | {
+        date: string;
+        reason?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  externalId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * A playing surface at a venue. Court names are unique within a venue.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courts".
+ */
+export interface Court {
+  id: number;
+  name: string;
+  venue: number | Venue;
+  active?: boolean | null;
+  externalId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Links a user to a team. A verified membership is how a user is allowed to report for a team.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-memberships".
+ */
+export interface TeamMembership {
+  id: number;
+  user: number | User;
+  team: number | Team;
+  /**
+   * Role on the team. Admin assigned.
+   */
+  role: 'rep' | 'coach' | 'manager';
+  /**
+   * A verified membership may report and confirm scores. Admin only.
+   */
+  verified?: boolean | null;
+  /**
+   * Admin who verified this membership. Admin only.
+   */
+  verifiedBy?: (number | null) | User;
+  verifiedAt?: string | null;
+  /**
+   * Email this rep was invited at, for matching on signup.
+   */
+  invitedEmail?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Derived standings cache. Recomputed by the standings service; never edited by hand.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "standings-cache".
+ */
+export interface StandingsCache {
+  id: number;
+  division: number | Division;
+  /**
+   * StandingRow[] in final sorted order, each with a server-assigned rank.
+   */
+  rows?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Hash of the canonical-ordered final games plus config plus seed. Skips the upsert when unchanged.
+   */
+  inputsHash?: string | null;
+  computedAt?: string | null;
+  /**
+   * Snapshot of the standings legend shown to families.
+   */
+  legend?: string | null;
+  /**
+   * Denormalized parent season status for the public read gate.
+   */
+  seasonStatus?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Append-only record of privileged actions. Cannot be edited or deleted.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log".
+ */
+export interface AuditLog {
+  id: number;
+  /**
+   * Acting user. Null for system or cron actions.
+   */
+  actor?: (number | null) | User;
+  /**
+   * Snapshot of the actor email so the record survives user deletion.
+   */
+  actorEmail?: string | null;
+  /**
+   * For example game.finalize, membership.verify, official.assign, import.commit.
+   */
+  action: string;
+  entity: string;
+  entityId: string;
+  before?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  after?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  reason?: string | null;
+  at: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * System dedupe store for the Idempotency-Key header. Not user editable.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "idempotency-keys".
+ */
+export interface IdempotencyKey {
+  id: number;
+  key: string;
+  /**
+   * For example report:game:123.
+   */
+  scope: string;
+  /**
+   * Same key from a different user is rejected 403.
+   */
+  userId?: string | null;
+  /**
+   * Hash of the stable logical fields, not the multipart envelope.
+   */
+  requestHash?: string | null;
+  statusCode?: number | null;
+  responseBody?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Swept after 24 hours by the TTL cron.
+   */
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * System refresh-token store for native sessions. Hashed; not user editable.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "refresh-tokens".
+ */
+export interface RefreshToken {
+  id: number;
+  tokenHash: string;
+  user: number | User;
+  /**
+   * Token family id. Reuse detection revokes the whole family.
+   */
+  family: string;
+  expiresAt: string;
+  revoked?: boolean | null;
+  /**
+   * Hash of the token that rotated this one.
+   */
+  replacedBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * System rate-limit hit log. Not user editable.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rate-limit-hits".
+ */
+export interface RateLimitHit {
+  id: number;
+  /**
+   * For example report, confirm, import.
+   */
+  bucket: string;
+  /**
+   * The actor being limited, for example user id or ip.
+   */
+  subject: string;
+  at: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -778,6 +1212,54 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'seasons';
+        value: number | Season;
+      } | null)
+    | ({
+        relationTo: 'divisions';
+        value: number | Division;
+      } | null)
+    | ({
+        relationTo: 'teams';
+        value: number | Team;
+      } | null)
+    | ({
+        relationTo: 'venues';
+        value: number | Venue;
+      } | null)
+    | ({
+        relationTo: 'courts';
+        value: number | Court;
+      } | null)
+    | ({
+        relationTo: 'team-memberships';
+        value: number | TeamMembership;
+      } | null)
+    | ({
+        relationTo: 'standings-cache';
+        value: number | StandingsCache;
+      } | null)
+    | ({
+        relationTo: 'import-batches';
+        value: number | ImportBatch;
+      } | null)
+    | ({
+        relationTo: 'audit-log';
+        value: number | AuditLog;
+      } | null)
+    | ({
+        relationTo: 'idempotency-keys';
+        value: number | IdempotencyKey;
+      } | null)
+    | ({
+        relationTo: 'refresh-tokens';
+        value: number | RefreshToken;
+      } | null)
+    | ({
+        relationTo: 'rate-limit-hits';
+        value: number | RateLimitHit;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -871,6 +1353,7 @@ export interface UsersSelect<T extends boolean = true> {
     | {
         certificationReminders?: T;
         generalUpdates?: T;
+        gameReminders?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1255,6 +1738,219 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seasons_select".
+ */
+export interface SeasonsSelect<T extends boolean = true> {
+  name?: T;
+  sport?: T;
+  status?: T;
+  startDate?: T;
+  endDate?: T;
+  timezone?: T;
+  defaultGameLengthMinutes?: T;
+  bufferMinutes?: T;
+  seasonSeed?: T;
+  standingsConfig?:
+    | T
+    | {
+        pointsWin?: T;
+        pointsLoss?: T;
+        pointsTie?: T;
+        tiebreakers?:
+          | T
+          | {
+              criterion?: T;
+              id?: T;
+            };
+        pointDiffCap?: T;
+        mercyEnabled?: T;
+        includeForfeits?: T;
+        forfeitScoreFor?: T;
+        forfeitScoreAgainst?: T;
+        forfeitWinPoints?: T;
+        forfeitPenaltyPoints?: T;
+        pointsForBasis?: T;
+        legend?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "divisions_select".
+ */
+export interface DivisionsSelect<T extends boolean = true> {
+  fullPath?: T;
+  displayLabel?: T;
+  leagueName?: T;
+  ageGroup?: T;
+  gender?: T;
+  tier?: T;
+  season?: T;
+  scheduleType?: T;
+  requiredRampLevel?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teams_select".
+ */
+export interface TeamsSelect<T extends boolean = true> {
+  name?: T;
+  club?: T;
+  division?: T;
+  color?: T;
+  logo?: T;
+  externalId?: T;
+  active?: T;
+  importBatch?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "venues_select".
+ */
+export interface VenuesSelect<T extends boolean = true> {
+  name?: T;
+  address?: T;
+  city?: T;
+  province?: T;
+  postalCode?: T;
+  mapsUrl?: T;
+  notes?: T;
+  blackoutDates?:
+    | T
+    | {
+        date?: T;
+        reason?: T;
+        id?: T;
+      };
+  externalId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courts_select".
+ */
+export interface CourtsSelect<T extends boolean = true> {
+  name?: T;
+  venue?: T;
+  active?: T;
+  externalId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-memberships_select".
+ */
+export interface TeamMembershipsSelect<T extends boolean = true> {
+  user?: T;
+  team?: T;
+  role?: T;
+  verified?: T;
+  verifiedBy?: T;
+  verifiedAt?: T;
+  invitedEmail?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "standings-cache_select".
+ */
+export interface StandingsCacheSelect<T extends boolean = true> {
+  division?: T;
+  rows?: T;
+  inputsHash?: T;
+  computedAt?: T;
+  legend?: T;
+  seasonStatus?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "import-batches_select".
+ */
+export interface ImportBatchesSelect<T extends boolean = true> {
+  kind?: T;
+  fileName?: T;
+  counts?: T;
+  publishMode?: T;
+  status?: T;
+  createdRecords?: T;
+  committedBy?: T;
+  committedAt?: T;
+  undoneBy?: T;
+  undoneAt?: T;
+  undoExpiresAt?: T;
+  undoWindowMinutes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log_select".
+ */
+export interface AuditLogSelect<T extends boolean = true> {
+  actor?: T;
+  actorEmail?: T;
+  action?: T;
+  entity?: T;
+  entityId?: T;
+  before?: T;
+  after?: T;
+  reason?: T;
+  at?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "idempotency-keys_select".
+ */
+export interface IdempotencyKeysSelect<T extends boolean = true> {
+  key?: T;
+  scope?: T;
+  userId?: T;
+  requestHash?: T;
+  statusCode?: T;
+  responseBody?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "refresh-tokens_select".
+ */
+export interface RefreshTokensSelect<T extends boolean = true> {
+  tokenHash?: T;
+  user?: T;
+  family?: T;
+  expiresAt?: T;
+  revoked?: T;
+  replacedBy?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rate-limit-hits_select".
+ */
+export interface RateLimitHitsSelect<T extends boolean = true> {
+  bucket?: T;
+  subject?: T;
+  at?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1325,6 +2021,16 @@ export interface SiteSetting {
   contact?: {
     email?: string | null;
     phone?: string | null;
+  };
+  /**
+   * Where contested-game and review escalations are sent. Update is super admin only, so a club admin cannot repoint it.
+   */
+  schedulingAdmin?: {
+    /**
+     * Recipient for contested-game and review escalations.
+     */
+    email?: string | null;
+    name?: string | null;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1403,6 +2109,12 @@ export interface SiteSettingsSelect<T extends boolean = true> {
     | {
         email?: T;
         phone?: T;
+      };
+  schedulingAdmin?:
+    | T
+    | {
+        email?: T;
+        name?: T;
       };
   updatedAt?: T;
   createdAt?: T;

@@ -33,5 +33,18 @@ export const SiteSettings: GlobalConfig = {
         { name: 'phone', type: 'text', defaultValue: '(403) 804-3396' },
       ],
     },
+    {
+      name: 'schedulingAdmin',
+      type: 'group',
+      label: 'Scheduling admin',
+      admin: {
+        description:
+          'Where contested-game and review escalations are sent. Update is super admin only, so a club admin cannot repoint it.',
+      },
+      fields: [
+        { name: 'email', type: 'email', admin: { description: 'Recipient for contested-game and review escalations.' } },
+        { name: 'name', type: 'text' },
+      ],
+    },
   ],
 }

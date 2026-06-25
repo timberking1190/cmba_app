@@ -4,7 +4,14 @@
  * them without pulling server-only code into the browser bundle.
  */
 
-export type GameStatus = "scheduled" | "final" | "cancelled";
+export type GameStatus =
+  | "scheduled"
+  | "reported"
+  | "contested"
+  | "final"
+  | "postponed"
+  | "cancelled"
+  | "forfeit";
 
 export type Game = {
   id: string;
@@ -43,26 +50,34 @@ export type StandingRow = {
   pa: number; // points against
   diff: number;
   division?: string;
+  rank?: number; // server-assigned final order; the client renders this, never re-sorts
+  streak?: string; // e.g. "W3" or "L1"
+  lastFive?: string; // e.g. "WWLWL"
 };
 
 export function mapsUrl(location: string): string {
   return `https://maps.google.com/?q=${encodeURIComponent(location)}`;
 }
 
+// A game is "upcoming" until it has a terminal result. Final, forfeit, and
+// cancelled are never upcoming; reported, contested, and postponed still appear
+// here because they are scheduled games that have not resulted in a final score.
 export function filterUpcoming(games: Game[], nowMs: number): Game[] {
   return games
     .filter(
       (g) =>
         g.status !== "final" &&
+        g.status !== "forfeit" &&
         g.status !== "cancelled" &&
         (g.start == null || g.start.getTime() >= nowMs)
     )
     .sort((a, b) => (a.start?.getTime() ?? 0) - (b.start?.getTime() ?? 0));
 }
 
+// Results are the games with a terminal scored outcome: final and forfeit.
 export function filterResults(games: Game[]): Game[] {
   return games
-    .filter((g) => g.status === "final")
+    .filter((g) => g.status === "final" || g.status === "forfeit")
     .sort((a, b) => (b.start?.getTime() ?? 0) - (a.start?.getTime() ?? 0));
 }
 
