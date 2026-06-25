@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { divisionsFrom, sortStandings, type StandingRow } from "@/lib/scheduleUtils";
+import { divisionsFrom, orderStandingsForDisplay, type StandingRow } from "@/lib/scheduleUtils";
 
 const COLS: { key: keyof StandingRow; label: string; wide?: boolean }[] = [
   { key: "team", label: "Team", wide: true },
@@ -19,10 +19,10 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
   const divs = useMemo(() => divisionsFrom(rows), [rows]);
   const [division, setDivision] = useState("all");
 
-  const sorted = useMemo(
-    () => sortStandings(division === "all" ? rows : rows.filter((r) => r.division === division)),
-    [rows, division]
-  );
+  // Our standings carry a server-assigned, deterministic rank. We render that
+  // order and never re-derive it from pts/diff/w on the client (orderStandingsForDisplay).
+  const hasRank = useMemo(() => rows.some((r) => r.rank != null), [rows]);
+  const sorted = useMemo(() => orderStandingsForDisplay(rows, division), [rows, division]);
 
   return (
     <div>
@@ -62,7 +62,7 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
             {sorted.map((r, i) => (
               <tr key={`${r.team}-${i}`} className={`border-b border-white/10 ${i % 2 ? "bg-white/[0.02]" : ""}`}>
                 <td className="py-3 px-4">
-                  <span className="font-mono text-[11px] text-cmba-grey-mid mr-2">{i + 1}</span>
+                  <span className="font-mono text-[11px] text-cmba-grey-mid mr-2">{hasRank ? r.rank ?? i + 1 : i + 1}</span>
                   <span className="font-display font-bold text-sm text-white uppercase tracking-wide">{r.team}</span>
                 </td>
                 <td className="py-3 px-4 text-center text-sm text-cmba-grey-light tabular-nums">{r.gp}</td>

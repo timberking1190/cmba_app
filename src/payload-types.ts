@@ -86,6 +86,7 @@ export interface Config {
     venues: Venue;
     courts: Court;
     'team-memberships': TeamMembership;
+    games: Game;
     'standings-cache': StandingsCache;
     'import-batches': ImportBatch;
     'audit-log': AuditLog;
@@ -118,6 +119,7 @@ export interface Config {
     venues: VenuesSelect<false> | VenuesSelect<true>;
     courts: CourtsSelect<false> | CourtsSelect<true>;
     'team-memberships': TeamMembershipsSelect<false> | TeamMembershipsSelect<true>;
+    games: GamesSelect<false> | GamesSelect<true>;
     'standings-cache': StandingsCacheSelect<false> | StandingsCacheSelect<true>;
     'import-batches': ImportBatchesSelect<false> | ImportBatchesSelect<true>;
     'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
@@ -976,6 +978,82 @@ export interface TeamMembership {
   createdAt: string;
 }
 /**
+ * Scheduled games and results. Transitions go through the games service, not direct edits.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "games".
+ */
+export interface Game {
+  id: number;
+  season: number | Season;
+  division: number | Division;
+  homeTeam: number | Team;
+  awayTeam: number | Team;
+  venue?: (number | null) | Venue;
+  court?: (number | null) | Court;
+  /**
+   * Stored UTC; entered in the league time zone.
+   */
+  startAt: string;
+  /**
+   * Computed from the season game length.
+   */
+  endAt?: string | null;
+  /**
+   * Transitions go through the games service. Finalized status is super admin only.
+   */
+  status: 'scheduled' | 'reported' | 'contested' | 'final' | 'postponed' | 'cancelled' | 'forfeit';
+  /**
+   * Draft is not visible on the public site.
+   */
+  publishState: 'draft' | 'published';
+  /**
+   * Optimistic lock. Bumped on every write.
+   */
+  version?: number | null;
+  homeScore?: number | null;
+  awayScore?: number | null;
+  periodScores?:
+    | {
+        period?: number | null;
+        home?: number | null;
+        away?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  forfeit?: {
+    isForfeit?: boolean | null;
+    outcome?: ('home_forfeit' | 'away_forfeit' | 'double_forfeit' | 'no_contest') | null;
+    forfeitingTeam?: (number | null) | Team;
+    reason?: string | null;
+  };
+  /**
+   * Appended by the games service on every change.
+   */
+  changeLog?:
+    | {
+        at?: string | null;
+        actor?: (number | null) | User;
+        actorEmail?: string | null;
+        field?: string | null;
+        from?: string | null;
+        to?: string | null;
+        reason?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * A bye is not scheduled on a court and never counts in standings.
+   */
+  isBye?: boolean | null;
+  lockedAt?: string | null;
+  externalId?: string | null;
+  notes?: string | null;
+  importBatch?: (number | null) | ImportBatch;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Derived standings cache. Recomputed by the standings service; never edited by hand.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1236,6 +1314,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'team-memberships';
         value: number | TeamMembership;
+      } | null)
+    | ({
+        relationTo: 'games';
+        value: number | Game;
       } | null)
     | ({
         relationTo: 'standings-cache';
@@ -1856,6 +1938,60 @@ export interface TeamMembershipsSelect<T extends boolean = true> {
   verifiedBy?: T;
   verifiedAt?: T;
   invitedEmail?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "games_select".
+ */
+export interface GamesSelect<T extends boolean = true> {
+  season?: T;
+  division?: T;
+  homeTeam?: T;
+  awayTeam?: T;
+  venue?: T;
+  court?: T;
+  startAt?: T;
+  endAt?: T;
+  status?: T;
+  publishState?: T;
+  version?: T;
+  homeScore?: T;
+  awayScore?: T;
+  periodScores?:
+    | T
+    | {
+        period?: T;
+        home?: T;
+        away?: T;
+        id?: T;
+      };
+  forfeit?:
+    | T
+    | {
+        isForfeit?: T;
+        outcome?: T;
+        forfeitingTeam?: T;
+        reason?: T;
+      };
+  changeLog?:
+    | T
+    | {
+        at?: T;
+        actor?: T;
+        actorEmail?: T;
+        field?: T;
+        from?: T;
+        to?: T;
+        reason?: T;
+        id?: T;
+      };
+  isBye?: T;
+  lockedAt?: T;
+  externalId?: T;
+  notes?: T;
+  importBatch?: T;
   updatedAt?: T;
   createdAt?: T;
 }

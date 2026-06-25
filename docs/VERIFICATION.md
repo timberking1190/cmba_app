@@ -332,3 +332,93 @@ hold over real HTTP). No server errors.
 ### Phase B0 verdict: GREEN
 Static + 68 tests + additive migration on live ca-central-1 + live default-deny
 smoke all pass. Public site unaffected. Ready for B1.
+
+## Phase B1 - Pure core, Games, state machine, standings
+
+Date: 2026-06-25 · Branch: `feat/backend` · DB: `cmba-connect` (ca-central-1)
+
+### Delivered
+- Pure, I/O-free, fully unit-tested core (all in src/lib, injectable inputs):
+  - gameStateMachine: canTransition table, isFinalized, effectsOf (recompute on
+    entering AND leaving final), nextStatusForReport (dual entry), and the
+    security checks checkActorMayReport / checkActorMayConfirm (opposing-derived,
+    not-own-report, not-dual-membership).
+  - standings/computeStandings: mercy/diff cap, forfeit W/L/GP accounting incl
+    double_forfeit and no_contest, includeForfeits=false, byes, head-to-head with
+    the precise "every pair played AND strictly distinct or skip" rule, the
+    absolute (seasonSeed, teamId) final tiebreaker, streak/lastFive, and a stable
+    inputs hash. Output rows carry a server-assigned integer rank.
+  - conflicts/detect: venue+court / team / official double-booking (blocking) and
+    official over-max / ramp-below (warnings); byes excluded; deterministic order.
+  - roundRobin/generate: circle method with a bye sentinel filtered before any
+    swap, single and double, plus blackout-aware slot assignment.
+  - csvImport/parse + validate: header-exact CSV with quoted commas and a BOM,
+    and per-kind validators (errors and warnings) using injected lookup maps.
+- Games collection: the central entity with the intentional public-read exception
+  (anonymous sees published only; a verified rep additionally sees their team's
+  drafts; resolved async from verified memberships), the 7-state status + draft or
+  published axis, version (optimistic lock), append-only changeLog, the forfeit
+  group with outcome, and field locks where a finalized game's scores and status
+  are super-admin only.
+- games/service: the only writer of game status and scores. transitionGame is a
+  conditional update guarded on version AND status (the single finalize
+  serialization point); adminOverride, applyForfeit, setPublishState all write the
+  AuditLog and recompute on the final edge.
+- standings/index: recomputeDivision (published final and forfeit games only,
+  pinned sort, no-op when the inputs hash is unchanged) and getDivision/League
+  standings.
+- cmbaSchedule replaces the teamlinkt data layer (same Game and StandingRow shapes)
+  with a FEATURE_LEGACY_TEAMLINKT fallback so the public pages never go blank
+  before a season is seeded. StatusChip is exhaustive; StandingsTable renders the
+  server rank via orderStandingsForDisplay (sortStandings kept only for legacy
+  rows). /schedule and /standings now read our data first.
+
+### 1. Static checks - GREEN
+build, `tsc --noEmit`, lint, and `generate:types` all clean.
+
+### 2. Automated tests - 134/134 PASS (66 new this phase)
+state machine (transitions, dual entry, the three actor checks); standings
+(mercy cap, forfeit + double_forfeit + no_contest + includeForfeits=false, byes,
+the rock-paper-scissors H2H cycle falls through without looping, the unbalanced
+H2H skip, idempotency under shuffled input with identical rows + streak + hash,
+winPct never NaN, the deterministic seed tiebreaker); conflicts (each
+double-booking kind, buffer window, byes excluded, candidate-vs-published);
+generator (even N, odd N double has no sentinel leak and exactly 2 byes per team,
+blackout avoidance); CSV (quoted commas, kind detection, every games and teams
+error and warning); standings display ordering preserves server rank.
+
+### 3. Migration - GREEN (additive on live ca-central-1)
+`20260625_070400_stageb1_games` applied (146ms): games + games_change_log +
+games_period_scores, with the 7-value status enum; no drops in up().
+
+### 4. Live integration smoke (Local API, ca-central-1) - 6/6 GREEN
+scripts/smoke-b1.ts (npm run smoke:b1) creates a transient active season, two
+teams, and two published final games, runs recomputeDivision, and asserts: the
+season seed is auto-assigned; the cache has two ranked rows; the team that won
+twice is rank 1 with 4 points; the other is rank 2 with 0; the published-games
+query returns both; and after an admin cancels one final game and recomputes, the
+game DROPS from standings (recompute on LEAVING the final set, red-team finding
+14). All temporary records are deleted afterward, so production stays clean.
+
+### 5. Live HTTP smoke (built app) - GREEN
+`/`, `/calendar`, `/standings`, `/admin` -> 200 (public site intact, now reading
+cmbaSchedule with the legacy fallback); `/api/games` (anon) -> 200 with zero docs
+(published-only, no draft leakage); `/api/standings-cache` -> 200. No server errors.
+
+### Note on server-only
+standings/index and games/service dropped the `server-only` guard so operator
+scripts (seed, smoke) can call them via the Local API; they are internal server
+modules imported only by routes, crons, and scripts, never by a client component.
+The page-facing data layer (cmbaSchedule, teamlinkt) keeps `server-only`.
+
+### Residual / follow-ups
+- recomputeDivision is exercised live by the smoke; the full rep report -> opposing
+  confirm -> final -> recompute -> standings path lands in B2 with its adversarial
+  integration tests.
+- The public pages still show the TeamLinkt fallback until a season is seeded; the
+  cutover (FEATURE_LEGACY_TEAMLINKT=false) and the non-blank gate are in B4.
+
+### Phase B1 verdict: GREEN
+Static + 134 tests + additive Games migration on live ca-central-1 + a 6-check
+live recompute integration smoke + HTTP smoke all pass. Public site unaffected.
+Ready for B2.

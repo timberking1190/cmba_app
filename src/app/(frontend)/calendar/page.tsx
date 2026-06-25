@@ -1,5 +1,5 @@
 import { ExternalLink, Info } from "lucide-react";
-import { getEvents, getTeamLinktConfig, serializeGame } from "@/lib/teamlinkt";
+import { getEvents, getTeamLinktConfig, serializeGame } from "@/lib/cmbaSchedule";
 import { ScheduleView } from "@/components/ScheduleView";
 import { TeamLinktActions } from "@/components/TeamLinktActions";
 import { TeamLinktEmbed } from "@/components/TeamLinktEmbed";

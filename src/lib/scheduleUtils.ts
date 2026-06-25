@@ -50,6 +50,7 @@ export type StandingRow = {
   pa: number; // points against
   diff: number;
   division?: string;
+  teamId?: number | string; // stable id for the deterministic final tiebreaker and team links
   rank?: number; // server-assigned final order; the client renders this, never re-sorts
   streak?: string; // e.g. "W3" or "L1"
   lastFive?: string; // e.g. "WWLWL"
@@ -100,4 +101,21 @@ export function groupByDate(games: Game[]): { key: string; label: string; games:
 
 export function sortStandings(rows: StandingRow[]): StandingRow[] {
   return [...rows].sort((a, b) => b.pts - a.pts || b.diff - a.diff || b.w - a.w);
+}
+
+/*
+ * Display ordering for the standings table. Our standings carry a server-assigned,
+ * deterministic rank, so we render that order and never re-derive it from pts/diff/w
+ * on the client. sortStandings is used only as a fallback for legacy rows with no
+ * rank. For the "all divisions" view, rows are grouped by division then by rank.
+ */
+export function orderStandingsForDisplay(rows: StandingRow[], division: string): StandingRow[] {
+  const filtered = division === "all" ? rows : rows.filter((r) => r.division === division);
+  const hasRank = filtered.some((r) => r.rank != null);
+  if (!hasRank) return sortStandings(filtered);
+  return [...filtered].sort(
+    (a, b) =>
+      (division === "all" ? String(a.division ?? "").localeCompare(String(b.division ?? "")) : 0) ||
+      (a.rank ?? 0) - (b.rank ?? 0)
+  );
 }

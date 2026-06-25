@@ -19,6 +19,7 @@ import { Courses } from './collections/Courses'
 import { Courts } from './collections/Courts'
 import { Divisions } from './collections/Divisions'
 import { GameReports } from './collections/GameReports'
+import { Games } from './collections/Games'
 import { IdempotencyKeys } from './collections/IdempotencyKeys'
 import { ImportBatches } from './collections/ImportBatches'
 import { IncidentLog } from './collections/IncidentLog'
@@ -104,6 +105,7 @@ export default buildConfig({
     Venues,
     Courts,
     TeamMemberships,
+    Games,
     StandingsCache,
     ImportBatches,
     // Compliance + system records for Stage B.

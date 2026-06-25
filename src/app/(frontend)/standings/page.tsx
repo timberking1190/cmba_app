@@ -1,5 +1,5 @@
 import { Info } from "lucide-react";
-import { getStandings, getTeamLinktConfig } from "@/lib/teamlinkt";
+import { getStandings, getTeamLinktConfig } from "@/lib/cmbaSchedule";
 import { StandingsTable } from "@/components/StandingsTable";
 import { TeamLinktEmbed } from "@/components/TeamLinktEmbed";
 import { TeamLinktActions } from "@/components/TeamLinktActions";
