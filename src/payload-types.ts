@@ -91,6 +91,8 @@ export interface Config {
     'scoresheet-files': ScoresheetFile;
     confirmations: Confirmation;
     disputes: Dispute;
+    officials: Official;
+    'game-officials': GameOfficial;
     'standings-cache': StandingsCache;
     'import-batches': ImportBatch;
     'audit-log': AuditLog;
@@ -129,6 +131,8 @@ export interface Config {
     'scoresheet-files': ScoresheetFilesSelect<false> | ScoresheetFilesSelect<true>;
     confirmations: ConfirmationsSelect<false> | ConfirmationsSelect<true>;
     disputes: DisputesSelect<false> | DisputesSelect<true>;
+    officials: OfficialsSelect<false> | OfficialsSelect<true>;
+    'game-officials': GameOfficialsSelect<false> | GameOfficialsSelect<true>;
     'standings-cache': StandingsCacheSelect<false> | StandingsCacheSelect<true>;
     'import-batches': ImportBatchesSelect<false> | ImportBatchesSelect<true>;
     'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
@@ -1162,6 +1166,57 @@ export interface Dispute {
   updatedAt: string;
 }
 /**
+ * Referee and official roster.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "officials".
+ */
+export interface Official {
+  id: number;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  /**
+   * RAMP certification level. Used for eligibility warnings.
+   */
+  rampLevel?: ('level1' | 'level2' | 'level3') | null;
+  /**
+   * Warn when assigned more games in a day than this.
+   */
+  maxGamesPerDay?: number | null;
+  externalId?: string | null;
+  notes?: string | null;
+  /**
+   * Optional linked account for self-serve availability later.
+   */
+  linkedUser?: (number | null) | User;
+  active?: boolean | null;
+  importBatch?: (number | null) | ImportBatch;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Official assignments. Each change is audited and emailed.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "game-officials".
+ */
+export interface GameOfficial {
+  id: number;
+  game: number | Game;
+  official: number | Official;
+  /**
+   * Denormalized from the official linked account for read scoping.
+   */
+  officialUserId?: (number | null) | User;
+  role: 'referee1' | 'referee2' | 'scorekeeper' | 'other';
+  assignedBy?: (number | null) | User;
+  assignedAt?: string | null;
+  status?: ('assigned' | 'accepted' | 'declined') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Derived standings cache. Recomputed by the standings service; never edited by hand.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1464,6 +1519,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'disputes';
         value: number | Dispute;
+      } | null)
+    | ({
+        relationTo: 'officials';
+        value: number | Official;
+      } | null)
+    | ({
+        relationTo: 'game-officials';
+        value: number | GameOfficial;
       } | null)
     | ({
         relationTo: 'standings-cache';
@@ -2221,6 +2284,39 @@ export interface DisputesSelect<T extends boolean = true> {
   createdAt?: T;
   resolvedAt?: T;
   updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "officials_select".
+ */
+export interface OfficialsSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  phone?: T;
+  rampLevel?: T;
+  maxGamesPerDay?: T;
+  externalId?: T;
+  notes?: T;
+  linkedUser?: T;
+  active?: T;
+  importBatch?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "game-officials_select".
+ */
+export interface GameOfficialsSelect<T extends boolean = true> {
+  game?: T;
+  official?: T;
+  officialUserId?: T;
+  role?: T;
+  assignedBy?: T;
+  assignedAt?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

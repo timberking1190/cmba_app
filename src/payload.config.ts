@@ -20,12 +20,14 @@ import { Courses } from './collections/Courses'
 import { Courts } from './collections/Courts'
 import { Disputes } from './collections/Disputes'
 import { Divisions } from './collections/Divisions'
+import { GameOfficials } from './collections/GameOfficials'
 import { GameReports } from './collections/GameReports'
 import { Games } from './collections/Games'
 import { IdempotencyKeys } from './collections/IdempotencyKeys'
 import { ImportBatches } from './collections/ImportBatches'
 import { IncidentFiles } from './collections/IncidentFiles'
 import { IncidentLog } from './collections/IncidentLog'
+import { Officials } from './collections/Officials'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Pathways } from './collections/Pathways'
@@ -115,6 +117,8 @@ export default buildConfig({
     ScoresheetFiles,
     Confirmations,
     Disputes,
+    Officials,
+    GameOfficials,
     StandingsCache,
     ImportBatches,
     // Compliance + system records for Stage B.

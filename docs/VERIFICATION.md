@@ -501,3 +501,52 @@ recipients, and no-PII bodies are exercised; only delivery is pending the operat
 Static + 138 tests + two additive migrations on live ca-central-1 + a 24-check
 adversarial integration smoke + a folded-in red-team pass all green. Public site
 unaffected. Ready for B3.
+
+## Phase B3 - CSV import, schedule generator, officials, admin consoles
+
+Date: 2026-06-25 · Branch: `feat/backend` · DB: `cmba-connect` (ca-central-1)
+
+### Delivered
+- Collections: Officials (admin-managed, linked-user readable), GameOfficials
+  (own-assignment readable, audited + emailed, unique game+official).
+- Import service: pure validators (B1) + a DB lookup builder, a dry-run preview
+  (validate + conflict detection), and a pending-first, single-transaction commit
+  with an undo window. CSV date+time are converted from America/Edmonton to UTC
+  (DST handled and unit-tested).
+- API: /api/v1/import/validate, /import/commit (Idempotency-Key), /import/:id/undo;
+  /api/v1/admin/schedule/generate (round robin + slot assignment + conflict
+  preview, optional commit); /api/v1/admin/games/:id/officials (assign with
+  double-booking block and over-max / ramp warnings, emails the official);
+  /api/v1/admin/games/:id/override (the only finalized-game edit path; super admin
+  for finalized games, club admin scoped to their own club, reason required).
+- Admin consoles under /manage (kept off /admin, the Payload SPA): /manage hub,
+  /manage/import (the three-step screen with template downloads, validate, the
+  errors/warnings/conflicts preview, the acknowledge gate, draft-or-publish, and
+  undo), /manage/schedule (publish + override), /manage/contested (the contested
+  queue + awaiting-confirmation list), /manage/officials (the assigning screen).
+  All gated by middleware + an in-page isAnyAdmin check.
+
+### 1. Static + tests - GREEN
+build, typecheck, lint, types clean; 141 unit tests pass (3 new: the Edmonton to
+UTC conversion in winter MST and summer MDT).
+
+### 2. Migration - GREEN (additive on live ca-central-1)
+`stageb3_officials` (officials, game_officials; composite unique game+official).
+
+### 3. Integration smoke - 14/14 GREEN (npm run smoke:b3)
+Imports the four REAL shipped templates (public/templates) end to end against the
+live DB: Teams (4 + clubs created on approval), Venues (venues + auto courts),
+Officials (3), Games (3, with the past-date warnings acknowledged, draft, plus the
+referee assignments from the optional columns). Then: the draft games are not
+public; undo removes the whole games batch; a published re-import makes them
+public; an admin override finalizes a game with a score and recomputes standings.
+
+### Notes
+- Admin scheduling consoles live under /manage, not /admin/import, to avoid the
+  Payload admin SPA route collision (the BUILD_PROMPT gotcha 1).
+- The generator and officials emails use the dev jsonTransport until SES is set.
+
+### Phase B3 verdict: GREEN
+Static + 141 tests + an additive migration on live ca-central-1 + a 14-check
+import/generator/override integration smoke all green. Public site unaffected.
+Ready for B4.

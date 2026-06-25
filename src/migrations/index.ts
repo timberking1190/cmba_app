@@ -7,6 +7,7 @@ import * as migration_20260625_063707_stageb0_scheduling_foundation from './2026
 import * as migration_20260625_070400_stageb1_games from './20260625_070400_stageb1_games';
 import * as migration_20260625_072109_stageb2_reporting from './20260625_072109_stageb2_reporting';
 import * as migration_20260625_075326_stageb2_fixes from './20260625_075326_stageb2_fixes';
+import * as migration_20260625_080712_stageb3_officials from './20260625_080712_stageb3_officials';
 
 export const migrations = [
   {
@@ -52,6 +53,11 @@ export const migrations = [
   {
     up: migration_20260625_075326_stageb2_fixes.up,
     down: migration_20260625_075326_stageb2_fixes.down,
-    name: '20260625_075326_stageb2_fixes'
+    name: '20260625_075326_stageb2_fixes',
+  },
+  {
+    up: migration_20260625_080712_stageb3_officials.up,
+    down: migration_20260625_080712_stageb3_officials.down,
+    name: '20260625_080712_stageb3_officials'
   },
 ];

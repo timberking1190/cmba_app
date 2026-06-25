@@ -19,7 +19,9 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // Presence check only; role is enforced in the page (super-admin pages gate
-  // themselves via getCurrentUser + isSuperAdmin).
-  matcher: ['/account/:path*', '/compliance/:path*'],
+  // Presence check only; role is enforced in the page (admin pages gate themselves
+  // via getCurrentUser + isAnyAdmin / isSuperAdmin). /manage holds the scheduling
+  // admin consoles (kept off /admin, which is the Payload SPA). /rep is the rep
+  // dashboard.
+  matcher: ['/account/:path*', '/compliance/:path*', '/manage/:path*', '/rep/:path*'],
 }

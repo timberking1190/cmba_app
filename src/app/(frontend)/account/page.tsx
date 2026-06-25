@@ -270,6 +270,7 @@ export default async function AccountPage() {
                 {/* Hard nav into the Payload admin SPA — not a Next page. */}
                 {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a href="/admin" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Management panel (/admin) →</a>
+                <Link href="/manage" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Scheduling console →</Link>
                 <Link href="/compliance/dashboard" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Compliance dashboard →</Link>
                 {isSuperAdmin(user) && (
                   <Link href="/compliance/consent-audit" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Consent audit →</Link>
