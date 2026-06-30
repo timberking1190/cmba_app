@@ -15,11 +15,19 @@ type AuthUser = { id: number | string; email: string; fullName?: string } | null
 
 const navLinks = [
   { label: "RULES", href: "/rules", icon: BookOpen },
-  { label: "ATHLETES", href: "/athlete", icon: Trophy },
+  {
+    label: "ATHLETES", href: "/athlete", icon: Trophy,
+    children: [
+      { label: "Athlete Hub", href: "/athlete" },
+      { label: "Skill Challenges", href: "/athlete/challenges" },
+      { label: "Basketball IQ", href: "/athlete/quiz" },
+    ],
+  },
   {
     label: "COACHES", href: "/coach", icon: Shield,
     children: [
       { label: "Dashboard", href: "/coach" },
+      { label: "Verify Challenges", href: "/coach/challenges" },
       { label: "Certification Pathway", href: "/coach/pathway" },
       { label: "Courses", href: "/coach/courses" },
       { label: "Training & Clinics", href: "/coach/clinics" },
