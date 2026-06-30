@@ -111,6 +111,10 @@ export interface Config {
     'mfa-totp': MfaTotp;
     'recovery-codes': RecoveryCode;
     'email-otp': EmailOtp;
+    badges: Badge;
+    'badge-awards': BadgeAward;
+    'xp-events': XpEvent;
+    streaks: Streak;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -162,6 +166,10 @@ export interface Config {
     'mfa-totp': MfaTotpSelect<false> | MfaTotpSelect<true>;
     'recovery-codes': RecoveryCodesSelect<false> | RecoveryCodesSelect<true>;
     'email-otp': EmailOtpSelect<false> | EmailOtpSelect<true>;
+    badges: BadgesSelect<false> | BadgesSelect<true>;
+    'badge-awards': BadgeAwardsSelect<false> | BadgeAwardsSelect<true>;
+    'xp-events': XpEventsSelect<false> | XpEventsSelect<true>;
+    streaks: StreaksSelect<false> | StreaksSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1697,6 +1705,151 @@ export interface EmailOtp {
   updatedAt: string;
 }
 /**
+ * Catalog of badge definitions with declarative earn criteria. No personal data.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "badges".
+ */
+export interface Badge {
+  id: number;
+  /**
+   * Stable identifier, e.g. first-whistle.
+   */
+  slug: string;
+  name: string;
+  description?: string | null;
+  /**
+   * Emoji rendered as text, e.g. 🏀.
+   */
+  icon?: string | null;
+  /**
+   * Audiences this badge can be earned by.
+   */
+  audience: ('athlete' | 'coach' | 'official' | 'parent')[];
+  tier: 'bronze' | 'silver' | 'gold' | 'milestone';
+  /**
+   * How the award engine decides this badge is earned.
+   */
+  earnKind: 'xp_threshold' | 'streak_threshold' | 'verified_count' | 'pathway_stage' | 'recognition' | 'manual';
+  /**
+   * Parameters for earnKind.
+   */
+  earnConfig?: {
+    /**
+     * For xp_threshold / streak_threshold / verified_count.
+     */
+    threshold?: number | null;
+    /**
+     * Event source the count is over, e.g. challenge.verified.
+     */
+    sourceKey?: string | null;
+  };
+  /**
+   * When set, only VERIFIED (coach/admin-stamped) events count toward this badge.
+   */
+  verificationRequired?: boolean | null;
+  /**
+   * Inactive badges are hidden from members and never awarded.
+   */
+  active?: boolean | null;
+  /**
+   * Sync/dedupe key for seeded or imported badges.
+   */
+  externalId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Immutable badge-award ledger. Written only by the award engine; cannot be edited or deleted.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "badge-awards".
+ */
+export interface BadgeAward {
+  id: number;
+  user: number | User;
+  badge: number | Badge;
+  awardedVia: 'auto' | 'coach_verified' | 'admin_manual';
+  /**
+   * The triggering XP event for an automatic award.
+   */
+  sourceEvent?: (number | null) | XpEvent;
+  /**
+   * True only for coach/admin-stamped awards or badges that do not require verification. Engine-set.
+   */
+  verified?: boolean | null;
+  /**
+   * Admin/coach who granted a manual or verified award. Null for automatic.
+   */
+  awardedBy?: (number | null) | User;
+  /**
+   * Captured at award time (re-derived server-side). Gates privacy-safe display.
+   */
+  isMinor?: boolean | null;
+  awardedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Append-only XP ledger. Written only by the award engine; cannot be edited or deleted.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "xp-events".
+ */
+export interface XpEvent {
+  id: number;
+  user: number | User;
+  /**
+   * XP awarded (may be 0 for streak-tracking-only events).
+   */
+  amount: number;
+  kind:
+    | 'login'
+    | 'challenge'
+    | 'quiz'
+    | 'drill'
+    | 'clinic'
+    | 'recognition'
+    | 'pathway_stage'
+    | 'streak_bonus'
+    | 'milestone';
+  counts: 'fun_only' | 'meaningful';
+  /**
+   * True only when coach/admin-verified or cert-derived. Engine-set.
+   */
+  verified?: boolean | null;
+  /**
+   * Traceability back to the originating record.
+   */
+  source?: {
+    collection?: string | null;
+    docId?: string | null;
+  };
+  occurredAt: string;
+  /**
+   * Idempotency key, unique per user. Engine-set.
+   */
+  dedupeKey: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Materialized streak counters. Written only by the streak-rollup cron.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "streaks".
+ */
+export interface Streak {
+  id: number;
+  user: number | User;
+  currentStreakDays?: number | null;
+  longestStreakDays?: number | null;
+  lastActiveDay?: string | null;
+  streakKind?: ('activity' | 'login') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1895,6 +2048,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'email-otp';
         value: number | EmailOtp;
+      } | null)
+    | ({
+        relationTo: 'badges';
+        value: number | Badge;
+      } | null)
+    | ({
+        relationTo: 'badge-awards';
+        value: number | BadgeAward;
+      } | null)
+    | ({
+        relationTo: 'xp-events';
+        value: number | XpEvent;
+      } | null)
+    | ({
+        relationTo: 'streaks';
+        value: number | Streak;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2969,6 +3138,80 @@ export interface EmailOtpSelect<T extends boolean = true> {
   consumedAt?: T;
   createdAt?: T;
   updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "badges_select".
+ */
+export interface BadgesSelect<T extends boolean = true> {
+  slug?: T;
+  name?: T;
+  description?: T;
+  icon?: T;
+  audience?: T;
+  tier?: T;
+  earnKind?: T;
+  earnConfig?:
+    | T
+    | {
+        threshold?: T;
+        sourceKey?: T;
+      };
+  verificationRequired?: T;
+  active?: T;
+  externalId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "badge-awards_select".
+ */
+export interface BadgeAwardsSelect<T extends boolean = true> {
+  user?: T;
+  badge?: T;
+  awardedVia?: T;
+  sourceEvent?: T;
+  verified?: T;
+  awardedBy?: T;
+  isMinor?: T;
+  awardedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "xp-events_select".
+ */
+export interface XpEventsSelect<T extends boolean = true> {
+  user?: T;
+  amount?: T;
+  kind?: T;
+  counts?: T;
+  verified?: T;
+  source?:
+    | T
+    | {
+        collection?: T;
+        docId?: T;
+      };
+  occurredAt?: T;
+  dedupeKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "streaks_select".
+ */
+export interface StreaksSelect<T extends boolean = true> {
+  user?: T;
+  currentStreakDays?: T;
+  longestStreakDays?: T;
+  lastActiveDay?: T;
+  streakKind?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
