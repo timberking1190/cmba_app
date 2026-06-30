@@ -15,6 +15,7 @@
     "migrate": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts payload migrate",
     "migrate:create": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts payload migrate:create",
     "seed": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/seed.ts",
+    "seed:badges": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/seed-badges.ts",
     "create-admin": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/create-admin.ts",
     "smoke:b1": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/smoke-b1.ts",
     "smoke:b2": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/smoke-b2.ts",
