@@ -83,6 +83,9 @@ export default async function AccountPage() {
               </span>
             ))}
           </div>
+          <Link href="/account/security" className="inline-flex items-center gap-1.5 mt-4 font-mono text-[11px] text-cmba-grey-mid hover:text-white uppercase tracking-wider transition-colors">
+            <ShieldCheck size={12} /> Security and two-factor
+          </Link>
         </div>
       </section>
 

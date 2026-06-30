@@ -836,3 +836,23 @@ binary against the new schema keeps working (zero-downtime).
 - Gate: 193/193 tests (+ guard + session suites incl. the "admin is never ok while
   aal1" MFA-bypass invariant and force-enrollment safety), tsc + lint clean, build
   exit 0. No enforcement wired yet; logins unaffected.
+
+### I4 — TOTP authenticator + recovery codes + /account/security (no enforcement)
+- Libs (unit-tested, 28 MFA tests total): crypto.ts (AES-256-GCM, tamper-rejecting),
+  totp.ts (otpauth, replay floor via lastStep), recovery.ts (PBKDF2 + constant-time).
+- Server helpers (server.ts): getAuthWithSid, elevateSession (read-modify-write
+  sessionMeta to aal2), markEnrolled, writeAudit. Safe overrideAccess updates (Users
+  side-effect hooks are create-gated, confirmed by reading hooks/users.ts).
+- Routes: POST .../mfa/totp/enroll (encrypted secret + QR), .../totp/activate (verify
+  -> enrolled + recovery codes once + elevate), .../mfa/challenge (totp or recovery
+  -> elevate). Rate-limited (mfa_enroll/mfa_verify/mfa_challenge). Audited.
+- UI: /account/security + TotpSetup (QR + manual key + confirm + recovery display);
+  Security link on /account.
+- TOTP_ENC_KEY generated into local .env (gitignored); documented in .env.example.
+- Live checks (prod build, migration applied): MFA routes return 401 unauthenticated;
+  /account/security redirects to /login; all 5 private MFA collections return 403 on
+  direct REST read (IDOR/access protection). Gate: 207/207 tests, tsc + lint clean,
+  build exit 0.
+- NOTE: full interactive "enroll with a real authenticator app" is the operator's
+  live test (needs a real signed-in user); covered in docs/PENTEST_READINESS.md. No
+  enforcement wired yet (MFA_ENFORCE still off); logins unaffected.
