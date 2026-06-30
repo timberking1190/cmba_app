@@ -114,6 +114,10 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      // Stage C / S1 (I7): enforce MFA across the admin SPA (no-op until MFA_ENFORCE).
+      providers: ['@/components/security/AdminMfaGate#AdminMfaGate'],
+    },
     meta: {
       titleSuffix: '· CMBA Connect',
     },

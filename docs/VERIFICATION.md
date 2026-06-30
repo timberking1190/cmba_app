@@ -960,3 +960,14 @@ kill-switch.
   accepted residual in docs/SECURITY.md.
 - Gate: 234/234 tests, tsc + lint clean, build exit 0.
 - S2 remaining: Payload /admin afterLogin MFA slot; optional malware-scan add-on.
+
+### S1/I7 (cont.) - Payload /admin MFA enforcement (closes the gap)
+- GET /api/v1/auth/mfa/status returns the session posture; `decision` is forced to
+  'ok' when MFA_ENFORCE is off, so clients never redirect until enforcement is on.
+- AdminMfaGate provider (src/components/security/AdminMfaGate.tsx) wraps the whole
+  Payload /admin SPA (registered via admin.components.providers + regenerated
+  importMap). On mount it checks the status and, when enforced + not AAL2 (or
+  required-but-unenrolled), redirects to enroll/challenge with ?next=/admin.
+- Live (flag off): /admin returns 200 with the provider wrapping it and still ships
+  nonced scripts (CSP intact); status route 401 unauthenticated. Gate: 234/234 tests,
+  tsc + lint clean, build exit 0. The S1/I7 enforcement gap is now CLOSED for /admin.
