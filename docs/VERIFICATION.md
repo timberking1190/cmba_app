@@ -916,3 +916,18 @@ there is no lockout window. Email-OTP recovery (I8) waits on SES.
 OPERATOR (docs/OPERATOR_ACTIONS.md): enroll a factor at /account/security for the
 super admin (and a backup) BEFORE setting MFA_ENFORCE=true. The flag is the instant
 kill-switch.
+
+## Phase S2 (started) - Authorization + data protection
+- Adversarial access-control / IDOR tests (src/access/__tests__/accessControl.test.ts,
+  8 tests): role helpers; readUsers/updateUsers scope a non-admin to their OWN record
+  (cannot read/update another user by id tampering); club admin scoped to self+club;
+  deleteUsers super-admin only; anonymous denied. Part of the pentest matrix.
+- Verified existing data-protection controls: EXIF/GPS strip on photo upload
+  (src/lib/uploads/exif.ts + test); private cert/scoresheet/incident downloads keep
+  Payload access control (payload.config; only public Media disables it); React
+  output-encoding (no dangerouslySetInnerHTML in app code); Payload+Drizzle ORM (no
+  raw SQL); CSRF via Payload csrf allowlist + SameSite=Lax.
+- Documented in docs/SECURITY.md S2 section. Gate: 223/223 tests, lint clean.
+- Remaining S2 (scheduled, touches live paths): sensitive-field encryption
+  (guardian/DOB), invalidate-on-password-change, secure-upload sniffing/malware scan,
+  SSRF/open-redirect/mass-assignment adversarial review, Payload /admin MFA slot.

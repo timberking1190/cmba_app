@@ -119,6 +119,23 @@ step-up + session/device management UI, force-enrollment enforcement behind
 MFA_ENFORCE, email-OTP recovery after SES) land in subsequent commits per the build
 order in `docs/VERIFICATION.md`; each appends its rows here.
 
+## S2 - Authorization and data protection (in progress)
+
+| Control | Requirement | Implementation | Tested by |
+| --- | --- | --- | --- |
+| Default deny + IDOR | Non-admins scoped to their own records; no cross-user access by id tampering | `src/access/users.ts` (owner-scoped Where clauses), `src/access/index.ts` role helpers; MFA collections deny-all | `src/access/__tests__/accessControl.test.ts` (adversarial) |
+| Private document downloads | Certificates / scoresheet / incident photos are access-checked, never public | Private Supabase buckets keep Payload access control ON (`payload.config.ts`); only the public Media bucket disables it | code review |
+| EXIF / GPS stripping | Remove location metadata from uploaded photos | `src/lib/uploads/exif.ts` (`sharp().rotate()` bakes orientation, drops EXIF + GPS) | `src/lib/__tests__/exif.test.ts` |
+| Output encoding (XSS) | No raw HTML injection | React escapes by default; no `dangerouslySetInnerHTML` in app code (S0 finding) | code review |
+| SQL injection | Parameterized access only | Payload + Drizzle ORM (no raw string SQL in app paths) | code review |
+| CSRF | State-changing requests protected | Payload `csrf` allowlist (S0) + SameSite=Lax cookies (cross-site POST drops the cookie) | code review |
+
+Remaining S2 work (larger, touches live paths; scheduled): application-layer
+encryption of the most sensitive fields (guardian contact, date of birth) using
+`src/lib/mfa/crypto.ts`; invalidate-sessions-on-password-change; secure-upload
+content sniffing + malware scan; SSRF / open-redirect / mass-assignment review with
+adversarial tests; and the Payload `/admin` afterLogin MFA slot.
+
 ## Required external assurance (cannot be satisfied by code)
 
 Before any public registration launch:
