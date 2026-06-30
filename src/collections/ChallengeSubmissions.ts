@@ -62,6 +62,7 @@ export const ChallengeSubmissions: CollectionConfig = {
   },
   fields: [
     { name: 'challenge', type: 'relationship', relationTo: 'challenges', required: true, index: true },
+    { name: 'team', type: 'relationship', relationTo: 'teams', index: true, admin: { description: 'The athlete\'s team, used to scope which coach may verify this submission.' } },
     {
       name: 'user',
       type: 'relationship',
