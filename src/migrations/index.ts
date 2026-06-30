@@ -15,6 +15,7 @@ import * as migration_20260630_125952_add_audit_integrity from './20260630_12595
 import * as migration_20260630_170515_f1a_engagement_foundation from './20260630_170515_f1a_engagement_foundation';
 import * as migration_20260630_173652_f2_recognitions_consents from './20260630_173652_f2_recognitions_consents';
 import * as migration_20260630_205617_f3_notification_prefs from './20260630_205617_f3_notification_prefs';
+import * as migration_20260630_205953_now_challenges from './20260630_205953_now_challenges';
 
 export const migrations = [
   {
@@ -100,6 +101,11 @@ export const migrations = [
   {
     up: migration_20260630_205617_f3_notification_prefs.up,
     down: migration_20260630_205617_f3_notification_prefs.down,
-    name: '20260630_205617_f3_notification_prefs'
+    name: '20260630_205617_f3_notification_prefs',
+  },
+  {
+    up: migration_20260630_205953_now_challenges.up,
+    down: migration_20260630_205953_now_challenges.down,
+    name: '20260630_205953_now_challenges'
   },
 ];

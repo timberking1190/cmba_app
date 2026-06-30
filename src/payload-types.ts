@@ -116,6 +116,8 @@ export interface Config {
     'xp-events': XpEvent;
     streaks: Streak;
     recognitions: Recognition;
+    challenges: Challenge;
+    'challenge-submissions': ChallengeSubmission;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -172,6 +174,8 @@ export interface Config {
     'xp-events': XpEventsSelect<false> | XpEventsSelect<true>;
     streaks: StreaksSelect<false> | StreaksSelect<true>;
     recognitions: RecognitionsSelect<false> | RecognitionsSelect<true>;
+    challenges: ChallengesSelect<false> | ChallengesSelect<true>;
+    'challenge-submissions': ChallengeSubmissionsSelect<false> | ChallengeSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1928,6 +1932,64 @@ export interface Recognition {
   createdAt: string;
 }
 /**
+ * Catalog of skill challenges. No personal data.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "challenges".
+ */
+export interface Challenge {
+  id: number;
+  slug: string;
+  title: string;
+  description?: string | null;
+  skill?: ('shooting' | 'dribbling' | 'passing' | 'defense' | 'conditioning') | null;
+  /**
+   * Stage or age group this challenge targets (e.g. U13).
+   */
+  ageGroup?: string | null;
+  instructions?: string | null;
+  /**
+   * Meaningful XP granted when a submission is verified.
+   */
+  xpReward?: number | null;
+  /**
+   * When set, a coach/admin must verify a submission before the meaningful XP and any badge count.
+   */
+  requiresVerification?: boolean | null;
+  active?: boolean | null;
+  externalId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Athlete challenge attempts. Self-claims land unverified; admin/coach verification grants meaningful XP.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "challenge-submissions".
+ */
+export interface ChallengeSubmission {
+  id: number;
+  challenge: number | Challenge;
+  user: number | User;
+  /**
+   * The athlete-logged result (e.g. 18/25 free throws, 42s course).
+   */
+  result?: string | null;
+  notes?: string | null;
+  /**
+   * A verified submission earns meaningful XP and counts toward badges. Admin/coach only.
+   */
+  verified?: boolean | null;
+  /**
+   * Admin/coach who verified the submission.
+   */
+  verifiedBy?: (number | null) | User;
+  verifiedAt?: string | null;
+  submittedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -2146,6 +2208,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'recognitions';
         value: number | Recognition;
+      } | null)
+    | ({
+        relationTo: 'challenges';
+        value: number | Challenge;
+      } | null)
+    | ({
+        relationTo: 'challenge-submissions';
+        value: number | ChallengeSubmission;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -3320,6 +3390,40 @@ export interface RecognitionsSelect<T extends boolean = true> {
   awardsBadge?: T;
   flagged?: T;
   flagReason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "challenges_select".
+ */
+export interface ChallengesSelect<T extends boolean = true> {
+  slug?: T;
+  title?: T;
+  description?: T;
+  skill?: T;
+  ageGroup?: T;
+  instructions?: T;
+  xpReward?: T;
+  requiresVerification?: T;
+  active?: T;
+  externalId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "challenge-submissions_select".
+ */
+export interface ChallengeSubmissionsSelect<T extends boolean = true> {
+  challenge?: T;
+  user?: T;
+  result?: T;
+  notes?: T;
+  verified?: T;
+  verifiedBy?: T;
+  verifiedAt?: T;
+  submittedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

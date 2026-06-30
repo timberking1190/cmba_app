@@ -58,6 +58,8 @@ import { BadgeAwards } from './collections/BadgeAwards'
 import { XpEvents } from './collections/XpEvents'
 import { Streaks } from './collections/Streaks'
 import { Recognitions } from './collections/Recognitions'
+import { Challenges } from './collections/Challenges'
+import { ChallengeSubmissions } from './collections/ChallengeSubmissions'
 import { FooterNav } from './globals/FooterNav'
 import { HeaderNav } from './globals/HeaderNav'
 import { PolicyVersions } from './globals/PolicyVersions'
@@ -185,6 +187,8 @@ export default buildConfig({
     XpEvents,
     Streaks,
     Recognitions,
+    Challenges,
+    ChallengeSubmissions,
   ],
   globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav],
   editor: lexicalEditor(),

@@ -12,6 +12,11 @@ type Req = PayloadRequest | undefined
 
 const ledgerEnabled = (): boolean => process.env.FEATURE_GAMIFICATION_LEDGER === 'true'
 
+/** Small fun-only XP for logging a challenge attempt (self-reported). */
+export const CHALLENGE_PARTICIPATION_XP = 25
+/** Fallback meaningful XP for a verified challenge when the challenge has none set. */
+export const CHALLENGE_DEFAULT_XP = 100
+
 const relId = (r: unknown): number | string | undefined =>
   r == null ? undefined : typeof r === 'object' ? (r as { id: number | string }).id : (r as number | string)
 
@@ -41,6 +46,67 @@ export async function onCertificationVerified(
       verified: true,
       source: { collection: 'certifications', docId: String(cert.id) },
       dedupeKey: `cert:${cert.id}`,
+    },
+    req,
+  )
+}
+
+/**
+ * A logged challenge attempt earns small fun-only (self-reported) participation XP.
+ * Idempotent per submission. The meaningful reward comes later, on verification.
+ */
+export async function onChallengeSubmitted(
+  payload: Payload,
+  submission: { id: number | string; user?: unknown } | null | undefined,
+  req?: Req,
+): Promise<void> {
+  if (!ledgerEnabled() || !submission) return
+  const userId = relId(submission.user)
+  if (userId == null) return
+  await awardXp(
+    payload,
+    {
+      user: userId,
+      kind: 'challenge',
+      amount: CHALLENGE_PARTICIPATION_XP,
+      counts: 'fun_only',
+      verified: false,
+      source: { collection: 'challenge-submissions', docId: String(submission.id) },
+      dedupeKey: `challenge-sub:${submission.id}`,
+    },
+    req,
+  )
+}
+
+/**
+ * A coach/admin-verified challenge grants the challenge's meaningful (verified) XP,
+ * which counts toward verification-required badges. Idempotent per submission.
+ */
+export async function onChallengeVerified(
+  payload: Payload,
+  submission: { id: number | string; user?: unknown; challenge?: unknown } | null | undefined,
+  req?: Req,
+): Promise<void> {
+  if (!ledgerEnabled() || !submission) return
+  const userId = relId(submission.user)
+  if (userId == null) return
+  let reward = CHALLENGE_DEFAULT_XP
+  const challengeId = relId(submission.challenge)
+  if (challengeId != null) {
+    const ch = await payload.findByID({ collection: 'challenges', id: challengeId, depth: 0, overrideAccess: true, req }).catch(() => null)
+    const r = (ch as { xpReward?: number | null } | null)?.xpReward
+    if (typeof r === 'number') reward = r
+  }
+  await awardXp(
+    payload,
+    {
+      user: userId,
+      kind: 'challenge',
+      amount: reward,
+      counts: 'meaningful',
+      verified: true,
+      source: { collection: 'challenge-submissions', docId: String(submission.id) },
+      dedupeKey: `challenge-verified:${submission.id}`,
     },
     req,
   )
