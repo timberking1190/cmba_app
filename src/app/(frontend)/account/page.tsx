@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import {
-  ShieldCheck, ShieldAlert, ShieldX, Download, ExternalLink, Trophy, Clock, AlertTriangle, CheckCircle2,
+  ShieldCheck, ShieldAlert, ShieldX, Download, ExternalLink, Trophy, Clock, AlertTriangle, CheckCircle2, Award,
 } from 'lucide-react'
 
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
@@ -13,7 +13,7 @@ import { getUnifiedProgress } from '@/lib/gamification/progress'
 import { pathwayAudienceFor } from '@/lib/audience'
 import { AccountActions } from '@/components/account/AccountActions'
 import { CalgarySkyline } from '@/components/graphics/CalgarySkyline'
-import type { Certification, CertificationType, Course } from '@/payload-types'
+import type { Certification, CertificationType, Course, Recognition } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'My Account | CMBA Connect' }
@@ -37,15 +37,17 @@ export default async function AccountPage() {
   const roles = user.roles ?? []
   const audience = pathwayAudienceFor(roles)
 
-  const [compliance, pathways, progress, certRes, certTypesRes] = await Promise.all([
+  const [compliance, pathways, progress, certRes, certTypesRes, recRes] = await Promise.all([
     getComplianceForUser(payload, user),
     getPathwayProgress(payload, user, audience),
     getUnifiedProgress(payload, user),
     payload.find({ collection: 'certifications', where: { user: { equals: user.id } }, depth: 2, limit: 200, overrideAccess: true }),
     payload.find({ collection: 'certification-types', limit: 200, depth: 0, overrideAccess: true }),
+    payload.find({ collection: 'recognitions', where: { and: [{ subject: { equals: user.id } }, { moderationStatus: { equals: 'approved' } }] }, depth: 0, limit: 20, overrideAccess: true, sort: '-moderatedAt' }),
   ])
   const certs = certRes.docs as Certification[]
   const certTypes = certTypesRes.docs as CertificationType[]
+  const recognitions = recRes.docs as Recognition[]
 
   // Recommended courses: those tied to a missing required certification.
   const missingTypeIds = new Set(compliance.missing.map((m) => m.type.id))
@@ -230,6 +232,22 @@ export default async function AccountPage() {
                     </div>
                     <ExternalLink size={14} className="text-cmba-grey-dark shrink-0" />
                   </a>
+                ))}
+              </div>
+            </section>
+          )}
+          {/* Recognitions (approved, surfaced to the recognized member) */}
+          {recognitions.length > 0 && (
+            <section>
+              <h2 className="reveal font-display font-bold text-white uppercase tracking-wide text-sm mb-3 flex items-center gap-2">
+                <Award size={14} className="text-cmba-red" /> Recognitions
+              </h2>
+              <div className="space-y-2">
+                {recognitions.map((r, i) => (
+                  <div key={r.id} style={{ transitionDelay: `${i * 60}ms` }} className="reveal rv-left bg-cmba-black-card border border-white/12 p-3">
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-cmba-red">{String(r.kind).replace(/_/g, ' ')}</div>
+                    {r.message && <p className="text-sm text-cmba-grey-light mt-1">{r.message}</p>}
+                  </div>
                 ))}
               </div>
             </section>
