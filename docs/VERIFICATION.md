@@ -971,3 +971,20 @@ kill-switch.
 - Live (flag off): /admin returns 200 with the provider wrapping it and still ships
   nonced scripts (CSP intact); status route 401 unauthenticated. Gate: 234/234 tests,
   tsc + lint clean, build exit 0. The S1/I7 enforcement gap is now CLOSED for /admin.
+
+## Phase S3 (started) - API security, monitoring, incident readiness
+- Tamper-evident AuditLog: HMAC per row over the integrity-protected fields
+  (src/lib/audit/integrity.ts), stamped in the AuditLog create hook (the log was
+  already append-only 3 ways). New `integrity` column added via migration
+  20260630_125952_add_audit_integrity (additive ADD COLUMN, generated + APPLIED to
+  prod, verified: column present, 52 rows intact). `npm run verify-audit-log` walks
+  the log (live result: 0 valid, 52 unprotected pre-integrity baseline, 0 TAMPERED,
+  exit 0). Unit-tested (tamper detection, key-order + actor-shape stability).
+- /api/v1/auth/mfa/status endpoint for the admin gate (401-gated).
+- docs/INCIDENT_RESPONSE.md: runbook tied to IncidentLog + PIPEDA/PIPA breach duties,
+  severity/timelines, monitoring signals, retention.
+- Documented existing S3 controls (per-endpoint auth + rate limit, idempotency, log
+  hygiene via safeClientError + hashed rate-limit keys) in docs/SECURITY.md S3.
+- Gate: 238/238 tests, tsc + lint clean, build exit 0.
+- Remaining S3: centralized log shipping + anomaly alerting (operator add-on);
+  per-endpoint body schema-validation hardening.

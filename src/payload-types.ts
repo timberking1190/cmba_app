@@ -1460,6 +1460,10 @@ export interface AuditLog {
     | null;
   reason?: string | null;
   at: string;
+  /**
+   * Tamper-evident HMAC of this entry. System-set.
+   */
+  integrity?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2812,6 +2816,7 @@ export interface AuditLogSelect<T extends boolean = true> {
   after?: T;
   reason?: T;
   at?: T;
+  integrity?: T;
   updatedAt?: T;
   createdAt?: T;
 }

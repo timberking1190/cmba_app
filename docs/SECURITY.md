@@ -146,9 +146,24 @@ break those paths without a larger rework. The AES-256-GCM primitive
 (`src/lib/mfa/crypto.ts`) is in place and is already used for TOTP secrets; a
 specific isolated field can adopt it later. Recorded as an accepted residual.
 
-Remaining S2 work: the Payload `/admin` afterLogin MFA slot (the enforcement gap
-noted in S1/I7) and an optional malware-scan integration on uploads (operator
-add-on; the sniff + size + re-encode controls are in place).
+Remaining S2 work: an optional malware-scan integration on uploads (operator
+add-on; the sniff + size + re-encode controls are in place). The Payload `/admin`
+MFA enforcement gap is now closed (see the MFA enforcement row).
+
+## S3 - API security, monitoring, incident readiness (in progress)
+
+| Control | Requirement | Implementation | Tested by |
+| --- | --- | --- | --- |
+| Per-endpoint auth + rate limit | Every /api/v1 mutation authenticates and is rate limited | `lib/api/auth.ts` + `checkRateLimit` (durable, hashed-IP) on auth/MFA/reporting/import buckets; CORS allowlist (S0) | route tests; live 401/429 |
+| Idempotency | Idempotency-Key on writes | `lib/api/idempotency.ts` (keyed on key+scope, fails closed) | `idempotency.test.ts` |
+| Tamper-evident audit log | Append-only + integrity detection | AuditLog deny-all create/update/delete + throw-on-update/delete hooks; HMAC per row (`lib/audit/integrity.ts`); `npm run verify-audit-log` | `integrity.test.ts`; live verifier (0 tampered) |
+| Audit MFA status endpoint | Session posture for gating | `/api/v1/auth/mfa/status` | live 401-gating |
+| Incident response | Runbook tied to IncidentLog + PIPEDA | `docs/INCIDENT_RESPONSE.md`; IncidentLog collection | doc + collection |
+| Log hygiene | No PII / secrets in logs | `safeClientError` (no internal detail to clients); audit bodies carry no PII; rate-limit keys hashed | code review |
+
+Remaining S3 work: centralized log shipping with anomaly alerting (operator add-on,
+wired to the monitoring signals in `docs/INCIDENT_RESPONSE.md`), and per-endpoint
+request-body schema validation hardening on the remaining v1 routes.
 
 ## Required external assurance (cannot be satisfied by code)
 
