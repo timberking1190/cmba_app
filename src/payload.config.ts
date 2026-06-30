@@ -60,6 +60,7 @@ import { Streaks } from './collections/Streaks'
 import { Recognitions } from './collections/Recognitions'
 import { Challenges } from './collections/Challenges'
 import { ChallengeSubmissions } from './collections/ChallengeSubmissions'
+import { QuizAttempts } from './collections/QuizAttempts'
 import { FooterNav } from './globals/FooterNav'
 import { HeaderNav } from './globals/HeaderNav'
 import { PolicyVersions } from './globals/PolicyVersions'
@@ -189,6 +190,7 @@ export default buildConfig({
     Recognitions,
     Challenges,
     ChallengeSubmissions,
+    QuizAttempts,
   ],
   globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav],
   editor: lexicalEditor(),

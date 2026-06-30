@@ -118,6 +118,7 @@ export interface Config {
     recognitions: Recognition;
     challenges: Challenge;
     'challenge-submissions': ChallengeSubmission;
+    'quiz-attempts': QuizAttempt;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -176,6 +177,7 @@ export interface Config {
     recognitions: RecognitionsSelect<false> | RecognitionsSelect<true>;
     challenges: ChallengesSelect<false> | ChallengesSelect<true>;
     'challenge-submissions': ChallengeSubmissionsSelect<false> | ChallengeSubmissionsSelect<true>;
+    'quiz-attempts': QuizAttemptsSelect<false> | QuizAttemptsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1994,6 +1996,26 @@ export interface ChallengeSubmission {
   createdAt: string;
 }
 /**
+ * Server-scored quiz attempts. Written only by the quiz endpoint.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quiz-attempts".
+ */
+export interface QuizAttempt {
+  id: number;
+  user: number | User;
+  /**
+   * Which quiz, e.g. basketball-iq.
+   */
+  quizId: string;
+  score: number;
+  total: number;
+  passed?: boolean | null;
+  takenAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -2220,6 +2242,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'challenge-submissions';
         value: number | ChallengeSubmission;
+      } | null)
+    | ({
+        relationTo: 'quiz-attempts';
+        value: number | QuizAttempt;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -3429,6 +3455,20 @@ export interface ChallengeSubmissionsSelect<T extends boolean = true> {
   verifiedBy?: T;
   verifiedAt?: T;
   submittedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quiz-attempts_select".
+ */
+export interface QuizAttemptsSelect<T extends boolean = true> {
+  user?: T;
+  quizId?: T;
+  score?: T;
+  total?: T;
+  passed?: T;
+  takenAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

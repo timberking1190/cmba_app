@@ -1,13 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 /*
  * Coach/admin verifies one challenge submission. POSTs to the coach-verify route,
  * which authorizes (verified coach of the team, or admin) server-side and grants
- * the meaningful XP. On success the row is done; a failed auth shows the reason.
+ * the meaningful XP. On success router.refresh() drops the row from the pending
+ * list and updates the count; a failed auth shows the reason.
  */
 export function ChallengeVerifyButton({ submissionId }: { submissionId: number }) {
+  const router = useRouter()
   const [state, setState] = useState<'idle' | 'saving' | 'done' | 'error'>('idle')
   const [msg, setMsg] = useState('')
 
@@ -27,6 +30,7 @@ export function ChallengeVerifyButton({ submissionId }: { submissionId: number }
         return
       }
       setState('done')
+      router.refresh()
     } catch {
       setState('error')
       setMsg('Network error.')
