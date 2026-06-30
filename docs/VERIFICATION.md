@@ -947,3 +947,16 @@ kill-switch.
 - Gate: 232/232 tests, tsc + lint clean, build exit 0. (Note: this also fixed a tsc
   gap - the prior S2 commit's gate skipped tsc; the access-test fixture types are now
   correct.)
+
+### S2 (cont.) - secure file upload + field-encryption decision
+- Magic-byte content sniffing (src/lib/uploads/sniff.ts): CertificateFiles now
+  validates real bytes (PDF %PDF, PNG/JPEG/WebP magic) + 10MB cap before storage, so
+  a malicious file declared application/pdf is rejected. Image collections were
+  already content-validated by the sharp re-encode (EXIF strip). Tested (sniff.test).
+- Application-layer field encryption (guardian/DOB) ASSESSED + DEFERRED: DOB is read
+  in plaintext by deriveIsMinor and guardian.email inside hooks, so field-level
+  encrypt/decrypt would break those paths; encryption-at-rest (Supabase) covers the
+  baseline. AES-256-GCM primitive ready for an isolated field later. Documented as an
+  accepted residual in docs/SECURITY.md.
+- Gate: 234/234 tests, tsc + lint clean, build exit 0.
+- S2 remaining: Payload /admin afterLogin MFA slot; optional malware-scan add-on.

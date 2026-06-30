@@ -129,12 +129,26 @@ order in `docs/VERIFICATION.md`; each appends its rows here.
 | Output encoding (XSS) | No raw HTML injection | React escapes by default; no `dangerouslySetInnerHTML` in app code (S0 finding) | code review |
 | SQL injection | Parameterized access only | Payload + Drizzle ORM (no raw string SQL in app paths) | code review |
 | CSRF | State-changing requests protected | Payload `csrf` allowlist (S0) + SameSite=Lax cookies (cross-site POST drops the cookie) | code review |
+| Secure file upload | Verify real bytes (magic number) + size, not declared type | `src/lib/uploads/sniff.ts` (`validateUpload`/`sniffType`) on CertificateFiles; images re-encoded via sharp on all photo collections | `sniff.test.ts` |
+| Session invalidation | Kill other sessions + refresh families on password change | `src/collections/hooks/sessionInvalidation.ts` (Users hooks; actor self-session kept, scoped to password-set only, loop-guarded) | `sessionInvalidation.test.ts` |
+| Open redirect | `next`/`redirect` must be a same-site path | `src/lib/security/redirect.ts` (`safeInternalPath`) on /login + challenge; rejects `//`, schemes, control chars | `redirect.test.ts` |
+| Mass assignment | Privileged fields write-locked | `superAdminFieldOnly` on roles/status/owner across collections (a self-registrant cannot self-assign roles) | `redirect.test.ts` |
+| SSRF | No user-controlled server-side fetches | Outbound fetches are fixed-URL only (TeamLinkt from env, HIBP, Turnstile, SES SMTP); CMS embed is a client-side iframe (CSP frame-src allowlisted), not a server fetch | code review |
 
-Remaining S2 work (larger, touches live paths; scheduled): application-layer
-encryption of the most sensitive fields (guardian contact, date of birth) using
-`src/lib/mfa/crypto.ts`; invalidate-sessions-on-password-change; secure-upload
-content sniffing + malware scan; SSRF / open-redirect / mass-assignment review with
-adversarial tests; and the Payload `/admin` afterLogin MFA slot.
+### Accepted decision: application-layer field encryption (deferred)
+
+Encryption at rest for all personal data is provided by Supabase (ca-central-1).
+Application-layer encryption of individual fields was assessed and deferred:
+`dateOfBirth` is read in plaintext by `deriveIsMinor` (the minor-derivation that
+gates the guardian flow), and `guardian.email` is read inside server hooks
+(guardian confirmation), so field-level encrypt-on-write / decrypt-on-read would
+break those paths without a larger rework. The AES-256-GCM primitive
+(`src/lib/mfa/crypto.ts`) is in place and is already used for TOTP secrets; a
+specific isolated field can adopt it later. Recorded as an accepted residual.
+
+Remaining S2 work: the Payload `/admin` afterLogin MFA slot (the enforcement gap
+noted in S1/I7) and an optional malware-scan integration on uploads (operator
+add-on; the sniff + size + re-encode controls are in place).
 
 ## Required external assurance (cannot be satisfied by code)
 
