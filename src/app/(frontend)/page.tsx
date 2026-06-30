@@ -165,7 +165,7 @@ export default function HomePage() {
             {divisions.map((div) => (
               <Link key={div.label} href={div.href}
                 className="shrink-0 w-40 lg:w-48 bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/60 p-6 text-center transition-all card-hover group">
-                <div className="font-display font-black text-5xl lg:text-6xl text-cmba-red/25 group-hover:text-cmba-red/55 transition-colors mb-2 tracking-tighter2">{div.label}</div>
+                <div className="font-display font-black text-[1.9rem] lg:text-5xl text-cmba-red/25 group-hover:text-cmba-red/55 transition-colors mb-2 tracking-tighter2 whitespace-nowrap">{div.label}</div>
                 <div className="font-mono text-[11px] text-white uppercase tracking-[0.14em]">Age Group</div>
                 <div className="text-xs text-cmba-grey mt-1">Rules & Resources</div>
               </Link>

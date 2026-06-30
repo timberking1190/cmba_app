@@ -3,8 +3,14 @@ import { useEffect, useRef } from "react";
 
 /*
  * Domain-warped FBM noise in Calgary red on near-black. Sits behind all content
- * (z-index:-2, veil at -1). Falls back to a static gradient with no WebGL and
+ * (z-index:0, veil on top). Falls back to a static gradient with no WebGL and
  * freezes a single frame for prefers-reduced-motion.
+ *
+ * Mobile/coarse-pointer devices get a much cheaper render: a lower internal
+ * resolution, fewer FBM octaves, a 30fps cap, and a pause when the tab is hidden.
+ * The noise is soft and slow, so this is visually near-identical but stops the
+ * full-screen shader from competing with the scroll for the GPU (the cause of the
+ * scroll jank and battery drain on phones).
  */
 export function FluidBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -14,6 +20,11 @@ export function FluidBackground() {
     if (!cv) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const small =
+      Math.min(window.innerWidth, window.innerHeight) < 820 ||
+      window.matchMedia("(pointer: coarse)").matches;
+    const OCT = small ? 4 : 6; // FBM octaves
+
     const gl = cv.getContext("webgl", { antialias: false, alpha: false });
     if (!gl) {
       cv.style.background = "radial-gradient(120% 95% at 50% -8%, #6a0008 0%, #2a0003 42%, #08080A 78%)";
@@ -26,7 +37,7 @@ export function FluidBackground() {
       "vec2 h2(vec2 p){p=vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3)));return -1.+2.*fract(sin(p)*43758.5453);}" +
       "float n(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);" +
       "return mix(mix(dot(h2(i),f),dot(h2(i+vec2(1,0)),f-vec2(1,0)),u.x),mix(dot(h2(i+vec2(0,1)),f-vec2(0,1)),dot(h2(i+vec2(1,1)),f-vec2(1,1)),u.x),u.y);}" +
-      "float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<6;i++){v+=a*n(p);p*=2.;a*=.5;}return v;}" +
+      "float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<" + OCT + ";i++){v+=a*n(p);p*=2.;a*=.5;}return v;}" +
       "void main(){vec2 p=(gl_FragCoord.xy-.5*r)/r.y;float tm=t*.06;vec2 mm=(m-.5);" +
       "vec2 q=vec2(fbm(p*1.4+tm),fbm(p*1.4+vec2(5.2,1.3)-tm));" +
       "vec2 w=vec2(fbm(p*1.4+2.*q+vec2(1.7,9.2)+.25*mm),fbm(p*1.4+2.*q+vec2(8.3,2.8)-.25*mm));" +
@@ -60,9 +71,11 @@ export function FluidBackground() {
     let mouse = [0.5, 0.5];
 
     const resize = () => {
-      const d = Math.min(window.devicePixelRatio || 1, 1.5);
-      cv.width = Math.floor(window.innerWidth * d);
-      cv.height = Math.floor(window.innerHeight * d);
+      // Render at a LOW internal resolution on phones (the noise is soft, so the
+      // upscale is invisible) to cut fragment-shader cost by several times.
+      const d = small ? 0.7 : Math.min(window.devicePixelRatio || 1, 1.5);
+      cv.width = Math.max(1, Math.floor(window.innerWidth * d));
+      cv.height = Math.max(1, Math.floor(window.innerHeight * d));
       cv.style.width = window.innerWidth + "px";
       cv.style.height = window.innerHeight + "px";
       gl.viewport(0, 0, cv.width, cv.height);
@@ -75,22 +88,32 @@ export function FluidBackground() {
     };
     window.addEventListener("pointermove", onMove);
 
+    let hidden = false;
+    const onVis = () => { hidden = document.hidden; };
+    document.addEventListener("visibilitychange", onVis);
+
     const t0 = performance.now();
+    const frameMs = small ? 1000 / 30 : 0; // cap mobile to ~30fps; uncapped on desktop
+    let last = -1e9;
     let raf = 0;
-    const draw = () => {
-      const time = reduce ? 8 : (performance.now() - t0) / 1000;
-      gl.uniform1f(uT, time);
-      gl.uniform2f(uR, cv.width, cv.height);
-      gl.uniform2f(uM, mouse[0], mouse[1]);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    const draw = (now: number) => {
+      if (!hidden && (frameMs === 0 || now - last >= frameMs)) {
+        last = now;
+        const time = reduce ? 8 : (now - t0) / 1000;
+        gl.uniform1f(uT, time);
+        gl.uniform2f(uR, cv.width, cv.height);
+        gl.uniform2f(uM, mouse[0], mouse[1]);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      }
       if (!reduce) raf = requestAnimationFrame(draw);
     };
-    draw();
+    raf = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onMove);
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, []);
 
