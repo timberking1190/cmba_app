@@ -165,6 +165,24 @@ Remaining S3 work: centralized log shipping with anomaly alerting (operator add-
 wired to the monitoring signals in `docs/INCIDENT_RESPONSE.md`), and per-endpoint
 request-body schema validation hardening on the remaining v1 routes.
 
+## S4 - Children's data + registration readiness (in progress)
+
+| Control | Requirement | Implementation | Tested by |
+| --- | --- | --- | --- |
+| Guardian-managed minors | Under-18 accounts are guardian-managed, pending until confirmed | `deriveIsMinor` + `guardianFlow` + `sendGuardianConfirmation` (Stage A); guardian email confirm gate | existing |
+| Minor document privacy | A minor's files are owner + super-admin only; club admins see status, not files | `CertificateFiles` read = owner-or-superadmin; private bucket, access-checked downloads | code review |
+| Server-enforced consent | Versioned, auditable sign-off incl. guardian consent for minors | `enforceConsent` hard-reject + append-only ConsentRecords + PolicyVersions (Stage A) | existing |
+| Data minimization | Collect the least, especially for minors | No SIN/payment data; guardian fields only when minor; bodies in audit/email carry no PII | code review |
+| Data subject rights | Access, correction, export, erasure | self-serve export route + admin erase-user with legal-hold check (Stage A/B) | existing |
+| Registration readiness | Public sign-up behind a switch + signup bot defense | `src/lib/registration/policy.ts` (REGISTRATION_MODE, default open) + `registrationGate` hook (mode + honeypot + per-IP/global rate limit + optional Turnstile) on Users create | `policy.test.ts`; live: honeypot -> 400, no user created |
+| No ad/profiling trackers | No third-party advertising / child profiling | None present; only privacy-respecting Turnstile (optional, off by default) | code review |
+
+Remaining S4 work: email verification on sign-up (Payload `auth.verify`; needs SES),
+a token-based self-serve invite flow for invite-only mode, and stricter access
+logging when a minor's record is read (beyond the current owner-only access). The
+STRIDE threat model, data flow diagram, and PIA already exist
+(`docs/THREAT_MODEL.md`, `docs/PRIVACY_IMPACT_ASSESSMENT.md`).
+
 ## Required external assurance (cannot be satisfied by code)
 
 Before any public registration launch:

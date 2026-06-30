@@ -988,3 +988,20 @@ kill-switch.
 - Gate: 238/238 tests, tsc + lint clean, build exit 0.
 - Remaining S3: centralized log shipping + anomaly alerting (operator add-on);
   per-endpoint body schema-validation hardening.
+
+## Phase S4 (started) - Children's data + registration readiness
+- Registration readiness behind a flag: src/lib/registration/policy.ts
+  (REGISTRATION_MODE, default 'open' = current behavior; 'closed' = admin-created
+  only). registrationGate beforeValidate hook on Users create enforces (for public
+  sign-up only): mode, honeypot, per-IP (hashed) + global rate limit, optional
+  Turnstile. Admin-created accounts and seed/bootstrap are exempt. Default behavior
+  unchanged (open, no Turnstile, generous limits). Honeypot added to the /login
+  register form.
+- Live: a honeypot-tripped public registration is rejected 400 ("Sign-up rejected.")
+  with NO user created; normal sign-up is unaffected.
+- Children's-data protections documented (existing): guardian-managed minors,
+  minor-document owner-only access, server-enforced versioned consent, DSAR
+  (export + erasure with legal hold). Threat model / DFD / PIA already produced.
+- Gate: 242/242 tests (+4 registration policy), tsc + lint clean, build exit 0.
+- Remaining S4: email verification on sign-up (needs SES), token-based invite flow,
+  stricter minor-read access logging.

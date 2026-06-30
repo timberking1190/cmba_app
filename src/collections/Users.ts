@@ -12,6 +12,7 @@ import {
 import { validatePassword } from './hooks/passwordPolicy'
 import { enforceMfaRequired } from './hooks/mfa'
 import { flagPasswordChange, invalidateSessionsOnPasswordChange } from './hooks/sessionInvalidation'
+import { registrationGate } from './hooks/registration'
 
 /*
  * Users — the auth collection.
@@ -45,9 +46,9 @@ export const Users: CollectionConfig = {
     group: 'People',
   },
   hooks: {
-    // validatePassword runs first so a weak/breached password is rejected before
-    // any other processing. It is a no-op when no password is being set.
-    beforeValidate: [validatePassword, deriveIsMinor, enforceConsent],
+    // registrationGate runs first (mode + bot defense on public sign-up), then
+    // validatePassword rejects a weak/breached password before any other processing.
+    beforeValidate: [registrationGate, validatePassword, deriveIsMinor, enforceConsent],
     beforeChange: [guardianFlow, enforceMfaRequired, flagPasswordChange],
     afterChange: [sendGuardianConfirmation, logConsentRecord, invalidateSessionsOnPasswordChange],
   },
