@@ -49,7 +49,7 @@ export default async function AthleteChallengesPage() {
                       {c.skill && <span className="font-mono text-[10px] uppercase tracking-wider text-cmba-red">{c.skill}</span>}
                       {c.description && <p className="text-sm text-cmba-grey mt-1">{c.description}</p>}
                     </div>
-                    <span className="font-mono text-[11px] text-cmba-grey-mid shrink-0">{c.xpReward ?? 0} XP</span>
+                    <span className="font-mono text-[11px] text-cmba-grey-mid shrink-0">{c.xpReward ?? 100} XP</span>
                   </div>
                   {c.instructions && <p className="text-xs text-cmba-grey-light mt-2">{c.instructions}</p>}
                   <ChallengeSubmitForm challengeId={c.id} teams={teams} />

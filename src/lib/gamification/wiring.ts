@@ -57,12 +57,15 @@ export async function onCertificationVerified(
  */
 export async function onChallengeSubmitted(
   payload: Payload,
-  submission: { id: number | string; user?: unknown } | null | undefined,
+  submission: { id: number | string; user?: unknown; challenge?: unknown } | null | undefined,
   req?: Req,
 ): Promise<void> {
   if (!ledgerEnabled() || !submission) return
   const userId = relId(submission.user)
   if (userId == null) return
+  // Dedup per (user, challenge) so re-logging the SAME challenge does not stack
+  // participation XP; the source still traces to this specific submission.
+  const challengeId = relId(submission.challenge) ?? submission.id
   await awardXp(
     payload,
     {
@@ -72,7 +75,7 @@ export async function onChallengeSubmitted(
       counts: 'fun_only',
       verified: false,
       source: { collection: 'challenge-submissions', docId: String(submission.id) },
-      dedupeKey: `challenge-sub:${submission.id}`,
+      dedupeKey: `challenge-sub:${challengeId}`,
     },
     req,
   )
@@ -106,7 +109,9 @@ export async function onChallengeVerified(
       counts: 'meaningful',
       verified: true,
       source: { collection: 'challenge-submissions', docId: String(submission.id) },
-      dedupeKey: `challenge-verified:${submission.id}`,
+      // Dedup per (user, challenge): the meaningful reward is earned once per
+      // challenge no matter how many submissions of it get verified.
+      dedupeKey: `challenge-verified:${challengeId ?? submission.id}`,
     },
     req,
   )
