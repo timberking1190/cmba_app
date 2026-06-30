@@ -118,5 +118,20 @@ Before any public registration launch:
 4. Signed Data Processing Agreements with Supabase, AWS, and Vercel; processor
    register current (`docs/DATA_RESIDENCY_AND_COMPLIANCE.md`).
 
-This document, the threat model, and the data flow diagram (added in S4) are the
-evidence those reviews consume.
+This document, the threat model, and the data flow diagram are the evidence those
+reviews consume.
+
+## Security and privacy evidence package
+
+- `docs/THREAT_MODEL.md` — STRIDE threat model + textual data flow diagram with
+  trust boundaries and Canadian-residency assertions; each STRIDE risk mapped to an
+  in-place control or marked planned.
+- `docs/PRIVACY_IMPACT_ASSESSMENT.md` — PIA under PIPEDA + Alberta PIPA: data
+  inventory, consent, minors/guardian, data subject rights, retention, residency,
+  risk table, open items before launch.
+- `docs/PROCESSOR_REGISTER.md` — third-party processors + DPA register (all DPAs
+  REQUIRED/pending) with residency-vs-sovereignty note.
+- `docs/PENTEST_READINESS.md` — scope, architecture, test accounts, the full
+  adversarial/pentest matrix as a checklist, known residuals, disclosure contact.
+- `docs/SES_SETUP.md` — SES (ca-central-1) provisioning runbook (sandbox + RAMP DNS
+  blockers documented).
