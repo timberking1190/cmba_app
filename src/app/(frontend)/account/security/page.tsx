@@ -6,6 +6,7 @@ import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { isAnyAdmin } from "@/access/index";
 import { TotpSetup } from "@/components/security/TotpSetup";
+import { PasskeyEnroll } from "@/components/security/PasskeyEnroll";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Security | CMBA Connect" };
@@ -16,6 +17,7 @@ export default async function SecurityPage() {
 
   const mfa = (user as { mfa?: { enrolled?: boolean; methods?: string[] | null } }).mfa ?? {};
   const enrolled = Boolean(mfa.enrolled);
+  const hasPasskey = (mfa.methods ?? []).includes("passkey");
   const admin = isAnyAdmin(user);
 
   return (
@@ -42,13 +44,14 @@ export default async function SecurityPage() {
           </div>
         )}
 
-        <div>
-          <h2 className="font-display font-bold text-white uppercase tracking-wide text-sm mb-3">Two-factor authentication</h2>
+        <div className="space-y-4">
+          <h2 className="font-display font-bold text-white uppercase tracking-wide text-sm">Two-factor authentication</h2>
+          <PasskeyEnroll hasPasskey={hasPasskey} />
           <TotpSetup enrolled={enrolled} />
         </div>
 
         <p className="font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider">
-          Passkeys and managing your active devices are coming next.
+          Managing your active devices and sign-in challenge are coming next.
         </p>
       </div>
     </div>

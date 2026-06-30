@@ -80,6 +80,39 @@ export async function markEnrolled(
   })
 }
 
+/** Store a single-use WebAuthn ceremony challenge (5 min TTL). */
+export async function storeWebauthnChallenge(
+  payload: Payload,
+  userId: string | number,
+  value: string,
+  type: 'registration' | 'authentication',
+): Promise<void> {
+  await payload.create({
+    collection: 'webauthn-challenges',
+    overrideAccess: true,
+    data: { user: userId, value, type, expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(), createdAt: new Date().toISOString() } as never,
+  })
+}
+
+/** Consume (return + delete) the most recent unexpired challenge for a user+type. */
+export async function consumeWebauthnChallenge(
+  payload: Payload,
+  userId: string | number,
+  type: 'registration' | 'authentication',
+): Promise<string | null> {
+  const res = await payload.find({
+    collection: 'webauthn-challenges',
+    where: { and: [{ user: { equals: userId } }, { type: { equals: type } }, { expiresAt: { greater_than: new Date().toISOString() } }] },
+    sort: '-createdAt',
+    limit: 1,
+    overrideAccess: true,
+  })
+  const doc = res.docs[0] as { id: string | number; value: string } | undefined
+  if (!doc) return null
+  await payload.delete({ collection: 'webauthn-challenges', id: doc.id, overrideAccess: true }).catch(() => {})
+  return doc.value
+}
+
 /** Append a security event to the append-only AuditLog. Never throws. */
 export async function writeAudit(
   payload: Payload,

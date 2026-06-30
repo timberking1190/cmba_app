@@ -856,3 +856,20 @@ binary against the new schema keeps working (zero-downtime).
 - NOTE: full interactive "enroll with a real authenticator app" is the operator's
   live test (needs a real signed-in user); covered in docs/PENTEST_READINESS.md. No
   enforcement wired yet (MFA_ENFORCE still off); logins unaffected.
+
+### I5 — Passkeys (WebAuthn) (no enforcement)
+- src/lib/mfa/webauthn.ts: @simplewebauthn/server v13 wrapper. RP ID + origin
+  allowlist from WEBAUTHN_RP_ID / WEBAUTHN_ORIGINS (preview hosts excluded unless
+  listed). verifyReg/verifyAuth fail closed on error; public key stored base64url and
+  never serialized; counter persisted.
+- webauthn-challenges store/consume (single-use, 5min TTL) in server.ts.
+- Routes (rate-limited, audited): passkey/register/options|verify (store credential,
+  markEnrolled('passkey'), elevate), passkey/auth/options|verify (elevate; rejects a
+  non-increasing signature counter = cloned-authenticator guard).
+- UI: PasskeyEnroll (@simplewebauthn/browser startRegistration) on /account/security.
+- Gate: 211/211 tests (+4 webauthn config/options), tsc + lint clean, build exit 0.
+  Live: all 4 passkey routes return 401 unauthenticated.
+- NOTE: the full passkey ceremony needs a real/virtual authenticator on the canonical
+  origin (cmbaplatform.vercel.app); that is the operator/pentest live test
+  (docs/PENTEST_READINESS.md). Config, options, origin-gating, and the counter guard
+  are covered by tests + code review.

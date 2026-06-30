@@ -104,6 +104,7 @@ un-triaged advisory still fails CI.
 | Password storage | Strong slow hash | Payload built-in (PBKDF2), local strategy never overridden | n/a |
 | MFA decision | One enforcement function, force-enrollment invariant | `src/lib/mfa/guard.ts` (decideMfa) | `guard.test.ts` (incl. "admin never ok while aal1") |
 | Per-session assurance | AAL per session via sessionMeta keyed by sid | `src/lib/mfa/session.ts` + `sessionPure.ts`; elevation in `server.ts` | `session.test.ts` |
+| Passkeys (primary) | WebAuthn/FIDO2, phishing-resistant, origin-pinned, counter-regression rejected | `src/lib/mfa/webauthn.ts` (@simplewebauthn v13, RP ID + origin allowlist from env); routes `.../mfa/passkey/register|auth/options|verify`; `webauthn-credentials` (publicKey read:()=>false) + single-use `webauthn-challenges` | `webauthn.test.ts` (config + options); ceremony is operator/live-tested |
 | TOTP second factor | Authenticator app, replay-protected | `src/lib/mfa/totp.ts` (otpauth, lastStep floor); routes `.../mfa/totp/enroll|activate`, `.../mfa/challenge` | `totp.test.ts`; live 401-gating + 403 deny-all |
 | TOTP secret at rest | App-layer encryption, never serialized | `src/lib/mfa/crypto.ts` (AES-256-GCM, TOTP_ENC_KEY); `mfa-totp.secretEncrypted` read:()=>false | `crypto.test.ts` (round-trip + tamper) |
 | Recovery codes | One-time, salted KDF, single-use | `src/lib/mfa/recovery.ts` (PBKDF2 + constant-time); `recovery-codes` deny-all | `recovery.test.ts` |
