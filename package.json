@@ -38,7 +38,7 @@
     "@supabase/supabase-js": "^2.100.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
-    "graphql": "^16.8.1",
+    "graphql": "^17.0.1",
     "lucide-react": "^1.7.0",
     "next": "15.3.9",
     "otpauth": "^9.5.1",
