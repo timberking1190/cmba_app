@@ -13,7 +13,7 @@ const faqCategories: { category: string; questions: Q[] }[] = [
   {
     category: "Registration",
     questions: [
-      { q: "When does registration open?", a: "CMBA registers through TeamLinkt. Fall/Winter registration typically opens in late summer, and Spring League opens in late winter. Watch cmba.ab.ca and CMBA's Instagram for the exact dates each season.", link: { label: "Register a Player", href: REGISTER.player } },
+      { q: "When does registration open?", a: "CMBA registers through TeamLinkt. Registration for the Fall/Winter season opens in June each year; Spring League registration opens separately in late winter. Watch cmba.ab.ca and CMBA's Instagram for the exact dates each season.", link: { label: "Register a Player", href: REGISTER.player } },
       { q: "What does it cost to register?", a: "Fees are set each season and vary by age group and league. They cover gym rental, officials, and league administration. The current fee schedule is published in CMBA's Fees document.", link: { label: "View Fees", href: DOCS.fees } },
       { q: "How do I register my child?", a: "Create a TeamLinkt account and complete the player registration for the league and age group you want. Tykes, U11, U13, U15, and U18 are all registered the same way.", link: { label: "Player Registration", href: REGISTER.player } },
     ],
