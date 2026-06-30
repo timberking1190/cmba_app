@@ -42,6 +42,8 @@ export async function GET(req: Request) {
     ids.set(String(id), id)
   }
 
+  // limit 1000 is a per-week ceiling (consistent with standings-nightly); at league
+  // scale this is not hit. If a future week exceeds it, paginate these two reads.
   const awards = await payload.find({ collection: 'badge-awards', where: { awardedAt: { greater_than_equal: weekAgo } }, depth: 0, limit: 1000, overrideAccess: true })
   for (const a of awards.docs) add((a as { user?: unknown }).user)
 

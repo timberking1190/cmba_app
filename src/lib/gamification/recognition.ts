@@ -9,7 +9,9 @@
 import type { Payload, PayloadRequest } from 'payload'
 
 import { isUnder18 } from '../age'
+import { emailRecognition } from '../emailEvents'
 import { writeAudit, type ActorUser } from '../games/service'
+import { notifyUser } from '../notify'
 import { awardXp } from './engine'
 
 type Req = PayloadRequest | undefined
@@ -43,6 +45,11 @@ export async function recordRecognitionApproved(
   const moderatorId = relId((rec as { moderatedBy?: unknown }).moderatedBy)
   const actor: ActorUser | null = moderatorId != null ? { id: moderatorId } : null
 
+  // Fetch the subject once (for isMinor on any badge grant and for the notification).
+  const subject = await payload
+    .findByID({ collection: 'users', id: subjectId, depth: 0, overrideAccess: true, req })
+    .catch(() => null)
+
   // 1) Meaningful (verified) XP for the recognized member.
   await awardXp(
     payload,
@@ -61,9 +68,6 @@ export async function recordRecognitionApproved(
   // 2) Optional explicit badge grant (recognition badges are not auto-evaluated).
   const badgeId = relId((rec as { awardsBadge?: unknown }).awardsBadge)
   if (badgeId != null) {
-    const subject = await payload
-      .findByID({ collection: 'users', id: subjectId, depth: 0, overrideAccess: true, req })
-      .catch(() => null)
     const isMinor = isUnder18((subject as { dateOfBirth?: string | null } | null)?.dateOfBirth)
     try {
       await payload.create({
@@ -89,6 +93,12 @@ export async function recordRecognitionApproved(
       // Unique (user, badge) violation: already granted. Ignore.
     }
   }
+
+  // 3) Notify the recognized member's account (PII-free; honors recognitionUpdates).
+  await notifyUser(payload, subject as never, {
+    prefKey: 'recognitionUpdates',
+    send: (to) => emailRecognition(payload, { toEmail: to }),
+  })
 
   await writeAudit(
     payload,

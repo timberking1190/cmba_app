@@ -67,11 +67,19 @@ export async function GET(req: Request) {
         data: { currentStreakDays: streak.currentStreakDays, longestStreakDays: Math.max(prevLongest, streak.longestStreakDays), lastActiveDay: streak.lastActiveDay } as never,
       })
     } else {
-      await payload.create({
-        collection: 'streaks',
-        overrideAccess: true,
-        data: { user: id, currentStreakDays: streak.currentStreakDays, longestStreakDays: streak.longestStreakDays, lastActiveDay: streak.lastActiveDay, streakKind: 'activity' } as never,
-      })
+      try {
+        await payload.create({
+          collection: 'streaks',
+          overrideAccess: true,
+          data: { user: id, currentStreakDays: streak.currentStreakDays, longestStreakDays: streak.longestStreakDays, lastActiveDay: streak.lastActiveDay, streakKind: 'activity' } as never,
+        })
+      } catch {
+        // UNIQUE(user) race (e.g. a manual run during the schedule): fall back to update.
+        const again = await payload.find({ collection: 'streaks', where: { user: { equals: id } }, limit: 1, depth: 0, overrideAccess: true })
+        if (again.docs[0]) {
+          await payload.update({ collection: 'streaks', id: again.docs[0].id, overrideAccess: true, data: { currentStreakDays: streak.currentStreakDays, longestStreakDays: streak.longestStreakDays, lastActiveDay: streak.lastActiveDay } as never })
+        }
+      }
     }
     streaksWritten++
 
