@@ -13,6 +13,7 @@ import * as migration_20260625_084235_stageb5_brackets_incidents_scaffolds from 
 import * as migration_20260630_020454_add_mfa_schema from './20260630_020454_add_mfa_schema';
 import * as migration_20260630_125952_add_audit_integrity from './20260630_125952_add_audit_integrity';
 import * as migration_20260630_170515_f1a_engagement_foundation from './20260630_170515_f1a_engagement_foundation';
+import * as migration_20260630_173652_f2_recognitions_consents from './20260630_173652_f2_recognitions_consents';
 
 export const migrations = [
   {
@@ -88,6 +89,11 @@ export const migrations = [
   {
     up: migration_20260630_170515_f1a_engagement_foundation.up,
     down: migration_20260630_170515_f1a_engagement_foundation.down,
-    name: '20260630_170515_f1a_engagement_foundation'
+    name: '20260630_170515_f1a_engagement_foundation',
+  },
+  {
+    up: migration_20260630_173652_f2_recognitions_consents.up,
+    down: migration_20260630_173652_f2_recognitions_consents.down,
+    name: '20260630_173652_f2_recognitions_consents'
   },
 ];

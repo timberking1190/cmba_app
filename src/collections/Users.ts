@@ -143,6 +143,12 @@ export const Users: CollectionConfig = {
         { name: 'acceptedIp', type: 'text' },
         { name: 'marketingOptIn', type: 'checkbox', defaultValue: false },
         { name: 'photoOptIn', type: 'checkbox', defaultValue: false },
+        // Member-Value engagement consents (guardian-set for minors; default off).
+        // These gate any surfacing of a member's progress/recognition/leaderboard
+        // presence beyond the owner. Default deny: nothing surfaces without opt-in.
+        { name: 'recognitionSurfacing', type: 'checkbox', defaultValue: false, admin: { description: 'Allow approved recognitions of this member to surface beyond the owner.' } },
+        { name: 'progressSharing', type: 'checkbox', defaultValue: false, admin: { description: 'Allow a coach or teammate to see this member\'s development progress.' } },
+        { name: 'appearOnLeaderboard', type: 'checkbox', defaultValue: false, admin: { description: 'Allow this member to appear on leaderboards (privacy-safe name only).' } },
       ],
     },
     {

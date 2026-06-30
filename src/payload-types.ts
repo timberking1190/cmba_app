@@ -115,6 +115,7 @@ export interface Config {
     'badge-awards': BadgeAward;
     'xp-events': XpEvent;
     streaks: Streak;
+    recognitions: Recognition;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -170,6 +171,7 @@ export interface Config {
     'badge-awards': BadgeAwardsSelect<false> | BadgeAwardsSelect<true>;
     'xp-events': XpEventsSelect<false> | XpEventsSelect<true>;
     streaks: StreaksSelect<false> | StreaksSelect<true>;
+    recognitions: RecognitionsSelect<false> | RecognitionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -268,6 +270,18 @@ export interface User {
     acceptedIp?: string | null;
     marketingOptIn?: boolean | null;
     photoOptIn?: boolean | null;
+    /**
+     * Allow approved recognitions of this member to surface beyond the owner.
+     */
+    recognitionSurfacing?: boolean | null;
+    /**
+     * Allow a coach or teammate to see this member's development progress.
+     */
+    progressSharing?: boolean | null;
+    /**
+     * Allow this member to appear on leaderboards (privacy-safe name only).
+     */
+    appearOnLeaderboard?: boolean | null;
   };
   /**
    * Required for participants under 18. The account stays pending until confirmed.
@@ -592,6 +606,9 @@ export interface ConsentRecord {
   guardianConsentVersion?: string | null;
   marketingOptIn?: boolean | null;
   photoOptIn?: boolean | null;
+  recognitionSurfacing?: boolean | null;
+  progressSharing?: boolean | null;
+  appearOnLeaderboard?: boolean | null;
   acceptedAt: string;
   acceptedIp?: string | null;
   updatedAt: string;
@@ -1850,6 +1867,59 @@ export interface Streak {
   createdAt: string;
 }
 /**
+ * Moderated recognitions. Created pending; approved in the admin panel before they surface.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recognitions".
+ */
+export interface Recognition {
+  id: number;
+  kind: 'player_of_game' | 'shout_out' | 'sportsmanship' | 'coach_of_month' | 'parent_volunteer' | 'milestone';
+  /**
+   * The recognized member.
+   */
+  subject: number | User;
+  /**
+   * Pinned to the caller server-side. Admin-only field.
+   */
+  nominatedBy: number | User;
+  /**
+   * Optional team scope for surfacing.
+   */
+  team?: (number | null) | Team;
+  /**
+   * Plaintext; escaped on render. No HTML.
+   */
+  message?: string | null;
+  /**
+   * Nothing surfaces until approved. Admin-only.
+   */
+  moderationStatus: 'pending' | 'approved' | 'rejected';
+  /**
+   * Admin who approved/rejected. Set server-side.
+   */
+  moderatedBy?: (number | null) | User;
+  moderatedAt?: string | null;
+  /**
+   * Captured server-side from the subject DOB. Gates privacy-safe surfacing.
+   */
+  subjectIsMinor?: boolean | null;
+  /**
+   * Optional: on approval the engine grants this badge (verified) + an XP event.
+   */
+  awardsBadge?: (number | null) | Badge;
+  /**
+   * Reported for moderator review.
+   */
+  flagged?: boolean | null;
+  /**
+   * Why the recognition was flagged.
+   */
+  flagReason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -2064,6 +2134,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'streaks';
         value: number | Streak;
+      } | null)
+    | ({
+        relationTo: 'recognitions';
+        value: number | Recognition;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2141,6 +2215,9 @@ export interface UsersSelect<T extends boolean = true> {
         acceptedIp?: T;
         marketingOptIn?: T;
         photoOptIn?: T;
+        recognitionSurfacing?: T;
+        progressSharing?: T;
+        appearOnLeaderboard?: T;
       };
   guardian?:
     | T
@@ -2342,6 +2419,9 @@ export interface ConsentRecordsSelect<T extends boolean = true> {
   guardianConsentVersion?: T;
   marketingOptIn?: T;
   photoOptIn?: T;
+  recognitionSurfacing?: T;
+  progressSharing?: T;
+  appearOnLeaderboard?: T;
   acceptedAt?: T;
   acceptedIp?: T;
   updatedAt?: T;
@@ -3210,6 +3290,26 @@ export interface StreaksSelect<T extends boolean = true> {
   longestStreakDays?: T;
   lastActiveDay?: T;
   streakKind?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recognitions_select".
+ */
+export interface RecognitionsSelect<T extends boolean = true> {
+  kind?: T;
+  subject?: T;
+  nominatedBy?: T;
+  team?: T;
+  message?: T;
+  moderationStatus?: T;
+  moderatedBy?: T;
+  moderatedAt?: T;
+  subjectIsMinor?: T;
+  awardsBadge?: T;
+  flagged?: T;
+  flagReason?: T;
   updatedAt?: T;
   createdAt?: T;
 }

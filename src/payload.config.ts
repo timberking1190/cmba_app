@@ -57,6 +57,7 @@ import { Badges } from './collections/Badges'
 import { BadgeAwards } from './collections/BadgeAwards'
 import { XpEvents } from './collections/XpEvents'
 import { Streaks } from './collections/Streaks'
+import { Recognitions } from './collections/Recognitions'
 import { FooterNav } from './globals/FooterNav'
 import { HeaderNav } from './globals/HeaderNav'
 import { PolicyVersions } from './globals/PolicyVersions'
@@ -176,12 +177,14 @@ export default buildConfig({
     MfaTotp,
     RecoveryCodes,
     EmailOtp,
-    // Engagement (Member-Value foundation): unified gamification ledgers.
-    // Scaffolds this stage (model only); the award engine + crons land in F1b.
+    // Engagement (Member-Value foundation): unified gamification ledgers +
+    // moderated recognition. Scaffolds this stage (model only); the award engine,
+    // recognition approval wiring, and crons land in later phases.
     Badges,
     BadgeAwards,
     XpEvents,
     Streaks,
+    Recognitions,
   ],
   globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav],
   editor: lexicalEditor(),
