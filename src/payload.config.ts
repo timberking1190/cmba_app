@@ -22,6 +22,7 @@ import { Courses } from './collections/Courses'
 import { Courts } from './collections/Courts'
 import { Disputes } from './collections/Disputes'
 import { Divisions } from './collections/Divisions'
+import { EmailOtp } from './collections/EmailOtp'
 import { GameIncidents } from './collections/GameIncidents'
 import { GameOfficials } from './collections/GameOfficials'
 import { GameReports } from './collections/GameReports'
@@ -47,6 +48,10 @@ import { TeamMemberships } from './collections/TeamMemberships'
 import { Teams } from './collections/Teams'
 import { Users } from './collections/Users'
 import { Venues } from './collections/Venues'
+import { WebauthnCredentials } from './collections/WebauthnCredentials'
+import { WebauthnChallenges } from './collections/WebauthnChallenges'
+import { MfaTotp } from './collections/MfaTotp'
+import { RecoveryCodes } from './collections/RecoveryCodes'
 import { FooterNav } from './globals/FooterNav'
 import { HeaderNav } from './globals/HeaderNav'
 import { PolicyVersions } from './globals/PolicyVersions'
@@ -156,6 +161,12 @@ export default buildConfig({
     IdempotencyKeys,
     RefreshTokens,
     RateLimitHits,
+    // S1 — multi-factor authentication (secrets in private collections).
+    WebauthnCredentials,
+    WebauthnChallenges,
+    MfaTotp,
+    RecoveryCodes,
+    EmailOtp,
   ],
   globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav],
   editor: lexicalEditor(),

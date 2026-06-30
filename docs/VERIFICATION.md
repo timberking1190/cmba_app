@@ -804,3 +804,22 @@ I0 deps+env · I1 password policy+HIBP · I2 schema · I3 session-meta · I4 TOT
 - Gate: 179/179 tests (incl. 14 new), tsc + lint clean, build exit 0.
 
 ### I0+I1 verdict: GREEN. Additive only; no login behavior changed; no schema change.
+
+### I2 — MFA data model (schema only, no enforcement)
+- 5 new private collections (deny-all external access; secrets `read:()=>false`):
+  webauthn-credentials, webauthn-challenges, mfa-totp, recovery-codes, email-otp.
+- Users gains a `mfa` group (enrolled/methods/enrolledAt/required/lastVerifiedAt;
+  enrolled+required saveToJWT) and a `sessionMeta` array (sid/aal/mfaAt/stepUpAt/
+  ip/userAgent; never serialized). `enforceMfaRequired` beforeChange derives
+  mfa.required from admin roles.
+- Migration src/migrations/20260630_020454_add_mfa_schema.ts generated OFFLINE
+  (snapshot diff, no DB connection). REVIEWED: up() is additive-only (8 CREATE
+  TABLE, users ADD COLUMN all nullable/DEFAULT false, enums + indexes, zero
+  destructive statements); down() cleanly reverses. Safe + reversible on the live DB.
+- Gate: tsc + lint clean, 179/179 tests, build exit 0. No enforcement; logins
+  unaffected; new tables not yet queried.
+
+OPERATOR ACTION (apply when ready, branch first): the migration is committed but NOT
+applied. Apply with:  `npm run migrate`  (against a Supabase branch first, then prod;
+DATABASE_URL points at the target). All changes are additive/nullable so an old
+binary against the new schema keeps working (zero-downtime).

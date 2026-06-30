@@ -10,6 +10,7 @@ import {
   sendGuardianConfirmation,
 } from './hooks/users'
 import { validatePassword } from './hooks/passwordPolicy'
+import { enforceMfaRequired } from './hooks/mfa'
 
 /*
  * Users — the auth collection.
@@ -46,7 +47,7 @@ export const Users: CollectionConfig = {
     // validatePassword runs first so a weak/breached password is rejected before
     // any other processing. It is a no-op when no password is being set.
     beforeValidate: [validatePassword, deriveIsMinor, enforceConsent],
-    beforeChange: [guardianFlow],
+    beforeChange: [guardianFlow, enforceMfaRequired],
     afterChange: [sendGuardianConfirmation, logConsentRecord],
   },
   fields: [
@@ -186,6 +187,75 @@ export const Users: CollectionConfig = {
           defaultValue: true,
           admin: { description: 'Reminders to report or confirm a game score. Transactional escalations are always sent.' },
         },
+      ],
+    },
+    {
+      name: 'mfa',
+      type: 'group',
+      label: 'Multi-factor authentication',
+      admin: {
+        position: 'sidebar',
+        description: 'MFA state. Secrets live in separate private collections. System-managed.',
+      },
+      fields: [
+        // saveToJWT: coarse per-user flags ride in the token so a half-completed
+        // session can be evaluated without a DB hit. Per-SESSION assurance lives in
+        // sessionMeta, never here.
+        {
+          name: 'enrolled',
+          type: 'checkbox',
+          defaultValue: false,
+          saveToJWT: true,
+          access: { update: () => false },
+          admin: { readOnly: true },
+        },
+        {
+          name: 'methods',
+          type: 'select',
+          hasMany: true,
+          options: [
+            { label: 'Authenticator app (TOTP)', value: 'totp' },
+            { label: 'Passkey', value: 'passkey' },
+          ],
+          access: { update: () => false },
+          admin: { readOnly: true },
+        },
+        { name: 'enrolledAt', type: 'date', access: { update: () => false }, admin: { readOnly: true } },
+        // Derived from roles (any admin role -> required). Drives force-enrollment.
+        {
+          name: 'required',
+          type: 'checkbox',
+          defaultValue: false,
+          saveToJWT: true,
+          access: { update: () => false },
+          admin: { readOnly: true },
+        },
+        { name: 'lastVerifiedAt', type: 'date', access: { read: () => false, update: () => false } },
+      ],
+    },
+    {
+      name: 'sessionMeta',
+      type: 'array',
+      // Parallel to Payload's own sessions[]; keyed by sid. Carries per-session
+      // assurance level (aal) + MFA/step-up timestamps. Never serialized; written
+      // only server-side via overrideAccess.
+      access: { read: () => false, update: () => false },
+      admin: { hidden: true },
+      fields: [
+        { name: 'sid', type: 'text', required: true, index: true },
+        {
+          name: 'aal',
+          type: 'select',
+          defaultValue: 'aal1',
+          options: [
+            { label: 'AAL1 (password only)', value: 'aal1' },
+            { label: 'AAL2 (MFA verified)', value: 'aal2' },
+          ],
+        },
+        { name: 'mfaAt', type: 'date' },
+        { name: 'stepUpAt', type: 'date' },
+        { name: 'ip', type: 'text' },
+        { name: 'userAgent', type: 'text' },
       ],
     },
     {
