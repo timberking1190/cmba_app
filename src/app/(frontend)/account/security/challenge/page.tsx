@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 
 import { getCurrentUser } from "@/lib/auth";
+import { safeInternalPath } from "@/lib/security/redirect";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
 
 export const dynamic = "force-dynamic";
@@ -16,9 +17,7 @@ export default async function ChallengePage({ searchParams }: { searchParams: Pr
   if (!mfa.enrolled) redirect("/account/security");
 
   const sp = await searchParams;
-  // Only allow same-site relative redirects (open-redirect guard).
-  const raw = sp?.next ?? "/account";
-  const next = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/account";
+  const next = safeInternalPath(sp?.next, "/account");
 
   return (
     <div className="max-w-md mx-auto px-4 lg:px-6 py-12">

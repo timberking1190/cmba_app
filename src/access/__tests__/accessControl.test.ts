@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { hasRole, isAnyAdmin, isClubAdmin, isSuperAdmin, clubIdOf } from '../index'
+import { hasRole, isAnyAdmin, isClubAdmin, isSuperAdmin, clubIdOf, type Role } from '../index'
 import { deleteUsers, readUsers, updateUsers } from '../users'
 
 /*
@@ -12,10 +12,10 @@ import { deleteUsers, readUsers, updateUsers } from '../users'
  */
 
 const anon = undefined
-const participant = { id: 1, roles: ['participant'] }
-const coach = { id: 2, roles: ['coach'] }
-const clubAdmin = { id: 3, roles: ['club_admin'], club: 99 }
-const superAdmin = { id: 4, roles: ['super_admin'] }
+const participant = { id: 1, roles: ['participant'] as Role[] }
+const coach = { id: 2, roles: ['coach'] as Role[] }
+const clubAdmin = { id: 3, roles: ['club_admin'] as Role[], club: 99 }
+const superAdmin = { id: 4, roles: ['super_admin'] as Role[] }
 
 const call = (fn: typeof readUsers, user: unknown) => fn({ req: { user } } as never)
 

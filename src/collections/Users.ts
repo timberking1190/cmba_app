@@ -11,6 +11,7 @@ import {
 } from './hooks/users'
 import { validatePassword } from './hooks/passwordPolicy'
 import { enforceMfaRequired } from './hooks/mfa'
+import { flagPasswordChange, invalidateSessionsOnPasswordChange } from './hooks/sessionInvalidation'
 
 /*
  * Users — the auth collection.
@@ -47,8 +48,8 @@ export const Users: CollectionConfig = {
     // validatePassword runs first so a weak/breached password is rejected before
     // any other processing. It is a no-op when no password is being set.
     beforeValidate: [validatePassword, deriveIsMinor, enforceConsent],
-    beforeChange: [guardianFlow, enforceMfaRequired],
-    afterChange: [sendGuardianConfirmation, logConsentRecord],
+    beforeChange: [guardianFlow, enforceMfaRequired, flagPasswordChange],
+    afterChange: [sendGuardianConfirmation, logConsentRecord, invalidateSessionsOnPasswordChange],
   },
   fields: [
     { name: 'fullName', type: 'text', required: true, label: 'Full name' },

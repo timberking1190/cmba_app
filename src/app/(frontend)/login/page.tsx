@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, ArrowRight, ExternalLink, Info, ClipboardList, CheckCircle2 } from "lucide-react";
 import { REGISTER } from "@/lib/cmbaLinks";
+import { safeInternalPath } from "@/lib/security/redirect";
 import { Wordmark } from "@/components/Wordmark";
 import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
 
@@ -89,7 +90,7 @@ export default function LoginPage() {
   function redirectTarget(): string {
     if (typeof window === "undefined") return "/account";
     const p = new URLSearchParams(window.location.search).get("redirect");
-    return p && p.startsWith("/") ? p : "/account";
+    return safeInternalPath(p, "/account");
   }
 
   async function handleSignIn(e: React.FormEvent) {

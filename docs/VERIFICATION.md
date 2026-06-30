@@ -931,3 +931,19 @@ kill-switch.
 - Remaining S2 (scheduled, touches live paths): sensitive-field encryption
   (guardian/DOB), invalidate-on-password-change, secure-upload sniffing/malware scan,
   SSRF/open-redirect/mass-assignment adversarial review, Payload /admin MFA slot.
+
+### S2 (cont.) - session invalidation, open-redirect, mass-assignment
+- Invalidate-sessions-on-password-change (src/collections/hooks/sessionInvalidation.ts,
+  wired into Users): when a password is set on update, all OTHER sessions + refresh
+  families are killed (the actor's own self-service session is kept; admin/reset
+  clears all). Tightly scoped (fires only when data.password present, so MFA/profile
+  updates never trigger it) with a loop guard. Pure filters unit-tested.
+- Open-redirect guard (src/lib/security/redirect.ts safeInternalPath): fixed a real
+  gap in the login page (?redirect=//evil.com passed the old startsWith('/') check).
+  Now rejects //, /\, schemes, control/whitespace. Used by /login and the MFA
+  challenge page. Tested.
+- Mass-assignment: asserted superAdminFieldOnly write-locks role/status-class fields
+  (a self-registrant cannot self-assign roles). Tested.
+- Gate: 232/232 tests, tsc + lint clean, build exit 0. (Note: this also fixed a tsc
+  gap - the prior S2 commit's gate skipped tsc; the access-test fixture types are now
+  correct.)
