@@ -98,3 +98,38 @@ export async function emailAssignment(payload: Payload, args: { toEmail?: string
     payload.logger.error(`Assignment email failed: ${String(err)}`)
   }
 }
+
+/*
+ * Weekly engagement digest. Optional (honors notificationPrefs.weeklyDigest at the
+ * call site). PII-free: it says only that there is new activity and links to the
+ * portal; counts and details are shown after sign-in.
+ */
+export async function emailWeeklyDigest(payload: Payload, args: { toEmail?: string | null }): Promise<void> {
+  if (!args.toEmail) return
+  try {
+    await payload.sendEmail({
+      to: args.toEmail,
+      subject: 'Your week in CMBA Connect',
+      text: `You have new activity this week, new badges, recognitions, or team news. Sign in to see it:\n${base()}/account\n\nTo change your email preferences, sign in and visit your account.`,
+    })
+  } catch (err) {
+    payload.logger.error(`Weekly digest email failed: ${String(err)}`)
+  }
+}
+
+/*
+ * A recognition for this member was approved. Optional (honors
+ * notificationPrefs.recognitionUpdates). PII-free: no names or message text.
+ */
+export async function emailRecognition(payload: Payload, args: { toEmail?: string | null }): Promise<void> {
+  if (!args.toEmail) return
+  try {
+    await payload.sendEmail({
+      to: args.toEmail,
+      subject: 'You received a recognition in CMBA Connect',
+      text: `Someone recognized a member of your CMBA Connect account. Sign in to see it:\n${base()}/account${PORTAL_NOTE}`,
+    })
+  } catch (err) {
+    payload.logger.error(`Recognition email failed: ${String(err)}`)
+  }
+}

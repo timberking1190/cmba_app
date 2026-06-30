@@ -301,6 +301,14 @@ export interface User {
      * Reminders to report or confirm a game score. Transactional escalations are always sent.
      */
     gameReminders?: boolean | null;
+    /**
+     * A weekly summary of new badges, recognitions, and team news.
+     */
+    weeklyDigest?: boolean | null;
+    /**
+     * Notify when a recognition for this member is approved.
+     */
+    recognitionUpdates?: boolean | null;
   };
   /**
    * MFA state. Secrets live in separate private collections. System-managed.
@@ -2235,6 +2243,8 @@ export interface UsersSelect<T extends boolean = true> {
         certificationReminders?: T;
         generalUpdates?: T;
         gameReminders?: T;
+        weeklyDigest?: T;
+        recognitionUpdates?: T;
       };
   mfa?:
     | T

@@ -21,6 +21,14 @@
     {
       "path": "/api/cron/ttl-sweep",
       "schedule": "30 8 * * *"
+    },
+    {
+      "path": "/api/cron/streak-rollup",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-digest",
+      "schedule": "0 13 * * 1"
     }
   ]
 }

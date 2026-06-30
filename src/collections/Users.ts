@@ -195,6 +195,8 @@ export const Users: CollectionConfig = {
           defaultValue: true,
           admin: { description: 'Reminders to report or confirm a game score. Transactional escalations are always sent.' },
         },
+        { name: 'weeklyDigest', type: 'checkbox', defaultValue: true, admin: { description: 'A weekly summary of new badges, recognitions, and team news.' } },
+        { name: 'recognitionUpdates', type: 'checkbox', defaultValue: true, admin: { description: 'Notify when a recognition for this member is approved.' } },
       ],
     },
     {
