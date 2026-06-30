@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { authenticated, isSuperAdmin, ownerOrSuperAdmin, superAdminFieldOnly } from '../access/index'
 import { addMonths, computeCertStatus } from '../lib/certStatus'
+import { onCertificationVerified } from '../lib/gamification/wiring'
 
 /*
  * Certifications — per-user certification records.
@@ -65,6 +66,14 @@ export const Certifications: CollectionConfig = {
         })
 
         return next
+      },
+    ],
+    afterChange: [
+      // Emit a meaningful XP event when a certification is verified. No-op unless
+      // FEATURE_GAMIFICATION_LEDGER is on; idempotent per certification.
+      async ({ doc, req }) => {
+        await onCertificationVerified(req.payload, doc as never, req)
+        return doc
       },
     ],
   },
