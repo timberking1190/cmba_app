@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { isAnyAdmin } from "@/access/index";
 import { TotpSetup } from "@/components/security/TotpSetup";
 import { PasskeyEnroll } from "@/components/security/PasskeyEnroll";
+import { SessionsList } from "@/components/security/SessionsList";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Security | CMBA Connect" };
@@ -50,9 +51,10 @@ export default async function SecurityPage() {
           <TotpSetup enrolled={enrolled} />
         </div>
 
-        <p className="font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider">
-          Managing your active devices and sign-in challenge are coming next.
-        </p>
+        <div className="space-y-3">
+          <h2 className="font-display font-bold text-white uppercase tracking-wide text-sm">Your devices</h2>
+          <SessionsList />
+        </div>
       </div>
     </div>
   );

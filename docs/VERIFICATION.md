@@ -873,3 +873,24 @@ binary against the new schema keeps working (zero-downtime).
   origin (cmbaplatform.vercel.app); that is the operator/pentest live test
   (docs/PENTEST_READINESS.md). Config, options, origin-gating, and the counter guard
   are covered by tests + code review.
+
+### I6 — Sign-in challenge + session/device management (no enforcement)
+- Challenge: /account/security/challenge + MfaChallenge (passkey via
+  startAuthentication, TOTP code, recovery code) -> elevates this session. `next` is
+  open-redirect-guarded (relative same-site only).
+- Sessions: GET .../mfa/sessions (Payload sessions + sessionMeta, current flagged,
+  no secrets); POST .../sessions/revoke ({sid} or {all}) keeps the current session,
+  removes others from user.sessions so their JWT is instantly rejected; SessionsList
+  UI (per-device sign-out + sign out everywhere). Rate-limited, audited.
+- Gate: 211/211 tests, tsc + lint clean, build exit 0. Live: sessions routes 401
+  unauthenticated; challenge page redirects when signed out.
+- DEFERRED to S2: invalidate-sessions-on-password-change hook (no in-app password
+  change UI yet; manual "sign out everywhere" covers the immediate need). Noted in
+  the threat model / pentest readiness.
+
+### S1 status after I6
+Both MFA factors (passkeys + TOTP), recovery codes, the sign-in challenge, and
+session management are built, tested, and self-service. Enrollment is LIVE-capable
+(migration applied). NOT yet wired: force-enrollment ENFORCEMENT (I7, MFA_ENFORCE) -
+intentionally gated until the super admin has enrolled a factor (operator step), so
+there is no lockout window. Email-OTP recovery (I8) waits on SES.

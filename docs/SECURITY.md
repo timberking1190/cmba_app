@@ -109,7 +109,9 @@ un-triaged advisory still fails CI.
 | TOTP secret at rest | App-layer encryption, never serialized | `src/lib/mfa/crypto.ts` (AES-256-GCM, TOTP_ENC_KEY); `mfa-totp.secretEncrypted` read:()=>false | `crypto.test.ts` (round-trip + tamper) |
 | Recovery codes | One-time, salted KDF, single-use | `src/lib/mfa/recovery.ts` (PBKDF2 + constant-time); `recovery-codes` deny-all | `recovery.test.ts` |
 | Factor IDOR protection | A user cannot read another's factors | MFA collections deny-all external; owner-or-superadmin on webauthn-credentials; secrets read:()=>false | live: GET /api/{mfa-totp,recovery-codes,...} returns 403 |
-| Security audit | Events recorded append-only | `writeAudit` to AuditLog (mfa.totp.activate, mfa.challenge.pass/fail) | code review |
+| Sign-in challenge | Enrolled users complete a factor at sign-in | `/account/security/challenge` + `MfaChallenge` (passkey/TOTP/recovery), open-redirect-guarded `next` | live 307 redirect; route 401-gating |
+| Session management | Device list, per-session + sign-out-everywhere; instant token invalidation | Routes `.../mfa/sessions`, `.../sessions/revoke` (removing a sid from user.sessions invalidates its JWT); `SessionsList` UI | live 401-gating |
+| Security audit | Events recorded append-only | `writeAudit` to AuditLog (mfa.totp.activate, mfa.passkey.register, mfa.challenge.pass/fail, mfa.session.revoke) | code review |
 
 Remaining S1 increments (passkeys/WebAuthn, the login challenge interstitial +
 step-up + session/device management UI, force-enrollment enforcement behind
