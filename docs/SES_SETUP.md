@@ -14,6 +14,13 @@ Status as investigated 2026-06-29 (read-only):
 - No Route53 hosted zones exist in the AWS account, so DNS records cannot be
   published automatically; they must be added wherever the chosen domain's DNS lives.
 
+Engagement emails (added 2026-06-30): the Member-Value weekly-digest and recognition
+notifications also send through this same transport, so they currently LOG via
+jsonTransport rather than deliver (expected, not a defect). They start delivering the
+moment SES is live below; no code change is needed (the digest cron and the recognition
+approval path already call `payload.sendEmail` with the PII-free composers). The
+weekly-digest cron is scheduled but its sends are log-only until then.
+
 Because of the above, email cannot be made to work end to end from this repo alone.
 Two decisions/actions are the operator's:
 

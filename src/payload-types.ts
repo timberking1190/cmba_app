@@ -1970,6 +1970,10 @@ export interface Challenge {
 export interface ChallengeSubmission {
   id: number;
   challenge: number | Challenge;
+  /**
+   * The athlete's team, used to scope which coach may verify this submission.
+   */
+  team?: (number | null) | Team;
   user: number | User;
   /**
    * The athlete-logged result (e.g. 18/25 free throws, 42s course).
@@ -3417,6 +3421,7 @@ export interface ChallengesSelect<T extends boolean = true> {
  */
 export interface ChallengeSubmissionsSelect<T extends boolean = true> {
   challenge?: T;
+  team?: T;
   user?: T;
   result?: T;
   notes?: T;
