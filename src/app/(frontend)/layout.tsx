@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Archivo, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
@@ -49,11 +50,16 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Reading the per-request nonce opts the public site into dynamic rendering so
+  // Next applies the strict CSP nonce (set in middleware) to every script it
+  // emits. Without this, statically rendered pages would ship un-nonced scripts
+  // that a nonce + strict-dynamic policy would block. (Stage C / S0->S1.)
+  await headers();
   return (
     <html lang="en" className="dark">
       <body

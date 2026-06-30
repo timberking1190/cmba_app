@@ -5,7 +5,9 @@ import { TeamLinktEmbed } from "@/components/TeamLinktEmbed";
 import { TeamLinktActions } from "@/components/TeamLinktActions";
 import { CourtLines } from "@/components/graphics/CourtLines";
 
-export const revalidate = 3600;
+// Dynamically rendered (the root layout reads the CSP nonce). TeamLinkt data stays
+// cached for an hour via unstable_cache in lib/teamlinkt, so dropping page-level
+// ISR does not increase upstream load.
 
 export default async function StandingsPage() {
   const rows = await getStandings();

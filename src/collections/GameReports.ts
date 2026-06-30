@@ -1,6 +1,18 @@
 import type { CollectionConfig } from 'payload'
+import { APIError } from 'payload'
 
 import { isAnyAdmin, isSuperAdmin, superAdminFieldOnly } from '../access/index'
+import { checkRateLimit } from '../lib/rateLimit'
+import {
+  getClientIp,
+  hashIp,
+  honeypotTripped,
+  isTurnstileEnabled,
+  verifyTurnstile,
+  TURNSTILE_HEADER,
+} from '../lib/security/botChallenge'
+
+const TEN_MINUTES = 10 * 60 * 1000
 
 /*
  * GameReports — native intake for game/incident reports (ejections, conduct
@@ -24,6 +36,52 @@ export const GameReports: CollectionConfig = {
     description: 'Game / incident reports submitted from /game-report.',
   },
   hooks: {
+    beforeValidate: [
+      /*
+       * Stage C / S0 — abuse defenses on the only public, unauthenticated form.
+       * Admin-panel submissions (req.user present) skip the challenge. Public
+       * submissions run: honeypot -> per-IP + global rate limit -> Turnstile
+       * (when configured). All rejections are safe, generic, and non-leaking.
+       */
+      async ({ req, operation }) => {
+        if (operation !== 'create' || req.user) return
+        const headers = req.headers
+
+        if (honeypotTripped(headers)) {
+          throw new APIError('Submission rejected.', 400, undefined, true)
+        }
+
+        const ip = getClientIp(headers)
+        const subject = hashIp(ip)
+        const perIp = await checkRateLimit(req.payload, {
+          bucket: 'game-report:ip',
+          subject,
+          limit: 5,
+          windowMs: TEN_MINUTES,
+        })
+        const global = await checkRateLimit(req.payload, {
+          bucket: 'game-report:global',
+          subject: 'all',
+          limit: 60,
+          windowMs: TEN_MINUTES,
+        })
+        if (!perIp.ok || !global.ok) {
+          throw new APIError(
+            'Too many submissions. Please wait a few minutes and try again.',
+            429,
+            undefined,
+            true,
+          )
+        }
+
+        if (isTurnstileEnabled()) {
+          const ok = await verifyTurnstile(headers.get(TURNSTILE_HEADER), ip)
+          if (!ok) {
+            throw new APIError('Bot challenge failed. Please try again.', 400, undefined, true)
+          }
+        }
+      },
+    ],
     afterChange: [
       async ({ doc, operation, req }) => {
         if (operation !== 'create') return doc

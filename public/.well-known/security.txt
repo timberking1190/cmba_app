@@ -1,0 +1,14 @@
+# CMBA Connect — responsible disclosure (RFC 9116)
+# If you believe you have found a security or privacy issue, please tell us.
+# We will acknowledge your report and work with you in good faith.
+
+Contact: mailto:security@cmba.ab.ca
+Contact: https://cmbaplatform.vercel.app/contact
+Expires: 2027-06-29T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://cmbaplatform.vercel.app/.well-known/security.txt
+Policy: https://cmbaplatform.vercel.app/terms
+
+# Please do not access, modify, or exfiltrate other people's data, and do not run
+# automated scans that degrade service. Give us reasonable time to remediate
+# before any public disclosure.

@@ -10,6 +10,8 @@ import * as migration_20260625_075326_stageb2_fixes from './20260625_075326_stag
 import * as migration_20260625_080712_stageb3_officials from './20260625_080712_stageb3_officials';
 import * as migration_20260625_082918_stageb4_push_devices from './20260625_082918_stageb4_push_devices';
 import * as migration_20260625_084235_stageb5_brackets_incidents_scaffolds from './20260625_084235_stageb5_brackets_incidents_scaffolds';
+import * as migration_20260630_020454_add_mfa_schema from './20260630_020454_add_mfa_schema';
+import * as migration_20260630_125952_add_audit_integrity from './20260630_125952_add_audit_integrity';
 
 export const migrations = [
   {
@@ -70,6 +72,16 @@ export const migrations = [
   {
     up: migration_20260625_084235_stageb5_brackets_incidents_scaffolds.up,
     down: migration_20260625_084235_stageb5_brackets_incidents_scaffolds.down,
-    name: '20260625_084235_stageb5_brackets_incidents_scaffolds'
+    name: '20260625_084235_stageb5_brackets_incidents_scaffolds',
+  },
+  {
+    up: migration_20260630_020454_add_mfa_schema.up,
+    down: migration_20260630_020454_add_mfa_schema.down,
+    name: '20260630_020454_add_mfa_schema',
+  },
+  {
+    up: migration_20260630_125952_add_audit_integrity.up,
+    down: migration_20260630_125952_add_audit_integrity.down,
+    name: '20260630_125952_add_audit_integrity'
   },
 ];

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, ArrowRight, ExternalLink, Info, ClipboardList, CheckCircle2 } from "lucide-react";
 import { REGISTER } from "@/lib/cmbaLinks";
+import { safeInternalPath } from "@/lib/security/redirect";
 import { Wordmark } from "@/components/Wordmark";
 import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
 
@@ -50,6 +51,9 @@ function Checkbox({
 
 export default function LoginPage() {
   const [mode, setMode] = useState<"signin" | "register">("signin");
+  // Signup bot defense: hidden honeypot + a too-fast-submit timing check (S4).
+  const [hp, setHp] = useState("");
+  const mountedAt = useRef(Date.now());
   const router = useRouter();
 
   const [policy, setPolicy] = useState<PolicyVersions | null>(null);
@@ -89,7 +93,7 @@ export default function LoginPage() {
   function redirectTarget(): string {
     if (typeof window === "undefined") return "/account";
     const p = new URLSearchParams(window.location.search).get("redirect");
-    return p && p.startsWith("/") ? p : "/account";
+    return safeInternalPath(p, "/account");
   }
 
   async function handleSignIn(e: React.FormEvent) {
@@ -147,9 +151,10 @@ export default function LoginPage() {
         body.password = password;
       }
 
+      const hpSignal = hp ? "hp" : Date.now() - mountedAt.current < 1500 ? "timing" : "";
       const res = await fetch("/api/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-cmba-hp": hpSignal },
         body: JSON.stringify(body),
       });
       const data = await res.json();
@@ -265,6 +270,11 @@ export default function LoginPage() {
           </form>
         ) : (
           <form onSubmit={handleRegister} className="reveal bg-cmba-black-card border border-white/12 p-6 space-y-4">
+            {/* Honeypot: hidden from people, tempting to naive bots. */}
+            <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden">
+              <label htmlFor="reg-website">Website</label>
+              <input id="reg-website" name="website" type="text" tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} />
+            </div>
             {/* Step 1 — age check */}
             <div>
               <h2 className="font-display font-bold text-white uppercase tracking-wide text-sm">Let us set up the right account</h2>

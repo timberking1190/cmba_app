@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
+import { enforceMfa } from '@/lib/mfa/enforce'
 import { getRepDashboard } from '@/lib/repDashboard'
 import { RepConsole } from '@/components/rep/RepConsole'
 
@@ -11,6 +12,7 @@ export const metadata: Metadata = { title: 'My team | CMBA Connect' }
 export default async function RepPage() {
   const user = await getCurrentUser()
   if (!user) redirect('/login?redirect=/rep')
+  await enforceMfa('/rep')
 
   const payload = await getPayloadClient()
   const dashboard = await getRepDashboard(payload, user.id)

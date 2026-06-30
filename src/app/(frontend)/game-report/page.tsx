@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AlertTriangle, Star, Send, Upload, CheckCircle } from "lucide-react";
 import { CMBA } from "@/lib/cmbaLinks";
 import { PhotoBand } from "@/components/media/PhotoBand";
@@ -16,10 +16,23 @@ export default function GameReportPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Mount time + hidden honeypot drive a lightweight bot challenge (S0). The
+  // server also enforces durable rate limiting and (when configured) Turnstile.
+  const mountedAt = useRef(Date.now());
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    // Honeypot: real users leave "website" empty. A filled value, or a submit
+    // faster than a human could complete the form, marks the request for the
+    // server to reject via the x-cmba-hp header.
+    const honeypot = String(fd.get("website") || "");
+    const tooFast = Date.now() - mountedAt.current < 1200;
+    const hpSignal = honeypot ? "hp" : tooFast ? "timing" : "";
+    const turnstileToken =
+      typeof window !== "undefined"
+        ? ((window as unknown as { __cmbaTurnstileToken?: string }).__cmbaTurnstileToken || "")
+        : "";
     const parties = fd.getAll("reportedParty").join(", ");
     const extra = [
       parties ? `About: ${parties}` : "",
@@ -35,7 +48,11 @@ export default function GameReportPage() {
       // Submits natively to the GameReports collection (reviewed in /admin).
       const res = await fetch("/api/game-reports", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-cmba-hp": hpSignal,
+          "x-cmba-turnstile": turnstileToken,
+        },
         body: JSON.stringify({
           reportType,
           reporterName: fd.get("reporterName"),
@@ -50,7 +67,11 @@ export default function GameReportPage() {
         }),
       });
       if (!res.ok) {
-        setError(`We couldn't submit your report. Please try again, or email ${CMBA.email}.`);
+        if (res.status === 429) {
+          setError("Too many submissions from this connection. Please wait a few minutes and try again.");
+        } else {
+          setError(`We couldn't submit your report. Please try again, or email ${CMBA.email}.`);
+        }
         return;
       }
       setSubmitted(true);
@@ -124,6 +145,12 @@ export default function GameReportPage() {
 
         {reportType && !submitted && (
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Honeypot: hidden from humans, tempting to naive bots. Kept out of the
+                tab order and accessibility tree; off-screen rather than display:none. */}
+            <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden">
+              <label htmlFor="website">Website</label>
+              <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+            </div>
             {/* Who is being reported */}
             <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-6">
               <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-4">

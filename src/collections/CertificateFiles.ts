@@ -1,6 +1,7 @@
 import type { Access, CollectionConfig } from 'payload'
 
 import { authenticated, isSuperAdmin, superAdminFieldOnly } from '../access/index'
+import { validateUpload } from '../lib/uploads/sniff'
 
 /*
  * CertificateFiles — PRIVATE uploads (certification PDFs / images).
@@ -39,6 +40,16 @@ export const CertificateFiles: CollectionConfig = {
     mimeTypes: ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'],
   },
   hooks: {
+    // Verify the real bytes (magic number) + size BEFORE Payload captures the
+    // buffer; declared content-type alone is not trusted. Images are re-encoded.
+    beforeOperation: [
+      async ({ args, operation, req }) => {
+        if (operation === 'create') {
+          await validateUpload(req, { allow: ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'] })
+        }
+        return args
+      },
+    ],
     beforeChange: [
       ({ req, data }) => {
         const user = req.user

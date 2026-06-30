@@ -106,6 +106,11 @@ export interface Config {
     'idempotency-keys': IdempotencyKey;
     'refresh-tokens': RefreshToken;
     'rate-limit-hits': RateLimitHit;
+    'webauthn-credentials': WebauthnCredential;
+    'webauthn-challenges': WebauthnChallenge;
+    'mfa-totp': MfaTotp;
+    'recovery-codes': RecoveryCode;
+    'email-otp': EmailOtp;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -152,6 +157,11 @@ export interface Config {
     'idempotency-keys': IdempotencyKeysSelect<false> | IdempotencyKeysSelect<true>;
     'refresh-tokens': RefreshTokensSelect<false> | RefreshTokensSelect<true>;
     'rate-limit-hits': RateLimitHitsSelect<false> | RateLimitHitsSelect<true>;
+    'webauthn-credentials': WebauthnCredentialsSelect<false> | WebauthnCredentialsSelect<true>;
+    'webauthn-challenges': WebauthnChallengesSelect<false> | WebauthnChallengesSelect<true>;
+    'mfa-totp': MfaTotpSelect<false> | MfaTotpSelect<true>;
+    'recovery-codes': RecoveryCodesSelect<false> | RecoveryCodesSelect<true>;
+    'email-otp': EmailOtpSelect<false> | EmailOtpSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -270,6 +280,27 @@ export interface User {
      */
     gameReminders?: boolean | null;
   };
+  /**
+   * MFA state. Secrets live in separate private collections. System-managed.
+   */
+  mfa?: {
+    enrolled?: boolean | null;
+    methods?: ('totp' | 'passkey')[] | null;
+    enrolledAt?: string | null;
+    required?: boolean | null;
+    lastVerifiedAt?: string | null;
+  };
+  sessionMeta?:
+    | {
+        sid: string;
+        aal?: ('aal1' | 'aal2') | null;
+        mfaAt?: string | null;
+        stepUpAt?: string | null;
+        ip?: string | null;
+        userAgent?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Registered device push tokens for the native apps. Self-managed.
    */
@@ -1429,6 +1460,10 @@ export interface AuditLog {
     | null;
   reason?: string | null;
   at: string;
+  /**
+   * Tamper-evident HMAC of this entry. System-set.
+   */
+  integrity?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1556,6 +1591,110 @@ export interface RateLimitHit {
   at: string;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Registered passkeys (WebAuthn). Public keys are private.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "webauthn-credentials".
+ */
+export interface WebauthnCredential {
+  id: number;
+  user: number | User;
+  credentialID: string;
+  publicKey: string;
+  counter: number;
+  /**
+   * AuthenticatorTransport[] hint.
+   */
+  transports?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  deviceType?: ('singleDevice' | 'multiDevice') | null;
+  backedUp?: boolean | null;
+  /**
+   * User-friendly label, e.g. "iPhone".
+   */
+  name?: string | null;
+  lastUsedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * Ephemeral WebAuthn ceremony challenges. Single-use.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "webauthn-challenges".
+ */
+export interface WebauthnChallenge {
+  id: number;
+  user?: (number | null) | User;
+  value: string;
+  type: 'registration' | 'authentication';
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * Encrypted TOTP secrets. One per user; private.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mfa-totp".
+ */
+export interface MfaTotp {
+  id: number;
+  user: number | User;
+  secretEncrypted: string;
+  activated?: boolean | null;
+  lastStep?: number | null;
+  createdAt: string;
+  activatedAt?: string | null;
+  updatedAt: string;
+}
+/**
+ * Hashed single-use recovery codes. Private.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recovery-codes".
+ */
+export interface RecoveryCode {
+  id: number;
+  user: number | User;
+  codes?:
+    | {
+        hash: string;
+        salt: string;
+        consumedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  remaining?: number | null;
+  generatedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Hashed recovery one-time passcodes. Private.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-otp".
+ */
+export interface EmailOtp {
+  id: number;
+  user: number | User;
+  hash: string;
+  purpose: 'recovery' | 'stepup';
+  expiresAt: string;
+  attempts?: number | null;
+  consumedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1736,6 +1875,26 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'rate-limit-hits';
         value: number | RateLimitHit;
+      } | null)
+    | ({
+        relationTo: 'webauthn-credentials';
+        value: number | WebauthnCredential;
+      } | null)
+    | ({
+        relationTo: 'webauthn-challenges';
+        value: number | WebauthnChallenge;
+      } | null)
+    | ({
+        relationTo: 'mfa-totp';
+        value: number | MfaTotp;
+      } | null)
+    | ({
+        relationTo: 'recovery-codes';
+        value: number | RecoveryCode;
+      } | null)
+    | ({
+        relationTo: 'email-otp';
+        value: number | EmailOtp;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1830,6 +1989,26 @@ export interface UsersSelect<T extends boolean = true> {
         certificationReminders?: T;
         generalUpdates?: T;
         gameReminders?: T;
+      };
+  mfa?:
+    | T
+    | {
+        enrolled?: T;
+        methods?: T;
+        enrolledAt?: T;
+        required?: T;
+        lastVerifiedAt?: T;
+      };
+  sessionMeta?:
+    | T
+    | {
+        sid?: T;
+        aal?: T;
+        mfaAt?: T;
+        stepUpAt?: T;
+        ip?: T;
+        userAgent?: T;
+        id?: T;
       };
   pushDevices?:
     | T
@@ -2637,6 +2816,7 @@ export interface AuditLogSelect<T extends boolean = true> {
   after?: T;
   reason?: T;
   at?: T;
+  integrity?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2714,6 +2894,81 @@ export interface RateLimitHitsSelect<T extends boolean = true> {
   at?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "webauthn-credentials_select".
+ */
+export interface WebauthnCredentialsSelect<T extends boolean = true> {
+  user?: T;
+  credentialID?: T;
+  publicKey?: T;
+  counter?: T;
+  transports?: T;
+  deviceType?: T;
+  backedUp?: T;
+  name?: T;
+  lastUsedAt?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "webauthn-challenges_select".
+ */
+export interface WebauthnChallengesSelect<T extends boolean = true> {
+  user?: T;
+  value?: T;
+  type?: T;
+  expiresAt?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mfa-totp_select".
+ */
+export interface MfaTotpSelect<T extends boolean = true> {
+  user?: T;
+  secretEncrypted?: T;
+  activated?: T;
+  lastStep?: T;
+  createdAt?: T;
+  activatedAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recovery-codes_select".
+ */
+export interface RecoveryCodesSelect<T extends boolean = true> {
+  user?: T;
+  codes?:
+    | T
+    | {
+        hash?: T;
+        salt?: T;
+        consumedAt?: T;
+        id?: T;
+      };
+  remaining?: T;
+  generatedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-otp_select".
+ */
+export interface EmailOtpSelect<T extends boolean = true> {
+  user?: T;
+  hash?: T;
+  purpose?: T;
+  expiresAt?: T;
+  attempts?: T;
+  consumedAt?: T;
+  createdAt?: T;
+  updatedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

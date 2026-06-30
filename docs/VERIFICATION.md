@@ -682,3 +682,326 @@ Re-ran the whole module to confirm no regressions:
   new crons run.
 
 ### Phase B5 verdict: GREEN. Stage B complete.
+
+---
+
+# Stage C — Security hardening
+
+## Verification pass (ratify Stage A + B against spec; no rebuild)
+
+Run 2026-06-29 on branch feat/backend before any Stage C work:
+
+- Unit + integration tests: 146/146 passing (17 files) via `npm test`.
+- Typecheck: `npx tsc --noEmit` clean.
+- Lint: `npm run lint` clean.
+- Production build: `npm run build` exit 0 (static + dynamic routes generate).
+
+Gotchas confirmed handled: /admin is Payload (src/app/(payload)/admin) with the old
+static directory moved to /resources; /login is real Payload email/password auth
+with consent-gated registration and login hardening. Source-of-truth decision is
+implemented (native pipeline queried first; FEATURE_LEGACY_TEAMLINKT defaults on
+until a season is seeded). FEATURE_GAP_ANALYSIS.md already benchmarks all five
+competitors. Verdict: Stage A + Stage B RATIFIED.
+
+## Phase S0 — Baseline hardening
+
+### 1. Static checks
+- Tests: 165/165 passing (added headers + botChallenge suites). `npm test`.
+- Typecheck clean; lint clean; production build exit 0.
+- Secret scanning: gitleaks configured in CI (.github/workflows/security.yml,
+  .gitleaks.toml). `.env` is gitignored and untracked; only `.env.example` is in
+  the repo (verified `git ls-files`). Dependency audit + Semgrep SAST gate in CI.
+
+### 2. Security tests + real-response header checks
+Server started from the production build; headers observed with curl:
+- CSP present on every HTML route with the locked directives: `default-src 'self'`,
+  `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
+  `frame-ancestors 'self'` (self required for Payload Live Preview; cross-origin
+  framing denied), allowlisted img/connect/font/media (Supabase ca-central-1 only)
+  and frame-src (TeamLinkt + YouTube + Google Docs/Drive + RAMP only), report-uri
+  /api/csp-report, upgrade-insecure-requests.
+- script-src strategy = compatible (`'self' 'unsafe-inline'`) by default. The gate
+  caught that a nonce + strict-dynamic policy would block Next's un-nonced inline
+  bootstrap scripts on statically rendered pages; the strict-nonce strategy is
+  implemented and gated behind CSP_STRICT_SCRIPTS for the S2 dynamic-rendering
+  upgrade (see docs/SECURITY.md). Documented residual.
+- Enforced on all routes: HSTS (max-age 63072000; includeSubDomains; preload),
+  X-Content-Type-Options nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy
+  strict-origin-when-cross-origin, Permissions-Policy (camera/mic/geo/usb/etc.
+  disabled), Cross-Origin-Opener-Policy same-origin.
+- Page serving unaffected: /, /game-report, /standings, /schedule, /rules, /faq,
+  /admin, /.well-known/security.txt all return 200 with the policy in place.
+- /api/csp-report returns 204 and logs a scrubbed summary; security.txt served as
+  text/plain.
+- Form abuse defense (game-report): honeypot + per-IP (5/10min) + global (60/10min)
+  durable rate limit + optional Cloudflare Turnstile (fail-closed when enabled),
+  with IP stored only as an HMAC hash. Unit-tested in
+  src/lib/security/__tests__/botChallenge.test.ts.
+- CORS + CSRF locked to known origins in src/payload.config.ts (no wildcard with
+  credentials; native apps use bearer tokens).
+
+### 3. Dynamic scan
+Deferred to the operator preview deploy (run an automated scanner, e.g. OWASP ZAP,
+against a Vercel preview; record results here). The first preview should run with
+CSP_REPORT_ONLY=true to confirm zero violations before enforcing.
+
+### 4. Standards mapping
+docs/SECURITY.md updated with the S0 control matrix (each control -> file + test).
+
+### 5. Self review / red team (S0 scope)
+- CSP enforced would have broken static script execution -> caught and resolved by
+  the compatible strategy; strict-nonce upgrade path recorded.
+- No raw IP persisted by the limiter (hashed). No secrets in repo. Error responses
+  remain generic (safeClientError). frame-ancestors keeps Live Preview working.
+
+### Phase S0 verdict: GREEN (code-level). Residuals: script-src compatible strategy
+(upgrade scheduled S2), and the operator dynamic scan on preview. S1 next.
+
+## Phase S1 (a) — CSP strict-nonce upgrade (gold standard)
+
+Decision: do the strict-nonce CSP now (not deferred). The public root layout reads
+the per-request nonce, forcing dynamic rendering so Next stamps the nonce onto every
+script. TeamLinkt schedule/standings data was already wrapped in unstable_cache (1h)
+so removing page-level ISR did not increase upstream load.
+
+Verified on the production build (real responses):
+- script-src is now `'self' 'nonce-…' 'strict-dynamic'` (no 'unsafe-inline' in
+  script-src). Homepage: 0 inline scripts without a nonce (was 8 un-nonced before).
+- /admin (Payload): 200, all admin scripts carry the nonce.
+- All public pages + /login + /admin return 200; rendering is dynamic (ƒ).
+- 165/165 tests, tsc + lint clean, build exit 0.
+
+`CSP_COMPAT_SCRIPTS=true` remains as a documented fallback. The S2 residual for
+script-src is therefore CLOSED at S1.
+
+## Phase S1 — Identity and authentication (incremental build)
+
+Build order (safe, additive; enforcement only at I7 behind MFA_ENFORCE kill-switch):
+I0 deps+env · I1 password policy+HIBP · I2 schema · I3 session-meta · I4 TOTP+recovery
+· I5 passkeys · I6 challenge/step-up/sessions (flag off) · I7 force-enrollment enforce
+· I8 email-OTP (after SES). Design recorded from the Payload-3.85-grounded research.
+
+### I0 — Dependencies + env (no behavior change)
+- Added @simplewebauthn/server@13.3.2, @simplewebauthn/browser@13.3.0, otpauth@9.5.1
+  (TOTP; the research's otplib@13.4.1 does not exist — used otpauth and will adapt to
+  its real API), qrcode@1.5.4, @types/qrcode (dev).
+- New env (documented in .env.example): TOTP_ENC_KEY, WEBAUTHN_RP_ID, WEBAUTHN_ORIGINS,
+  MFA_ENFORCE=false, FEATURE_EMAIL_OTP=false.
+- Dependency-audit gate reconciled: all current high/critical advisories are
+  framework-transitive (next/nodemailer/undici via Payload+Next). Triaged into
+  .audit-allowlist.json (11 IDs) with a dependency-free gate scripts/audit-ci.mjs that
+  fails CI on any NEW un-allowlisted high/critical. Documented in docs/SECURITY.md;
+  remediation (framework upgrade) flagged as operator action + pentest input.
+
+### I1 — Password policy + breached-password screening
+- validatePassword beforeValidate hook on Users (runs first; no-op unless a password
+  is present, so existing accounts are unaffected until next change): min 12, max 128,
+  all characters allowed, no composition/rotation/hints, contextual blocklist
+  (password != email/name), and HIBP breach screening.
+- src/lib/security/hibp.ts: k-anonymity (5-char SHA-1 prefix, Add-Padding), 2.5s
+  timeout, fails OPEN on outage. Full password/hash never leaves the server (asserted
+  in tests).
+- Gate: 179/179 tests (incl. 14 new), tsc + lint clean, build exit 0.
+
+### I0+I1 verdict: GREEN. Additive only; no login behavior changed; no schema change.
+
+### I2 — MFA data model (schema only, no enforcement)
+- 5 new private collections (deny-all external access; secrets `read:()=>false`):
+  webauthn-credentials, webauthn-challenges, mfa-totp, recovery-codes, email-otp.
+- Users gains a `mfa` group (enrolled/methods/enrolledAt/required/lastVerifiedAt;
+  enrolled+required saveToJWT) and a `sessionMeta` array (sid/aal/mfaAt/stepUpAt/
+  ip/userAgent; never serialized). `enforceMfaRequired` beforeChange derives
+  mfa.required from admin roles.
+- Migration src/migrations/20260630_020454_add_mfa_schema.ts generated OFFLINE
+  (snapshot diff, no DB connection). REVIEWED: up() is additive-only (8 CREATE
+  TABLE, users ADD COLUMN all nullable/DEFAULT false, enums + indexes, zero
+  destructive statements); down() cleanly reverses. Safe + reversible on the live DB.
+- Gate: tsc + lint clean, 179/179 tests, build exit 0. No enforcement; logins
+  unaffected; new tables not yet queried.
+
+OPERATOR ACTION (apply when ready, branch first): the migration is committed but NOT
+applied. Apply with:  `npm run migrate`  (against a Supabase branch first, then prod;
+DATABASE_URL points at the target). All changes are additive/nullable so an old
+binary against the new schema keeps working (zero-downtime).
+
+### I3 — MFA decision + session-assurance read plumbing (read-only, no enforcement)
+- src/lib/mfa/guard.ts: decideMfa pure function (ok / enroll-required /
+  challenge-required / stepup-required) with the force-enrollment invariant and a
+  stale-column-safe mfaRequired (roles OR derived flag). Step-up freshness window 5min.
+- src/lib/mfa/sessionPure.ts: assuranceFor (sid -> aal, default aal1) + decodeSid
+  (read sid claim from a Payload JWT). Pure, unit-tested.
+- src/lib/mfa/session.ts: getCurrentUserWithAssurance reads the private sessionMeta
+  with overrideAccess (read:()=>false) and attaches _mfa. No write on the login path
+  (elevation to aal2 lands with the challenge routes).
+- Gate: 193/193 tests (+ guard + session suites incl. the "admin is never ok while
+  aal1" MFA-bypass invariant and force-enrollment safety), tsc + lint clean, build
+  exit 0. No enforcement wired yet; logins unaffected.
+
+### I4 — TOTP authenticator + recovery codes + /account/security (no enforcement)
+- Libs (unit-tested, 28 MFA tests total): crypto.ts (AES-256-GCM, tamper-rejecting),
+  totp.ts (otpauth, replay floor via lastStep), recovery.ts (PBKDF2 + constant-time).
+- Server helpers (server.ts): getAuthWithSid, elevateSession (read-modify-write
+  sessionMeta to aal2), markEnrolled, writeAudit. Safe overrideAccess updates (Users
+  side-effect hooks are create-gated, confirmed by reading hooks/users.ts).
+- Routes: POST .../mfa/totp/enroll (encrypted secret + QR), .../totp/activate (verify
+  -> enrolled + recovery codes once + elevate), .../mfa/challenge (totp or recovery
+  -> elevate). Rate-limited (mfa_enroll/mfa_verify/mfa_challenge). Audited.
+- UI: /account/security + TotpSetup (QR + manual key + confirm + recovery display);
+  Security link on /account.
+- TOTP_ENC_KEY generated into local .env (gitignored); documented in .env.example.
+- Live checks (prod build, migration applied): MFA routes return 401 unauthenticated;
+  /account/security redirects to /login; all 5 private MFA collections return 403 on
+  direct REST read (IDOR/access protection). Gate: 207/207 tests, tsc + lint clean,
+  build exit 0.
+- NOTE: full interactive "enroll with a real authenticator app" is the operator's
+  live test (needs a real signed-in user); covered in docs/PENTEST_READINESS.md. No
+  enforcement wired yet (MFA_ENFORCE still off); logins unaffected.
+
+### I5 — Passkeys (WebAuthn) (no enforcement)
+- src/lib/mfa/webauthn.ts: @simplewebauthn/server v13 wrapper. RP ID + origin
+  allowlist from WEBAUTHN_RP_ID / WEBAUTHN_ORIGINS (preview hosts excluded unless
+  listed). verifyReg/verifyAuth fail closed on error; public key stored base64url and
+  never serialized; counter persisted.
+- webauthn-challenges store/consume (single-use, 5min TTL) in server.ts.
+- Routes (rate-limited, audited): passkey/register/options|verify (store credential,
+  markEnrolled('passkey'), elevate), passkey/auth/options|verify (elevate; rejects a
+  non-increasing signature counter = cloned-authenticator guard).
+- UI: PasskeyEnroll (@simplewebauthn/browser startRegistration) on /account/security.
+- Gate: 211/211 tests (+4 webauthn config/options), tsc + lint clean, build exit 0.
+  Live: all 4 passkey routes return 401 unauthenticated.
+- NOTE: the full passkey ceremony needs a real/virtual authenticator on the canonical
+  origin (cmbaplatform.vercel.app); that is the operator/pentest live test
+  (docs/PENTEST_READINESS.md). Config, options, origin-gating, and the counter guard
+  are covered by tests + code review.
+
+### I6 — Sign-in challenge + session/device management (no enforcement)
+- Challenge: /account/security/challenge + MfaChallenge (passkey via
+  startAuthentication, TOTP code, recovery code) -> elevates this session. `next` is
+  open-redirect-guarded (relative same-site only).
+- Sessions: GET .../mfa/sessions (Payload sessions + sessionMeta, current flagged,
+  no secrets); POST .../sessions/revoke ({sid} or {all}) keeps the current session,
+  removes others from user.sessions so their JWT is instantly rejected; SessionsList
+  UI (per-device sign-out + sign out everywhere). Rate-limited, audited.
+- Gate: 211/211 tests, tsc + lint clean, build exit 0. Live: sessions routes 401
+  unauthenticated; challenge page redirects when signed out.
+- DEFERRED to S2: invalidate-sessions-on-password-change hook (no in-app password
+  change UI yet; manual "sign out everywhere" covers the immediate need). Noted in
+  the threat model / pentest readiness.
+
+### S1 status after I6
+Both MFA factors (passkeys + TOTP), recovery codes, the sign-in challenge, and
+session management are built, tested, and self-service. Enrollment is LIVE-capable
+(migration applied). NOT yet wired: force-enrollment ENFORCEMENT (I7, MFA_ENFORCE) -
+intentionally gated until the super admin has enrolled a factor (operator step), so
+there is no lockout window. Email-OTP recovery (I8) waits on SES.
+
+### I7 — Force-enrollment enforcement (behind MFA_ENFORCE, default OFF)
+- src/lib/mfa/enforce.ts: enforceMfa(path) - no-op (no query, no redirect) when
+  MFA_ENFORCE off; when on, loads per-session assurance and redirects per decideMfa
+  to /account/security (enroll) or /account/security/challenge. Redirect targets are
+  NOT enforced, so a required-but-unenrolled super admin always has a path in
+  (force-enrollment, never a hard lockout). Pure helpers in enforcePure.ts (tested).
+- Wired into the personal-data/admin pages: /account, /manage, /rep,
+  /compliance/dashboard, /compliance/consent-audit (after each page's existing role
+  gate).
+- Gate: 215/215 tests (+4 enforce), tsc + lint clean, build exit 0. Live with the
+  flag OFF: /account, /manage, /rep, /compliance/dashboard still redirect signed-out
+  users to /login exactly as before; public pages 200. Zero behavior change until the
+  operator flips MFA_ENFORCE.
+- REMAINING I7 PIECE: the Payload /admin panel does not yet run enforceMfa (it is a
+  separate SPA). Add an admin.components.afterLogin MFA slot to challenge/enroll
+  inline before turning enforcement fully on for the /admin surface. Tracked in
+  docs/OPERATOR_ACTIONS.md and docs/SECURITY.md.
+
+OPERATOR (docs/OPERATOR_ACTIONS.md): enroll a factor at /account/security for the
+super admin (and a backup) BEFORE setting MFA_ENFORCE=true. The flag is the instant
+kill-switch.
+
+## Phase S2 (started) - Authorization + data protection
+- Adversarial access-control / IDOR tests (src/access/__tests__/accessControl.test.ts,
+  8 tests): role helpers; readUsers/updateUsers scope a non-admin to their OWN record
+  (cannot read/update another user by id tampering); club admin scoped to self+club;
+  deleteUsers super-admin only; anonymous denied. Part of the pentest matrix.
+- Verified existing data-protection controls: EXIF/GPS strip on photo upload
+  (src/lib/uploads/exif.ts + test); private cert/scoresheet/incident downloads keep
+  Payload access control (payload.config; only public Media disables it); React
+  output-encoding (no dangerouslySetInnerHTML in app code); Payload+Drizzle ORM (no
+  raw SQL); CSRF via Payload csrf allowlist + SameSite=Lax.
+- Documented in docs/SECURITY.md S2 section. Gate: 223/223 tests, lint clean.
+- Remaining S2 (scheduled, touches live paths): sensitive-field encryption
+  (guardian/DOB), invalidate-on-password-change, secure-upload sniffing/malware scan,
+  SSRF/open-redirect/mass-assignment adversarial review, Payload /admin MFA slot.
+
+### S2 (cont.) - session invalidation, open-redirect, mass-assignment
+- Invalidate-sessions-on-password-change (src/collections/hooks/sessionInvalidation.ts,
+  wired into Users): when a password is set on update, all OTHER sessions + refresh
+  families are killed (the actor's own self-service session is kept; admin/reset
+  clears all). Tightly scoped (fires only when data.password present, so MFA/profile
+  updates never trigger it) with a loop guard. Pure filters unit-tested.
+- Open-redirect guard (src/lib/security/redirect.ts safeInternalPath): fixed a real
+  gap in the login page (?redirect=//evil.com passed the old startsWith('/') check).
+  Now rejects //, /\, schemes, control/whitespace. Used by /login and the MFA
+  challenge page. Tested.
+- Mass-assignment: asserted superAdminFieldOnly write-locks role/status-class fields
+  (a self-registrant cannot self-assign roles). Tested.
+- Gate: 232/232 tests, tsc + lint clean, build exit 0. (Note: this also fixed a tsc
+  gap - the prior S2 commit's gate skipped tsc; the access-test fixture types are now
+  correct.)
+
+### S2 (cont.) - secure file upload + field-encryption decision
+- Magic-byte content sniffing (src/lib/uploads/sniff.ts): CertificateFiles now
+  validates real bytes (PDF %PDF, PNG/JPEG/WebP magic) + 10MB cap before storage, so
+  a malicious file declared application/pdf is rejected. Image collections were
+  already content-validated by the sharp re-encode (EXIF strip). Tested (sniff.test).
+- Application-layer field encryption (guardian/DOB) ASSESSED + DEFERRED: DOB is read
+  in plaintext by deriveIsMinor and guardian.email inside hooks, so field-level
+  encrypt/decrypt would break those paths; encryption-at-rest (Supabase) covers the
+  baseline. AES-256-GCM primitive ready for an isolated field later. Documented as an
+  accepted residual in docs/SECURITY.md.
+- Gate: 234/234 tests, tsc + lint clean, build exit 0.
+- S2 remaining: Payload /admin afterLogin MFA slot; optional malware-scan add-on.
+
+### S1/I7 (cont.) - Payload /admin MFA enforcement (closes the gap)
+- GET /api/v1/auth/mfa/status returns the session posture; `decision` is forced to
+  'ok' when MFA_ENFORCE is off, so clients never redirect until enforcement is on.
+- AdminMfaGate provider (src/components/security/AdminMfaGate.tsx) wraps the whole
+  Payload /admin SPA (registered via admin.components.providers + regenerated
+  importMap). On mount it checks the status and, when enforced + not AAL2 (or
+  required-but-unenrolled), redirects to enroll/challenge with ?next=/admin.
+- Live (flag off): /admin returns 200 with the provider wrapping it and still ships
+  nonced scripts (CSP intact); status route 401 unauthenticated. Gate: 234/234 tests,
+  tsc + lint clean, build exit 0. The S1/I7 enforcement gap is now CLOSED for /admin.
+
+## Phase S3 (started) - API security, monitoring, incident readiness
+- Tamper-evident AuditLog: HMAC per row over the integrity-protected fields
+  (src/lib/audit/integrity.ts), stamped in the AuditLog create hook (the log was
+  already append-only 3 ways). New `integrity` column added via migration
+  20260630_125952_add_audit_integrity (additive ADD COLUMN, generated + APPLIED to
+  prod, verified: column present, 52 rows intact). `npm run verify-audit-log` walks
+  the log (live result: 0 valid, 52 unprotected pre-integrity baseline, 0 TAMPERED,
+  exit 0). Unit-tested (tamper detection, key-order + actor-shape stability).
+- /api/v1/auth/mfa/status endpoint for the admin gate (401-gated).
+- docs/INCIDENT_RESPONSE.md: runbook tied to IncidentLog + PIPEDA/PIPA breach duties,
+  severity/timelines, monitoring signals, retention.
+- Documented existing S3 controls (per-endpoint auth + rate limit, idempotency, log
+  hygiene via safeClientError + hashed rate-limit keys) in docs/SECURITY.md S3.
+- Gate: 238/238 tests, tsc + lint clean, build exit 0.
+- Remaining S3: centralized log shipping + anomaly alerting (operator add-on);
+  per-endpoint body schema-validation hardening.
+
+## Phase S4 (started) - Children's data + registration readiness
+- Registration readiness behind a flag: src/lib/registration/policy.ts
+  (REGISTRATION_MODE, default 'open' = current behavior; 'closed' = admin-created
+  only). registrationGate beforeValidate hook on Users create enforces (for public
+  sign-up only): mode, honeypot, per-IP (hashed) + global rate limit, optional
+  Turnstile. Admin-created accounts and seed/bootstrap are exempt. Default behavior
+  unchanged (open, no Turnstile, generous limits). Honeypot added to the /login
+  register form.
+- Live: a honeypot-tripped public registration is rejected 400 ("Sign-up rejected.")
+  with NO user created; normal sign-up is unaffected.
+- Children's-data protections documented (existing): guardian-managed minors,
+  minor-document owner-only access, server-enforced versioned consent, DSAR
+  (export + erasure with legal hold). Threat model / DFD / PIA already produced.
+- Gate: 242/242 tests (+4 registration policy), tsc + lint clean, build exit 0.
+- Remaining S4: email verification on sign-up (needs SES), token-based invite flow,
+  stricter minor-read access logging.

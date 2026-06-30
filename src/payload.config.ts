@@ -22,6 +22,7 @@ import { Courses } from './collections/Courses'
 import { Courts } from './collections/Courts'
 import { Disputes } from './collections/Disputes'
 import { Divisions } from './collections/Divisions'
+import { EmailOtp } from './collections/EmailOtp'
 import { GameIncidents } from './collections/GameIncidents'
 import { GameOfficials } from './collections/GameOfficials'
 import { GameReports } from './collections/GameReports'
@@ -47,6 +48,10 @@ import { TeamMemberships } from './collections/TeamMemberships'
 import { Teams } from './collections/Teams'
 import { Users } from './collections/Users'
 import { Venues } from './collections/Venues'
+import { WebauthnCredentials } from './collections/WebauthnCredentials'
+import { WebauthnChallenges } from './collections/WebauthnChallenges'
+import { MfaTotp } from './collections/MfaTotp'
+import { RecoveryCodes } from './collections/RecoveryCodes'
 import { FooterNav } from './globals/FooterNav'
 import { HeaderNav } from './globals/HeaderNav'
 import { PolicyVersions } from './globals/PolicyVersions'
@@ -85,13 +90,33 @@ const s3ClientConfig = {
 const publicBucket = process.env.S3_BUCKET_PUBLIC || process.env.S3_BUCKET || ''
 const privateBucket = process.env.S3_BUCKET_PRIVATE || ''
 
+// Stage C / S0 — CORS + CSRF allowlist. Only the known web origin(s) may make
+// credentialed browser requests; native apps authenticate with bearer tokens and
+// are not subject to browser CORS. No wildcard with credentials.
+const serverURL = process.env.NEXT_PUBLIC_SERVER_URL
+const trustedOrigins = [
+  serverURL,
+  ...(isProd ? [] : ['http://localhost:3000']),
+].filter((o): o is string => Boolean(o))
+
 export default buildConfig({
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL,
+  serverURL,
   secret,
+  // Lock CORS to known origins (allow our custom + idempotency headers on
+  // preflight); enable Payload's cookie CSRF check for the same origins.
+  cors: {
+    origins: trustedOrigins,
+    headers: ['idempotency-key', 'x-cmba-hp', 'x-cmba-turnstile'],
+  },
+  csrf: trustedOrigins,
   admin: {
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
+    },
+    components: {
+      // Stage C / S1 (I7): enforce MFA across the admin SPA (no-op until MFA_ENFORCE).
+      providers: ['@/components/security/AdminMfaGate#AdminMfaGate'],
     },
     meta: {
       titleSuffix: '· CMBA Connect',
@@ -140,6 +165,12 @@ export default buildConfig({
     IdempotencyKeys,
     RefreshTokens,
     RateLimitHits,
+    // S1 — multi-factor authentication (secrets in private collections).
+    WebauthnCredentials,
+    WebauthnChallenges,
+    MfaTotp,
+    RecoveryCodes,
+    EmailOtp,
   ],
   globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav],
   editor: lexicalEditor(),

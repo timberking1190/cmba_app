@@ -2,6 +2,7 @@ import { APIError } from 'payload'
 import type { Access, CollectionConfig } from 'payload'
 
 import { isAnyAdmin } from '../access/index'
+import { auditHmac } from '../lib/audit/integrity'
 
 /*
  * AuditLog - the append-only system of record for privileged actions (game
@@ -33,10 +34,13 @@ export const AuditLog: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
-      ({ operation }) => {
+      ({ operation, data }) => {
         if (operation === 'update') {
           throw new APIError('The audit log is append only and cannot be edited.', 403)
         }
+        // Stamp the tamper-evident HMAC over the integrity-protected fields.
+        if (operation === 'create' && data) data.integrity = auditHmac(data)
+        return data
       },
     ],
     beforeDelete: [
@@ -55,5 +59,11 @@ export const AuditLog: CollectionConfig = {
     { name: 'after', type: 'json' },
     { name: 'reason', type: 'text' },
     { name: 'at', type: 'date', required: true, index: true },
+    {
+      name: 'integrity',
+      type: 'text',
+      access: { update: () => false },
+      admin: { readOnly: true, description: 'Tamper-evident HMAC of this entry. System-set.' },
+    },
   ],
 }

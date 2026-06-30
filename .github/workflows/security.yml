@@ -1,0 +1,68 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly re-scan so newly disclosed advisories are caught even without a push.
+    - cron: '0 12 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secret-scan:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so a secret committed earlier is still caught
+      - name: Run gitleaks
+        run: |
+          VERSION=8.18.4
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          ./gitleaks detect --source . --redact --no-banner --exit-code 1 --config .gitleaks.toml
+
+  dependency-scan:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # Fail the build on any NEW high/critical advisory in shipped (production)
+      # deps. Known framework-transitive advisories (next/nodemailer/undici via
+      # Payload + Next) are triaged in .audit-allowlist.json and docs/SECURITY.md;
+      # a newly disclosed, un-triaged advisory blocks the merge.
+      - name: Audit production dependencies (gate)
+        run: node scripts/audit-ci.mjs
+      - name: Audit all dependencies (report only)
+        run: npm audit --audit-level=high || true
+
+  static-analysis:
+    name: Static analysis (Semgrep)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      # Public registry rulesets (no login/token needed). --error fails CI on any
+      # finding so high-severity issues block the merge.
+      - name: Semgrep scan
+        run: |
+          semgrep scan --error --metrics off \
+            --config p/owasp-top-ten \
+            --config p/javascript \
+            --config p/typescript \
+            --config p/react \
+            --config p/secrets

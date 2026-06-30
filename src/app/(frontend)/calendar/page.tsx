@@ -6,7 +6,9 @@ import { TeamLinktEmbed } from "@/components/TeamLinktEmbed";
 import { DOCS } from "@/lib/cmbaLinks";
 import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
 
-export const revalidate = 3600;
+// Dynamically rendered (the root layout reads the CSP nonce). TeamLinkt data stays
+// cached for an hour via unstable_cache in lib/teamlinkt, so dropping page-level
+// ISR does not increase upstream load.
 
 function ManagedCallout({ appUrl }: { appUrl: string }) {
   return (
