@@ -46,20 +46,21 @@ and `cmba-backend-build/docs/SECURITY_CONTROLS.md` for the source requirements.
 
 ### CSP script-src strategy (important)
 
-The public site is statically / ISR rendered. A nonce + `strict-dynamic` policy
-requires per-request dynamic rendering so Next can stamp the nonce onto its inline
-bootstrap scripts; on a static page those scripts ship without a nonce and a strict
-policy would block them (verified during the S0 gate). Two strategies are therefore
-supported via `buildCsp`:
+A nonce + `strict-dynamic` policy requires per-request dynamic rendering so Next
+can stamp the nonce onto its inline bootstrap scripts; on a static page those
+scripts ship without a nonce and a strict policy would block them (caught during
+the S0 gate). Two strategies are supported via `buildCsp`:
 
-- `compatible` (DEFAULT): `script-src 'self' 'unsafe-inline'`. Non-breaking on the
-  current static/ISR pages. Still blocks loading scripts from foreign origins, and
-  the app authors no inline scripts. This is the one residual at S0.
-- `strict-nonce` (gold standard): `script-src 'self' 'nonce-…' 'strict-dynamic'`.
-  Enable with `CSP_STRICT_SCRIPTS=true` AFTER the public site is moved to dynamic
-  rendering (read the `x-nonce` request header in the root layout) and the
-  TeamLinkt data caching on `/schedule` and `/calendar` is moved from page-level
-  ISR to fetch-level caching. Scheduled as an S2 upgrade.
+- `strict-nonce` (DEFAULT, gold standard): `script-src 'self' 'nonce-…'
+  'strict-dynamic'`. The public root layout reads the `x-nonce` request header,
+  which forces dynamic rendering so Next applies the nonce to every script.
+  Verified on real responses: 0 inline scripts without a nonce on the homepage and
+  on `/admin`; all pages 200. TeamLinkt schedule/standings data stays cached for an
+  hour via `unstable_cache` in `lib/teamlinkt`, so dropping page-level ISR does not
+  increase upstream load.
+- `compatible` (fallback): `script-src 'self' 'unsafe-inline'`. Enable with
+  `CSP_COMPAT_SCRIPTS=true` only if a static export without nonce propagation is
+  ever reintroduced.
 
 ### CSP rollout (operator action)
 
@@ -70,8 +71,6 @@ public pages AND `/admin` render with no violations, then unset to enforce.
 
 ### Accepted exceptions (S0)
 
-- `script-src 'unsafe-inline'` (compatible strategy, default): see above. Upgrade
-  path to `strict-nonce` is implemented and gated behind `CSP_STRICT_SCRIPTS`.
 - `style-src 'unsafe-inline'`: React/Next and the Off+Brand UI inject inline
   styles. Inline style is a low XSS risk and removing it would require a large
   refactor of third-party and framework styling. Revisit in S2.

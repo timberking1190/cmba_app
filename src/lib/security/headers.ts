@@ -51,7 +51,11 @@ const SUPABASE = ['https://*.supabase.co', 'https://*.supabase.in']
  *    inline scripts. Tracked for upgrade in S2 (docs/SECURITY.md).
  */
 export function cspScriptStrategy(): 'strict-nonce' | 'compatible' {
-  return process.env.CSP_STRICT_SCRIPTS === 'true' ? 'strict-nonce' : 'compatible'
+  // Default to the gold-standard strict policy. The public site reads the request
+  // nonce in its root layout (forcing dynamic rendering) so Next stamps the nonce
+  // onto every script it emits. Set CSP_COMPAT_SCRIPTS=true to fall back to the
+  // 'self' 'unsafe-inline' policy (e.g. if a static export is ever reintroduced).
+  return process.env.CSP_COMPAT_SCRIPTS === 'true' ? 'compatible' : 'strict-nonce'
 }
 
 export function buildCsp(nonce: string, isDev: boolean): string {

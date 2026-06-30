@@ -756,3 +756,20 @@ docs/SECURITY.md updated with the S0 control matrix (each control -> file + test
 
 ### Phase S0 verdict: GREEN (code-level). Residuals: script-src compatible strategy
 (upgrade scheduled S2), and the operator dynamic scan on preview. S1 next.
+
+## Phase S1 (a) — CSP strict-nonce upgrade (gold standard)
+
+Decision: do the strict-nonce CSP now (not deferred). The public root layout reads
+the per-request nonce, forcing dynamic rendering so Next stamps the nonce onto every
+script. TeamLinkt schedule/standings data was already wrapped in unstable_cache (1h)
+so removing page-level ISR did not increase upstream load.
+
+Verified on the production build (real responses):
+- script-src is now `'self' 'nonce-…' 'strict-dynamic'` (no 'unsafe-inline' in
+  script-src). Homepage: 0 inline scripts without a nonce (was 8 un-nonced before).
+- /admin (Payload): 200, all admin scripts carry the nonce.
+- All public pages + /login + /admin return 200; rendering is dynamic (ƒ).
+- 165/165 tests, tsc + lint clean, build exit 0.
+
+`CSP_COMPAT_SCRIPTS=true` remains as a documented fallback. The S2 residual for
+script-src is therefore CLOSED at S1.

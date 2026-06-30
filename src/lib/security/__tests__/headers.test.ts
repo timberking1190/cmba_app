@@ -6,26 +6,25 @@ const NONCE = 'TEST_NONCE_123'
 
 afterEach(() => {
   delete process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
-  delete process.env.CSP_STRICT_SCRIPTS
+  delete process.env.CSP_COMPAT_SCRIPTS
 })
 
 describe('buildCsp script-src strategy', () => {
-  it('compatible (default): self + unsafe-inline, never a nonce or unsafe-eval in prod', () => {
+  it('strict-nonce (default): self + nonce + strict-dynamic, no unsafe-inline/eval in script-src (prod)', () => {
+    const csp = buildCsp(NONCE, false)
+    expect(csp).toContain(`script-src 'self' 'nonce-${NONCE}' 'strict-dynamic'`)
+    // script-src specifically must not weaken (style-src may keep unsafe-inline).
+    const scriptSrc = csp.split(';').find((d) => d.trim().startsWith('script-src')) || ''
+    expect(scriptSrc).not.toContain("'unsafe-inline'")
+    expect(scriptSrc).not.toContain("'unsafe-eval'")
+  })
+
+  it('compatible (CSP_COMPAT_SCRIPTS=true): self + unsafe-inline, no nonce', () => {
+    process.env.CSP_COMPAT_SCRIPTS = 'true'
     const csp = buildCsp(NONCE, false)
     expect(csp).toContain("script-src 'self' 'unsafe-inline'")
     expect(csp).not.toContain('nonce-')
     expect(csp).not.toContain("'strict-dynamic'")
-    expect(csp).not.toContain("'unsafe-eval'")
-  })
-
-  it('strict-nonce (opt-in): self + nonce + strict-dynamic, no unsafe-inline in script-src', () => {
-    process.env.CSP_STRICT_SCRIPTS = 'true'
-    const csp = buildCsp(NONCE, false)
-    expect(csp).toContain(`script-src 'self' 'nonce-${NONCE}' 'strict-dynamic'`)
-    // script-src specifically must not weaken to unsafe-inline/eval (style-src may).
-    const scriptSrc = csp.split(';').find((d) => d.trim().startsWith('script-src')) || ''
-    expect(scriptSrc).not.toContain("'unsafe-inline'")
-    expect(scriptSrc).not.toContain("'unsafe-eval'")
   })
 })
 
