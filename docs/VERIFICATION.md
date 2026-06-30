@@ -823,3 +823,16 @@ OPERATOR ACTION (apply when ready, branch first): the migration is committed but
 applied. Apply with:  `npm run migrate`  (against a Supabase branch first, then prod;
 DATABASE_URL points at the target). All changes are additive/nullable so an old
 binary against the new schema keeps working (zero-downtime).
+
+### I3 — MFA decision + session-assurance read plumbing (read-only, no enforcement)
+- src/lib/mfa/guard.ts: decideMfa pure function (ok / enroll-required /
+  challenge-required / stepup-required) with the force-enrollment invariant and a
+  stale-column-safe mfaRequired (roles OR derived flag). Step-up freshness window 5min.
+- src/lib/mfa/sessionPure.ts: assuranceFor (sid -> aal, default aal1) + decodeSid
+  (read sid claim from a Payload JWT). Pure, unit-tested.
+- src/lib/mfa/session.ts: getCurrentUserWithAssurance reads the private sessionMeta
+  with overrideAccess (read:()=>false) and attaches _mfa. No write on the login path
+  (elevation to aal2 lands with the challenge routes).
+- Gate: 193/193 tests (+ guard + session suites incl. the "admin is never ok while
+  aal1" MFA-bypass invariant and force-enrollment safety), tsc + lint clean, build
+  exit 0. No enforcement wired yet; logins unaffected.
