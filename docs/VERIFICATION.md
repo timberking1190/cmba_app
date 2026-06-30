@@ -894,3 +894,25 @@ session management are built, tested, and self-service. Enrollment is LIVE-capab
 (migration applied). NOT yet wired: force-enrollment ENFORCEMENT (I7, MFA_ENFORCE) -
 intentionally gated until the super admin has enrolled a factor (operator step), so
 there is no lockout window. Email-OTP recovery (I8) waits on SES.
+
+### I7 — Force-enrollment enforcement (behind MFA_ENFORCE, default OFF)
+- src/lib/mfa/enforce.ts: enforceMfa(path) - no-op (no query, no redirect) when
+  MFA_ENFORCE off; when on, loads per-session assurance and redirects per decideMfa
+  to /account/security (enroll) or /account/security/challenge. Redirect targets are
+  NOT enforced, so a required-but-unenrolled super admin always has a path in
+  (force-enrollment, never a hard lockout). Pure helpers in enforcePure.ts (tested).
+- Wired into the personal-data/admin pages: /account, /manage, /rep,
+  /compliance/dashboard, /compliance/consent-audit (after each page's existing role
+  gate).
+- Gate: 215/215 tests (+4 enforce), tsc + lint clean, build exit 0. Live with the
+  flag OFF: /account, /manage, /rep, /compliance/dashboard still redirect signed-out
+  users to /login exactly as before; public pages 200. Zero behavior change until the
+  operator flips MFA_ENFORCE.
+- REMAINING I7 PIECE: the Payload /admin panel does not yet run enforceMfa (it is a
+  separate SPA). Add an admin.components.afterLogin MFA slot to challenge/enroll
+  inline before turning enforcement fully on for the /admin surface. Tracked in
+  docs/OPERATOR_ACTIONS.md and docs/SECURITY.md.
+
+OPERATOR (docs/OPERATOR_ACTIONS.md): enroll a factor at /account/security for the
+super admin (and a backup) BEFORE setting MFA_ENFORCE=true. The flag is the instant
+kill-switch.

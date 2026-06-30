@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { AlertTriangle, Clock, ShieldCheck, ExternalLink } from 'lucide-react'
 
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
+import { enforceMfa } from '@/lib/mfa/enforce'
 import { isAnyAdmin, isSuperAdmin, clubIdOf } from '@/access/index'
 import { computeCertStatus, daysUntil } from '@/lib/certStatus'
 import type { Certification, CertificationType, User } from '@/payload-types'
@@ -23,6 +24,7 @@ export default async function ComplianceDashboardPage() {
   const actor = await getCurrentUser()
   if (!actor) redirect('/login?redirect=/compliance/dashboard')
   if (!isAnyAdmin(actor)) redirect('/account')
+  await enforceMfa('/compliance/dashboard')
 
   const payload = await getPayloadClient()
   const actorClub = clubIdOf(actor)

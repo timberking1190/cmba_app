@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { CheckCircle2, AlertTriangle } from 'lucide-react'
 
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
+import { enforceMfa } from '@/lib/mfa/enforce'
 import { isSuperAdmin } from '@/access/index'
 import type { User } from '@/payload-types'
 import { CalgarySkyline } from '@/components/graphics/CalgarySkyline'
@@ -20,6 +21,7 @@ export default async function ConsentAuditPage() {
   const actor = await getCurrentUser()
   if (!actor) redirect('/login?redirect=/compliance/consent-audit')
   if (!isSuperAdmin(actor)) redirect('/account')
+  await enforceMfa('/compliance/consent-audit')
 
   const payload = await getPayloadClient()
   const [current, usersRes] = await Promise.all([

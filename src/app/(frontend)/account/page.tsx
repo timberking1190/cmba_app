@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
+import { enforceMfa } from '@/lib/mfa/enforce'
 import { isAnyAdmin, isSuperAdmin } from '@/access/index'
 import { getComplianceForUser, getPathwayProgress, getUserProgress } from '@/lib/compliance'
 import { AccountActions } from '@/components/account/AccountActions'
@@ -28,6 +29,7 @@ const nameOf = (rel: number | string | { name?: string } | null | undefined): st
 export default async function AccountPage() {
   const user = await getCurrentUser()
   if (!user) redirect('/login?redirect=/account')
+  await enforceMfa('/account')
 
   const payload = await getPayloadClient()
   const roles = user.roles ?? []

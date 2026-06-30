@@ -5,6 +5,7 @@ import { Upload, Calendar, AlertTriangle, Users } from 'lucide-react'
 
 import { isAnyAdmin } from '@/access/index'
 import { getCurrentUser } from '@/lib/auth'
+import { enforceMfa } from '@/lib/mfa/enforce'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Scheduling admin | CMBA Connect' }
@@ -20,6 +21,7 @@ export default async function ManageHub() {
   const user = await getCurrentUser()
   if (!user) redirect('/login?redirect=/manage')
   if (!isAnyAdmin(user)) redirect('/account')
+  await enforceMfa('/manage')
 
   return (
     <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-12">
