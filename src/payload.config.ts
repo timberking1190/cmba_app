@@ -85,9 +85,25 @@ const s3ClientConfig = {
 const publicBucket = process.env.S3_BUCKET_PUBLIC || process.env.S3_BUCKET || ''
 const privateBucket = process.env.S3_BUCKET_PRIVATE || ''
 
+// Stage C / S0 — CORS + CSRF allowlist. Only the known web origin(s) may make
+// credentialed browser requests; native apps authenticate with bearer tokens and
+// are not subject to browser CORS. No wildcard with credentials.
+const serverURL = process.env.NEXT_PUBLIC_SERVER_URL
+const trustedOrigins = [
+  serverURL,
+  ...(isProd ? [] : ['http://localhost:3000']),
+].filter((o): o is string => Boolean(o))
+
 export default buildConfig({
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL,
+  serverURL,
   secret,
+  // Lock CORS to known origins (allow our custom + idempotency headers on
+  // preflight); enable Payload's cookie CSRF check for the same origins.
+  cors: {
+    origins: trustedOrigins,
+    headers: ['idempotency-key', 'x-cmba-hp', 'x-cmba-turnstile'],
+  },
+  csrf: trustedOrigins,
   admin: {
     user: Users.slug,
     importMap: {

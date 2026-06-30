@@ -1,0 +1,10 @@
+# gitleaks config — extend the built-in rules and allowlist known-safe files.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholder/lockfile paths with no real secrets"
+paths = [
+  '''\.env\.example$''',
+  '''package-lock\.json$''',
+]

@@ -682,3 +682,77 @@ Re-ran the whole module to confirm no regressions:
   new crons run.
 
 ### Phase B5 verdict: GREEN. Stage B complete.
+
+---
+
+# Stage C — Security hardening
+
+## Verification pass (ratify Stage A + B against spec; no rebuild)
+
+Run 2026-06-29 on branch feat/backend before any Stage C work:
+
+- Unit + integration tests: 146/146 passing (17 files) via `npm test`.
+- Typecheck: `npx tsc --noEmit` clean.
+- Lint: `npm run lint` clean.
+- Production build: `npm run build` exit 0 (static + dynamic routes generate).
+
+Gotchas confirmed handled: /admin is Payload (src/app/(payload)/admin) with the old
+static directory moved to /resources; /login is real Payload email/password auth
+with consent-gated registration and login hardening. Source-of-truth decision is
+implemented (native pipeline queried first; FEATURE_LEGACY_TEAMLINKT defaults on
+until a season is seeded). FEATURE_GAP_ANALYSIS.md already benchmarks all five
+competitors. Verdict: Stage A + Stage B RATIFIED.
+
+## Phase S0 — Baseline hardening
+
+### 1. Static checks
+- Tests: 165/165 passing (added headers + botChallenge suites). `npm test`.
+- Typecheck clean; lint clean; production build exit 0.
+- Secret scanning: gitleaks configured in CI (.github/workflows/security.yml,
+  .gitleaks.toml). `.env` is gitignored and untracked; only `.env.example` is in
+  the repo (verified `git ls-files`). Dependency audit + Semgrep SAST gate in CI.
+
+### 2. Security tests + real-response header checks
+Server started from the production build; headers observed with curl:
+- CSP present on every HTML route with the locked directives: `default-src 'self'`,
+  `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
+  `frame-ancestors 'self'` (self required for Payload Live Preview; cross-origin
+  framing denied), allowlisted img/connect/font/media (Supabase ca-central-1 only)
+  and frame-src (TeamLinkt + YouTube + Google Docs/Drive + RAMP only), report-uri
+  /api/csp-report, upgrade-insecure-requests.
+- script-src strategy = compatible (`'self' 'unsafe-inline'`) by default. The gate
+  caught that a nonce + strict-dynamic policy would block Next's un-nonced inline
+  bootstrap scripts on statically rendered pages; the strict-nonce strategy is
+  implemented and gated behind CSP_STRICT_SCRIPTS for the S2 dynamic-rendering
+  upgrade (see docs/SECURITY.md). Documented residual.
+- Enforced on all routes: HSTS (max-age 63072000; includeSubDomains; preload),
+  X-Content-Type-Options nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy
+  strict-origin-when-cross-origin, Permissions-Policy (camera/mic/geo/usb/etc.
+  disabled), Cross-Origin-Opener-Policy same-origin.
+- Page serving unaffected: /, /game-report, /standings, /schedule, /rules, /faq,
+  /admin, /.well-known/security.txt all return 200 with the policy in place.
+- /api/csp-report returns 204 and logs a scrubbed summary; security.txt served as
+  text/plain.
+- Form abuse defense (game-report): honeypot + per-IP (5/10min) + global (60/10min)
+  durable rate limit + optional Cloudflare Turnstile (fail-closed when enabled),
+  with IP stored only as an HMAC hash. Unit-tested in
+  src/lib/security/__tests__/botChallenge.test.ts.
+- CORS + CSRF locked to known origins in src/payload.config.ts (no wildcard with
+  credentials; native apps use bearer tokens).
+
+### 3. Dynamic scan
+Deferred to the operator preview deploy (run an automated scanner, e.g. OWASP ZAP,
+against a Vercel preview; record results here). The first preview should run with
+CSP_REPORT_ONLY=true to confirm zero violations before enforcing.
+
+### 4. Standards mapping
+docs/SECURITY.md updated with the S0 control matrix (each control -> file + test).
+
+### 5. Self review / red team (S0 scope)
+- CSP enforced would have broken static script execution -> caught and resolved by
+  the compatible strategy; strict-nonce upgrade path recorded.
+- No raw IP persisted by the limiter (hashed). No secrets in repo. Error responses
+  remain generic (safeClientError). frame-ancestors keeps Live Preview working.
+
+### Phase S0 verdict: GREEN (code-level). Residuals: script-src compatible strategy
+(upgrade scheduled S2), and the operator dynamic scan on preview. S1 next.
