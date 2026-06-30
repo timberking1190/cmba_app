@@ -22,10 +22,13 @@ tracked in `docs/VERIFICATION.md`. Items are ordered by urgency.
   and request SES production access (it is in sandbox now). Until then transactional
   email (guardian confirmation, reminders, contested escalations, email-OTP) is
   logged but not delivered.
-- [ ] **Framework upgrade.** Upgrade Next.js to the latest patched 15.x and Payload
-  to a compatible release to clear the 11 triaged framework advisories
-  (`.audit-allowlist.json`); verify on a Vercel preview, then re-run
-  `node scripts/audit-ci.mjs` and shrink the allowlist.
+- [ ] **Framework upgrade (BLOCKED upstream, not actionable now).** Verified
+  2026-06-30: Payload 3.85.1 (latest) caps Next at `<15.5.0`, but the Next advisory
+  fixes are in `15.5.15+`. Upgrading to 15.4.11 (the max Payload allows) clears none
+  and adds one, so it was reverted. Action: watch for a Payload 3.x release that
+  widens the Next peer range to 15.5.15+ (or plan a Next 16 major upgrade), then run
+  docs/OPERATOR_RUNBOOK.md section 3 and re-run `node scripts/audit-ci.mjs`. No
+  operator action clears these today.
 - [ ] **Independent penetration test** (web + API) using `docs/PENTEST_READINESS.md`;
   remediate findings.
 - [ ] **Third-party security review / architecture assessment.**

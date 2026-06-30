@@ -87,10 +87,17 @@ packages: `next` (DoS, middleware/proxy bypass, SSRF in image optimization),
 baselined in `.audit-allowlist.json` (11 IDs as of 2026-06-29) so a NEWLY disclosed,
 un-triaged advisory still fails CI.
 
-- Remediation owner: operator. Upgrade Next.js to the latest patched 15.x and Payload
-  to a compatible release, verify on a Vercel preview, then re-run `node scripts/audit-ci.mjs`
-  to shrink the allowlist. REQUIRED before public registration launch and an input to
-  the independent penetration test.
+- Remediation status (checked 2026-06-30): BLOCKED upstream by Payload, not a simple
+  operator action. Payload 3.85.1 (already the latest) caps `@payloadcms/next` at Next
+  `<15.5.0`, but the Next advisory fixes all land in `15.5.15+` (e.g. middleware bypass
+  fixed in 15.5.18, SSRF in 15.5.16). Verified: upgrading to Next 15.4.11 (the highest
+  Payload allows) builds + passes all 242 tests but clears zero advisories and adds one
+  (>=15.4.0 only), so it was reverted. nodemailer/undici are likewise pinned through
+  Payload's tree. Real fix paths: a future Payload 3.x release that widens the Next peer
+  range to 15.5.15+, OR a Next 16 major upgrade (Payload supports >=16.2.6; separate
+  breaking-change effort). Until then these stay accepted; mitigated by strict CSP +
+  headers, CORS lockdown, and no public accounts yet. Tracked for the pentest input and
+  to re-attempt on the next compatible Payload release. See docs/OPERATOR_RUNBOOK.md s3.
 - Mitigations already in place reduce exposure of several of these: strict CSP +
   security headers (S0), CORS/CSRF lockdown, and the fact that the app has no public
   accounts yet.

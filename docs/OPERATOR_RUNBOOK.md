@@ -253,14 +253,23 @@ If that arrives, do the real end-to-end check: trigger a guardian-confirmation s
 
 ## 3. Upgrade the framework (clear the triaged advisories)
 
-The 11 advisories in `/Users/ken/cmba_app/.audit-allowlist.json` are not bugs in our code. They are known issues inside Next.js and two libraries it pulls in (`nodemailer` and `undici`, which arrive through Payload and Next). We accepted them on a "fix when we upgrade" basis. This section is that upgrade. When it is done, most or all of those 11 entries can be deleted, and the audit gate (`scripts/audit-ci.mjs`) goes back to a near-empty allowlist.
+The 11 advisories in `/Users/ken/cmba_app/.audit-allowlist.json` are not bugs in our code. They are known issues inside Next.js and two libraries it pulls in (`nodemailer` and `undici`, which arrive through Payload and Next). We accepted them on a "fix when we upgrade" basis.
 
-Two warnings before you start, both important:
+### Status (checked 2026-06-30): currently BLOCKED by Payload, not by you
 
-- Do ALL of this on a branch. Never run these commands directly on `main`. If the upgrade breaks something, a branch keeps `main` safe and deployable.
-- Next.js and Payload must stay compatible with each other. The `@payloadcms/next` package declares which Next versions it supports (its "peer range"). If you bump Next to a version Payload does not support yet, the admin panel or the build will break in confusing ways. We check this in step (b) before installing anything.
+We tried the upgrade and it cannot clear the advisories yet. Here is why, so nobody wastes time on it:
 
-Current versions (from `/Users/ken/cmba_app/package.json`): Next is `15.3.9`; `payload` and every `@payloadcms/*` package are all `3.85.1`. The goal is the latest patched `15.x` of Next and the latest `3.x` of Payload, with every `@payloadcms/*` package on the exact same version as each other and as `payload`.
+- Payload `3.85.1` is already the latest Payload. Its `@payloadcms/next` package only supports Next up to (but not including) `15.5.0` (its peer range is `>=15.4.11 <15.5.0`, plus a separate band for Next 16).
+- The fixes for the flagged Next advisories all landed in `15.5.15` and later (for example the middleware/proxy bypass is fixed in `15.5.18`, the SSRF in `15.5.16`). Those versions are above Payload's cap.
+- We verified by upgrading Next to `15.4.11` (the highest version Payload allows): the build, types, lint, and 242 tests all passed, BUT it cleared zero of the advisories and ADDED one more that only affects `>=15.4.0`. So it makes the security posture slightly worse, not better. We reverted it.
+
+Net: the patched Next is out of reach until either (1) the Payload team ships a release whose `@payloadcms/next` peer range allows Next `15.5.15+`, or (2) we do a Next 16 major upgrade (Payload already supports `>=16.2.6`), which is a larger, breaking change to evaluate on its own. The 11 advisories stay accepted and documented in `docs/SECURITY.md` until then. The app already mitigates several of them (strict CSP and security headers, CORS lockdown, and no public accounts yet).
+
+What you (or we) should do now: watch Payload's releases. When a Payload `3.x` release widens the Next peer range to include `15.5.15+`, run the steps below. Until then, leave the versions as they are.
+
+When the blocker clears, follow these steps (do ALL of this on a branch, never on `main`; keep every `@payloadcms/*` package on the exact same version as `payload`, and confirm Next stays inside Payload's peer range before installing):
+
+Current versions (from `/Users/ken/cmba_app/package.json`): Next is `15.3.9`; `payload` and every `@payloadcms/*` package are all `3.85.1`.
 
 ### (a) Create a branch
 
