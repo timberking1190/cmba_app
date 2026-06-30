@@ -1,6 +1,6 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 
-import { isAnyAdmin, isSuperAdmin, superAdminFieldOnly } from '../access/index'
+import { anyAdminOnly, authenticated, isSuperAdmin, ownerOrAnyAdmin, superAdminFieldOnly } from '../access/index'
 
 /*
  * TeamMemberships - THE VERIFIED REP GATE. A membership links a user to a team
@@ -11,22 +11,13 @@ import { isAnyAdmin, isSuperAdmin, superAdminFieldOnly } from '../access/index'
  * cannot stack memberships on one team. Verification is the trust boundary, so the
  * verify path is admin only.
  */
-const readMemberships: Access = ({ req: { user } }) => {
-  if (!user) return false
-  if (isAnyAdmin(user)) return true
-  return { user: { equals: user.id } }
-}
-
-const adminOnly: Access = ({ req: { user } }) => isAnyAdmin(user)
-const authenticatedCreate: Access = ({ req: { user } }) => Boolean(user)
-
 export const TeamMemberships: CollectionConfig = {
   slug: 'team-memberships',
   access: {
-    read: readMemberships,
-    create: authenticatedCreate,
-    update: adminOnly,
-    delete: adminOnly,
+    read: ownerOrAnyAdmin,
+    create: authenticated,
+    update: anyAdminOnly,
+    delete: anyAdminOnly,
   },
   admin: {
     useAsTitle: 'id',

@@ -40,6 +40,10 @@ export const ConsentRecords: CollectionConfig = {
     { name: 'guardianConsentVersion', type: 'text' },
     { name: 'marketingOptIn', type: 'checkbox', defaultValue: false },
     { name: 'photoOptIn', type: 'checkbox', defaultValue: false },
+    // Member-Value engagement consents (snapshot at sign-off; default off).
+    { name: 'recognitionSurfacing', type: 'checkbox', defaultValue: false },
+    { name: 'progressSharing', type: 'checkbox', defaultValue: false },
+    { name: 'appearOnLeaderboard', type: 'checkbox', defaultValue: false },
     { name: 'acceptedAt', type: 'date', required: true },
     { name: 'acceptedIp', type: 'text' },
   ],

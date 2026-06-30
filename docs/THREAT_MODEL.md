@@ -149,6 +149,12 @@ Canada) is called out at each store.
 - **Consent records** are written append-only to `ConsentRecords` (super-admin read
   only) on every initial consent and re-consent.
 - **Privileged actions** write append-only rows to `AuditLog`.
+- **Engagement ledgers** (`XpEvents`, `BadgeAwards`) are append-only, system-write
+  only: collections deny all API writes and the award engine inserts via
+  `overrideAccess`; `beforeChange`/`beforeDelete` block edits even for server calls.
+  `Streaks` is a mutable cache written only by the streak-rollup cron. `Recognitions`
+  are created pending and surface only after coach/admin approval. These ledgers ship
+  dormant behind `FEATURE_GAMIFICATION_LEDGER` (default off).
 - **Email** to members and reviewers goes through **AWS SES `ca-central-1`** with no
   PII in the body.
 
@@ -174,6 +180,9 @@ may be subject to US legal process (documented in the residency addendum).
 | Consent records | Versioned acceptance, IP, timestamps | Confidential, immutable | Postgres `ca-central-1` |
 | Authentication secrets | Password hashes, TOTP secrets, passkey keys, recovery codes, refresh tokens | Secret (never serialized) | Postgres `ca-central-1` |
 | Audit log | Privileged-action history | Confidential, append-only | Postgres `ca-central-1` |
+| Engagement ledgers | `XpEvents`, `BadgeAwards` (may describe a minor's activity) | Confidential, append-only, owner+admin read | Postgres `ca-central-1` |
+| Recognitions | Moderated shout-outs/awards, free-text, may name a minor | Sensitive (youth), pending-until-approved | Postgres `ca-central-1` |
+| Challenge submissions | Result + optional video clip (may show a minor) | Sensitive when a clip is attached | Postgres + private bucket `ca-central-1` |
 | Roles and RBAC config | `roles`, verification stamps, `legalHold` | Confidential, admin-write only | Postgres `ca-central-1` |
 | Platform secrets | `PAYLOAD_SECRET`, `DATABASE_URL`, `S3_*`, SES creds, `CRON_SECRET` | Secret | Vercel env, not in repo |
 | Public content | Pages, announcements, Media images | Public | Postgres + public bucket |
@@ -229,6 +238,8 @@ are locked to admins.
 | Tampering | A server call bypassing history controls with `overrideAccess` | In place: `AuditLog` and `ConsentRecords` block writes at BOTH the access layer and in `beforeChange`/`beforeDelete` hooks; `overrideAccess` bypasses access functions but not hooks, so append-only holds even for server calls (`AuditLog.ts`). |
 | Information disclosure | Secret fields serialized to a client | In place: password hash never overridden (Payload PBKDF2); TOTP secret, passkey public key and counter, recovery-code hashes, refresh-token hashes, and `mfa.lastVerifiedAt`/`sessionMeta` all have `read: () => false` or live in deny-all collections (`MfaTotp.ts`, `WebauthnCredentials.ts`, `RecoveryCodes.ts`, `RefreshTokens.ts`, `Users.ts`). |
 | Elevation of privilege | Minting an MFA-cleared session without MFA | In place: per-session assurance (`aal`) lives in `sessionMeta`, written only server-side via `overrideAccess`; admins are force-enrolled in MFA (`enforceMfaRequired`); coarse `mfa.enrolled`/`required` flags are read-only and `saveToJWT`. |
+| Tampering | A participant self-awarding a "verified" badge or XP | In place: `XpEvents`/`BadgeAwards` deny all API writes and the `verified`/`counts` fields are `superAdminFieldOnly`; only the engine mints events via `overrideAccess`, and it enforces the `verified <=> meaningful` invariant (fail-closed) so a verification-required badge can only be earned from verified XP. A recognition is created pending with `nominatedBy`/`moderationStatus` server-pinned; nothing surfaces until coach/admin approval. |
+| Information disclosure | A minor exposed through a leaderboard, player card, or recognition | In place: every engagement collection is owner+admin read; non-owner display uses the privacy-safe name; leaderboard/recognition surfacing of a minor is gated on guardian consent (`appearOnLeaderboard`/`recognitionSurfacing`). |
 
 ### TB-5: App to Supabase Postgres and Storage (`ca-central-1`)
 

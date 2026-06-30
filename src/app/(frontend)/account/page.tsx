@@ -8,7 +8,9 @@ import {
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { enforceMfa } from '@/lib/mfa/enforce'
 import { isAnyAdmin, isSuperAdmin } from '@/access/index'
-import { getComplianceForUser, getPathwayProgress, getUserProgress } from '@/lib/compliance'
+import { getComplianceForUser, getPathwayProgress } from '@/lib/compliance'
+import { getUnifiedProgress } from '@/lib/gamification/progress'
+import { pathwayAudienceFor } from '@/lib/audience'
 import { AccountActions } from '@/components/account/AccountActions'
 import { CalgarySkyline } from '@/components/graphics/CalgarySkyline'
 import type { Certification, CertificationType, Course } from '@/payload-types'
@@ -33,12 +35,12 @@ export default async function AccountPage() {
 
   const payload = await getPayloadClient()
   const roles = user.roles ?? []
-  const audience = roles.includes('coach') ? 'coach' : roles.includes('official') ? 'official' : undefined
+  const audience = pathwayAudienceFor(roles)
 
   const [compliance, pathways, progress, certRes, certTypesRes] = await Promise.all([
     getComplianceForUser(payload, user),
     getPathwayProgress(payload, user, audience),
-    getUserProgress(payload, user),
+    getUnifiedProgress(payload, user),
     payload.find({ collection: 'certifications', where: { user: { equals: user.id } }, depth: 2, limit: 200, overrideAccess: true }),
     payload.find({ collection: 'certification-types', limit: 200, depth: 0, overrideAccess: true }),
   ])

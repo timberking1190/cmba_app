@@ -52,6 +52,14 @@ import { WebauthnCredentials } from './collections/WebauthnCredentials'
 import { WebauthnChallenges } from './collections/WebauthnChallenges'
 import { MfaTotp } from './collections/MfaTotp'
 import { RecoveryCodes } from './collections/RecoveryCodes'
+// Engagement (Member-Value foundation): unified gamification ledgers.
+import { Badges } from './collections/Badges'
+import { BadgeAwards } from './collections/BadgeAwards'
+import { XpEvents } from './collections/XpEvents'
+import { Streaks } from './collections/Streaks'
+import { Recognitions } from './collections/Recognitions'
+import { Challenges } from './collections/Challenges'
+import { ChallengeSubmissions } from './collections/ChallengeSubmissions'
 import { FooterNav } from './globals/FooterNav'
 import { HeaderNav } from './globals/HeaderNav'
 import { PolicyVersions } from './globals/PolicyVersions'
@@ -171,6 +179,16 @@ export default buildConfig({
     MfaTotp,
     RecoveryCodes,
     EmailOtp,
+    // Engagement (Member-Value foundation): unified gamification ledgers +
+    // moderated recognition. Scaffolds this stage (model only); the award engine,
+    // recognition approval wiring, and crons land in later phases.
+    Badges,
+    BadgeAwards,
+    XpEvents,
+    Streaks,
+    Recognitions,
+    Challenges,
+    ChallengeSubmissions,
   ],
   globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav],
   editor: lexicalEditor(),

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { computeCertStatus } from '@/lib/certStatus'
-import { COACH_BADGES, getLevelForXP } from '@/lib/gamification'
+import { summarizeProgress } from '@/lib/gamification/progress'
 import { CoachPathwayView, type PathwayLevel } from '@/components/coach/CoachPathwayView'
 import { PhotoHero } from '@/components/media/PhotoHero'
 import { PhotoBand } from '@/components/media/PhotoBand'
@@ -82,9 +82,7 @@ export default async function CoachPathwayPage() {
 
   const completedStages = levels.filter((l) => l.complete).length
   const xp = levels.filter((l) => l.complete).reduce((a, l) => a + l.xpReward, 0)
-  const lvl = getLevelForXP(xp)
-  const earnedBadges = COACH_BADGES.slice(0, Math.min(completedStages, COACH_BADGES.length))
-  const lockedBadges = COACH_BADGES.slice(earnedBadges.length)
+  const progress = summarizeProgress({ completedStages, xp, audience: 'coach' })
 
   return (
     <div>
@@ -101,13 +99,13 @@ export default async function CoachPathwayPage() {
         <CoachPathwayView
           levels={levels}
           signedIn={Boolean(user)}
-          xp={xp}
-          level={lvl.level}
-          levelTitle={lvl.title}
-          nextLevelXp={lvl.nextLevelXp}
-          progress={lvl.progress}
-          earnedBadges={earnedBadges}
-          lockedBadges={lockedBadges}
+          xp={progress.xp}
+          level={progress.level}
+          levelTitle={progress.levelTitle}
+          nextLevelXp={progress.nextLevelXp}
+          progress={progress.progress}
+          earnedBadges={progress.earnedBadges}
+          lockedBadges={progress.lockedBadges}
         />
       </div>
 

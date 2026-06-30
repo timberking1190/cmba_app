@@ -111,6 +111,13 @@ export interface Config {
     'mfa-totp': MfaTotp;
     'recovery-codes': RecoveryCode;
     'email-otp': EmailOtp;
+    badges: Badge;
+    'badge-awards': BadgeAward;
+    'xp-events': XpEvent;
+    streaks: Streak;
+    recognitions: Recognition;
+    challenges: Challenge;
+    'challenge-submissions': ChallengeSubmission;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -162,6 +169,13 @@ export interface Config {
     'mfa-totp': MfaTotpSelect<false> | MfaTotpSelect<true>;
     'recovery-codes': RecoveryCodesSelect<false> | RecoveryCodesSelect<true>;
     'email-otp': EmailOtpSelect<false> | EmailOtpSelect<true>;
+    badges: BadgesSelect<false> | BadgesSelect<true>;
+    'badge-awards': BadgeAwardsSelect<false> | BadgeAwardsSelect<true>;
+    'xp-events': XpEventsSelect<false> | XpEventsSelect<true>;
+    streaks: StreaksSelect<false> | StreaksSelect<true>;
+    recognitions: RecognitionsSelect<false> | RecognitionsSelect<true>;
+    challenges: ChallengesSelect<false> | ChallengesSelect<true>;
+    'challenge-submissions': ChallengeSubmissionsSelect<false> | ChallengeSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -260,6 +274,18 @@ export interface User {
     acceptedIp?: string | null;
     marketingOptIn?: boolean | null;
     photoOptIn?: boolean | null;
+    /**
+     * Allow approved recognitions of this member to surface beyond the owner.
+     */
+    recognitionSurfacing?: boolean | null;
+    /**
+     * Allow a coach or teammate to see this member's development progress.
+     */
+    progressSharing?: boolean | null;
+    /**
+     * Allow this member to appear on leaderboards (privacy-safe name only).
+     */
+    appearOnLeaderboard?: boolean | null;
   };
   /**
    * Required for participants under 18. The account stays pending until confirmed.
@@ -279,6 +305,14 @@ export interface User {
      * Reminders to report or confirm a game score. Transactional escalations are always sent.
      */
     gameReminders?: boolean | null;
+    /**
+     * A weekly summary of new badges, recognitions, and team news.
+     */
+    weeklyDigest?: boolean | null;
+    /**
+     * Notify when a recognition for this member is approved.
+     */
+    recognitionUpdates?: boolean | null;
   };
   /**
    * MFA state. Secrets live in separate private collections. System-managed.
@@ -584,6 +618,9 @@ export interface ConsentRecord {
   guardianConsentVersion?: string | null;
   marketingOptIn?: boolean | null;
   photoOptIn?: boolean | null;
+  recognitionSurfacing?: boolean | null;
+  progressSharing?: boolean | null;
+  appearOnLeaderboard?: boolean | null;
   acceptedAt: string;
   acceptedIp?: string | null;
   updatedAt: string;
@@ -1697,6 +1734,262 @@ export interface EmailOtp {
   updatedAt: string;
 }
 /**
+ * Catalog of badge definitions with declarative earn criteria. No personal data.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "badges".
+ */
+export interface Badge {
+  id: number;
+  /**
+   * Stable identifier, e.g. first-whistle.
+   */
+  slug: string;
+  name: string;
+  description?: string | null;
+  /**
+   * Emoji rendered as text, e.g. 🏀.
+   */
+  icon?: string | null;
+  /**
+   * Audiences this badge can be earned by.
+   */
+  audience: ('athlete' | 'coach' | 'official' | 'parent')[];
+  tier: 'bronze' | 'silver' | 'gold' | 'milestone';
+  /**
+   * How the award engine decides this badge is earned.
+   */
+  earnKind: 'xp_threshold' | 'streak_threshold' | 'verified_count' | 'pathway_stage' | 'recognition' | 'manual';
+  /**
+   * Parameters for earnKind.
+   */
+  earnConfig?: {
+    /**
+     * For xp_threshold / streak_threshold / verified_count.
+     */
+    threshold?: number | null;
+    /**
+     * Event source the count is over, e.g. challenge.verified.
+     */
+    sourceKey?: string | null;
+  };
+  /**
+   * When set, only VERIFIED (coach/admin-stamped) events count toward this badge.
+   */
+  verificationRequired?: boolean | null;
+  /**
+   * Inactive badges are hidden from members and never awarded.
+   */
+  active?: boolean | null;
+  /**
+   * Sync/dedupe key for seeded or imported badges.
+   */
+  externalId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Immutable badge-award ledger. Written only by the award engine; cannot be edited or deleted.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "badge-awards".
+ */
+export interface BadgeAward {
+  id: number;
+  user: number | User;
+  badge: number | Badge;
+  awardedVia: 'auto' | 'coach_verified' | 'admin_manual';
+  /**
+   * The triggering XP event for an automatic award.
+   */
+  sourceEvent?: (number | null) | XpEvent;
+  /**
+   * True only for coach/admin-stamped awards or badges that do not require verification. Engine-set.
+   */
+  verified?: boolean | null;
+  /**
+   * Admin/coach who granted a manual or verified award. Null for automatic.
+   */
+  awardedBy?: (number | null) | User;
+  /**
+   * Captured at award time (re-derived server-side). Gates privacy-safe display.
+   */
+  isMinor?: boolean | null;
+  awardedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Append-only XP ledger. Written only by the award engine; cannot be edited or deleted.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "xp-events".
+ */
+export interface XpEvent {
+  id: number;
+  user: number | User;
+  /**
+   * XP awarded (may be 0 for streak-tracking-only events).
+   */
+  amount: number;
+  kind:
+    | 'login'
+    | 'challenge'
+    | 'quiz'
+    | 'drill'
+    | 'clinic'
+    | 'recognition'
+    | 'pathway_stage'
+    | 'streak_bonus'
+    | 'milestone';
+  counts: 'fun_only' | 'meaningful';
+  /**
+   * True only when coach/admin-verified or cert-derived. Engine-set.
+   */
+  verified?: boolean | null;
+  /**
+   * Traceability back to the originating record.
+   */
+  source?: {
+    collection?: string | null;
+    docId?: string | null;
+  };
+  occurredAt: string;
+  /**
+   * Idempotency key, unique per user. Engine-set.
+   */
+  dedupeKey: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Materialized streak counters. Written only by the streak-rollup cron.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "streaks".
+ */
+export interface Streak {
+  id: number;
+  user: number | User;
+  currentStreakDays?: number | null;
+  longestStreakDays?: number | null;
+  lastActiveDay?: string | null;
+  streakKind?: ('activity' | 'login') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Moderated recognitions. Created pending; approved in the admin panel before they surface.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recognitions".
+ */
+export interface Recognition {
+  id: number;
+  kind: 'player_of_game' | 'shout_out' | 'sportsmanship' | 'coach_of_month' | 'parent_volunteer' | 'milestone';
+  /**
+   * The recognized member.
+   */
+  subject: number | User;
+  /**
+   * Pinned to the caller server-side. Admin-only field.
+   */
+  nominatedBy: number | User;
+  /**
+   * Optional team scope for surfacing.
+   */
+  team?: (number | null) | Team;
+  /**
+   * Plaintext; escaped on render. No HTML.
+   */
+  message?: string | null;
+  /**
+   * Nothing surfaces until approved. Admin-only.
+   */
+  moderationStatus: 'pending' | 'approved' | 'rejected';
+  /**
+   * Admin who approved/rejected. Set server-side.
+   */
+  moderatedBy?: (number | null) | User;
+  moderatedAt?: string | null;
+  /**
+   * Captured server-side from the subject DOB. Gates privacy-safe surfacing.
+   */
+  subjectIsMinor?: boolean | null;
+  /**
+   * Optional: on approval the engine grants this badge (verified) + an XP event.
+   */
+  awardsBadge?: (number | null) | Badge;
+  /**
+   * Reported for moderator review.
+   */
+  flagged?: boolean | null;
+  /**
+   * Why the recognition was flagged.
+   */
+  flagReason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Catalog of skill challenges. No personal data.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "challenges".
+ */
+export interface Challenge {
+  id: number;
+  slug: string;
+  title: string;
+  description?: string | null;
+  skill?: ('shooting' | 'dribbling' | 'passing' | 'defense' | 'conditioning') | null;
+  /**
+   * Stage or age group this challenge targets (e.g. U13).
+   */
+  ageGroup?: string | null;
+  instructions?: string | null;
+  /**
+   * Meaningful XP granted when a submission is verified.
+   */
+  xpReward?: number | null;
+  /**
+   * When set, a coach/admin must verify a submission before the meaningful XP and any badge count.
+   */
+  requiresVerification?: boolean | null;
+  active?: boolean | null;
+  externalId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Athlete challenge attempts. Self-claims land unverified; admin/coach verification grants meaningful XP.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "challenge-submissions".
+ */
+export interface ChallengeSubmission {
+  id: number;
+  challenge: number | Challenge;
+  user: number | User;
+  /**
+   * The athlete-logged result (e.g. 18/25 free throws, 42s course).
+   */
+  result?: string | null;
+  notes?: string | null;
+  /**
+   * A verified submission earns meaningful XP and counts toward badges. Admin/coach only.
+   */
+  verified?: boolean | null;
+  /**
+   * Admin/coach who verified the submission.
+   */
+  verifiedBy?: (number | null) | User;
+  verifiedAt?: string | null;
+  submittedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1895,6 +2188,34 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'email-otp';
         value: number | EmailOtp;
+      } | null)
+    | ({
+        relationTo: 'badges';
+        value: number | Badge;
+      } | null)
+    | ({
+        relationTo: 'badge-awards';
+        value: number | BadgeAward;
+      } | null)
+    | ({
+        relationTo: 'xp-events';
+        value: number | XpEvent;
+      } | null)
+    | ({
+        relationTo: 'streaks';
+        value: number | Streak;
+      } | null)
+    | ({
+        relationTo: 'recognitions';
+        value: number | Recognition;
+      } | null)
+    | ({
+        relationTo: 'challenges';
+        value: number | Challenge;
+      } | null)
+    | ({
+        relationTo: 'challenge-submissions';
+        value: number | ChallengeSubmission;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1972,6 +2293,9 @@ export interface UsersSelect<T extends boolean = true> {
         acceptedIp?: T;
         marketingOptIn?: T;
         photoOptIn?: T;
+        recognitionSurfacing?: T;
+        progressSharing?: T;
+        appearOnLeaderboard?: T;
       };
   guardian?:
     | T
@@ -1989,6 +2313,8 @@ export interface UsersSelect<T extends boolean = true> {
         certificationReminders?: T;
         generalUpdates?: T;
         gameReminders?: T;
+        weeklyDigest?: T;
+        recognitionUpdates?: T;
       };
   mfa?:
     | T
@@ -2173,6 +2499,9 @@ export interface ConsentRecordsSelect<T extends boolean = true> {
   guardianConsentVersion?: T;
   marketingOptIn?: T;
   photoOptIn?: T;
+  recognitionSurfacing?: T;
+  progressSharing?: T;
+  appearOnLeaderboard?: T;
   acceptedAt?: T;
   acceptedIp?: T;
   updatedAt?: T;
@@ -2969,6 +3298,134 @@ export interface EmailOtpSelect<T extends boolean = true> {
   consumedAt?: T;
   createdAt?: T;
   updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "badges_select".
+ */
+export interface BadgesSelect<T extends boolean = true> {
+  slug?: T;
+  name?: T;
+  description?: T;
+  icon?: T;
+  audience?: T;
+  tier?: T;
+  earnKind?: T;
+  earnConfig?:
+    | T
+    | {
+        threshold?: T;
+        sourceKey?: T;
+      };
+  verificationRequired?: T;
+  active?: T;
+  externalId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "badge-awards_select".
+ */
+export interface BadgeAwardsSelect<T extends boolean = true> {
+  user?: T;
+  badge?: T;
+  awardedVia?: T;
+  sourceEvent?: T;
+  verified?: T;
+  awardedBy?: T;
+  isMinor?: T;
+  awardedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "xp-events_select".
+ */
+export interface XpEventsSelect<T extends boolean = true> {
+  user?: T;
+  amount?: T;
+  kind?: T;
+  counts?: T;
+  verified?: T;
+  source?:
+    | T
+    | {
+        collection?: T;
+        docId?: T;
+      };
+  occurredAt?: T;
+  dedupeKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "streaks_select".
+ */
+export interface StreaksSelect<T extends boolean = true> {
+  user?: T;
+  currentStreakDays?: T;
+  longestStreakDays?: T;
+  lastActiveDay?: T;
+  streakKind?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recognitions_select".
+ */
+export interface RecognitionsSelect<T extends boolean = true> {
+  kind?: T;
+  subject?: T;
+  nominatedBy?: T;
+  team?: T;
+  message?: T;
+  moderationStatus?: T;
+  moderatedBy?: T;
+  moderatedAt?: T;
+  subjectIsMinor?: T;
+  awardsBadge?: T;
+  flagged?: T;
+  flagReason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "challenges_select".
+ */
+export interface ChallengesSelect<T extends boolean = true> {
+  slug?: T;
+  title?: T;
+  description?: T;
+  skill?: T;
+  ageGroup?: T;
+  instructions?: T;
+  xpReward?: T;
+  requiresVerification?: T;
+  active?: T;
+  externalId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "challenge-submissions_select".
+ */
+export interface ChallengeSubmissionsSelect<T extends boolean = true> {
+  challenge?: T;
+  user?: T;
+  result?: T;
+  notes?: T;
+  verified?: T;
+  verifiedBy?: T;
+  verifiedAt?: T;
+  submittedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
