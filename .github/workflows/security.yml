@@ -40,10 +40,12 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      # Fail the build on high/critical advisories in shipped (production) deps.
-      # Dev-only advisories are reported but do not block (they never reach users).
+      # Fail the build on any NEW high/critical advisory in shipped (production)
+      # deps. Known framework-transitive advisories (next/nodemailer/undici via
+      # Payload + Next) are triaged in .audit-allowlist.json and docs/SECURITY.md;
+      # a newly disclosed, un-triaged advisory blocks the merge.
       - name: Audit production dependencies (gate)
-        run: npm audit --omit=dev --audit-level=high
+        run: node scripts/audit-ci.mjs
       - name: Audit all dependencies (report only)
         run: npm audit --audit-level=high || true
 

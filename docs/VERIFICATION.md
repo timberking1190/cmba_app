@@ -773,3 +773,34 @@ Verified on the production build (real responses):
 
 `CSP_COMPAT_SCRIPTS=true` remains as a documented fallback. The S2 residual for
 script-src is therefore CLOSED at S1.
+
+## Phase S1 — Identity and authentication (incremental build)
+
+Build order (safe, additive; enforcement only at I7 behind MFA_ENFORCE kill-switch):
+I0 deps+env · I1 password policy+HIBP · I2 schema · I3 session-meta · I4 TOTP+recovery
+· I5 passkeys · I6 challenge/step-up/sessions (flag off) · I7 force-enrollment enforce
+· I8 email-OTP (after SES). Design recorded from the Payload-3.85-grounded research.
+
+### I0 — Dependencies + env (no behavior change)
+- Added @simplewebauthn/server@13.3.2, @simplewebauthn/browser@13.3.0, otpauth@9.5.1
+  (TOTP; the research's otplib@13.4.1 does not exist — used otpauth and will adapt to
+  its real API), qrcode@1.5.4, @types/qrcode (dev).
+- New env (documented in .env.example): TOTP_ENC_KEY, WEBAUTHN_RP_ID, WEBAUTHN_ORIGINS,
+  MFA_ENFORCE=false, FEATURE_EMAIL_OTP=false.
+- Dependency-audit gate reconciled: all current high/critical advisories are
+  framework-transitive (next/nodemailer/undici via Payload+Next). Triaged into
+  .audit-allowlist.json (11 IDs) with a dependency-free gate scripts/audit-ci.mjs that
+  fails CI on any NEW un-allowlisted high/critical. Documented in docs/SECURITY.md;
+  remediation (framework upgrade) flagged as operator action + pentest input.
+
+### I1 — Password policy + breached-password screening
+- validatePassword beforeValidate hook on Users (runs first; no-op unless a password
+  is present, so existing accounts are unaffected until next change): min 12, max 128,
+  all characters allowed, no composition/rotation/hints, contextual blocklist
+  (password != email/name), and HIBP breach screening.
+- src/lib/security/hibp.ts: k-anonymity (5-char SHA-1 prefix, Add-Padding), 2.5s
+  timeout, fails OPEN on outage. Full password/hash never leaves the server (asserted
+  in tests).
+- Gate: 179/179 tests (incl. 14 new), tsc + lint clean, build exit 0.
+
+### I0+I1 verdict: GREEN. Additive only; no login behavior changed; no schema change.

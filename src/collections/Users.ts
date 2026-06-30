@@ -9,6 +9,7 @@ import {
   logConsentRecord,
   sendGuardianConfirmation,
 } from './hooks/users'
+import { validatePassword } from './hooks/passwordPolicy'
 
 /*
  * Users — the auth collection.
@@ -42,7 +43,9 @@ export const Users: CollectionConfig = {
     group: 'People',
   },
   hooks: {
-    beforeValidate: [deriveIsMinor, enforceConsent],
+    // validatePassword runs first so a weak/breached password is rejected before
+    // any other processing. It is a no-op when no password is being set.
+    beforeValidate: [validatePassword, deriveIsMinor, enforceConsent],
     beforeChange: [guardianFlow],
     afterChange: [sendGuardianConfirmation, logConsentRecord],
   },

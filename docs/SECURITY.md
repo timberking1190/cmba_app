@@ -39,7 +39,7 @@ and `cmba-backend-build/docs/SECURITY_CONTROLS.md` for the source requirements.
 | PII minimization in limiter | No raw IP stored | `hashIp` (HMAC-SHA256, truncated) keys rate-limit rows | `botChallenge.test.ts` |
 | Safe error handling | No stack traces / internal detail to clients | `safeClientError` in `src/lib/api/handler.ts`; CSP report sink swallows errors and 204s | `idempotency`/handler tests; code review |
 | Secrets out of repo | No secrets committed; scanning in CI | `.env` gitignored (only `.env.example` tracked); gitleaks in `.github/workflows/security.yml` + `.gitleaks.toml` | CI `security.yml` (secret-scan job) |
-| Dependency scanning | Fail build on high-severity advisories | `npm audit --omit=dev --audit-level=high` gate in `security.yml`; Dependabot (`.github/dependabot.yml`) | CI |
+| Dependency scanning | Fail build on NEW high/critical advisories in prod deps | `scripts/audit-ci.mjs` gate in `security.yml` (allowlist `.audit-allowlist.json`); Dependabot (`.github/dependabot.yml`) | CI |
 | Static analysis | SAST in CI | Semgrep (`p/owasp-top-ten`, `p/javascript`, `p/typescript`, `p/react`, `p/secrets`) in `security.yml` | CI |
 | Disclosure | security.txt with contact | `public/.well-known/security.txt` (RFC 9116) | Manual fetch |
 | TLS / HSTS | Enforced transport security | Vercel terminates TLS; HSTS emitted in production by middleware | Runtime header check |
@@ -79,10 +79,34 @@ public pages AND `/admin` render with no violations, then unset to enforce.
 
 ---
 
-## S1–S4 (planned — filled in as each phase lands)
+## Triaged dependency advisories (accepted, pending framework upgrade)
 
-Each subsequent phase appends its control rows here with implementation and test
-references, and updates `docs/VERIFICATION.md` with gate evidence.
+`npm audit` reports high/critical advisories that are entirely in framework-transitive
+packages: `next` (DoS, middleware/proxy bypass, SSRF in image optimization),
+`nodemailer`, and `undici`, pulled in via Payload 3.85.1 and Next 15.3.9. They are
+baselined in `.audit-allowlist.json` (11 IDs as of 2026-06-29) so a NEWLY disclosed,
+un-triaged advisory still fails CI.
+
+- Remediation owner: operator. Upgrade Next.js to the latest patched 15.x and Payload
+  to a compatible release, verify on a Vercel preview, then re-run `node scripts/audit-ci.mjs`
+  to shrink the allowlist. REQUIRED before public registration launch and an input to
+  the independent penetration test.
+- Mitigations already in place reduce exposure of several of these: strict CSP +
+  security headers (S0), CORS/CSRF lockdown, and the fact that the app has no public
+  accounts yet.
+
+## S1 — Identity and authentication (in progress, incremental)
+
+| Control | Requirement | Implementation | Tested by |
+| --- | --- | --- | --- |
+| Password policy (800-63B-4) | Min length, allow long passphrases + all chars, NO composition/rotation/hints | `validatePassword` beforeValidate hook (`src/collections/hooks/passwordPolicy.ts`), wired first in `Users.hooks.beforeValidate` | `src/collections/hooks/__tests__/passwordPolicy.test.ts` |
+| Breached-password screening | k-anonymity check, full password never leaves server, fail-open | `src/lib/security/hibp.ts` (HIBP range API, 5-char SHA-1 prefix, Add-Padding) | `src/lib/security/__tests__/hibp.test.ts` |
+| Password storage | Strong slow hash | Payload built-in (PBKDF2) — local strategy never overridden | — |
+
+Remaining S1 increments (passkeys, TOTP + recovery codes, email-OTP recovery,
+MFA session-state + enforcement, step-up, session/device management) land in
+subsequent commits per the build order in `docs/VERIFICATION.md`; each appends its
+rows here.
 
 ## Required external assurance (cannot be satisfied by code)
 
