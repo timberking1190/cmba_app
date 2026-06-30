@@ -1,6 +1,6 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 
-import { isAnyAdmin, superAdminFieldOnly } from '../access/index'
+import { anyAdminOnly, superAdminFieldOnly } from '../access/index'
 
 /*
  * PlayerStats - SCAFFOLD (model only this stage). Per-player box scores entered from
@@ -9,11 +9,9 @@ import { isAnyAdmin, superAdminFieldOnly } from '../access/index'
  * gates the feature. Activating it before that consent model is a youth-data leak,
  * deliberately deferred past Stage B.
  */
-const readAdmin: Access = ({ req: { user } }) => isAnyAdmin(user)
-
 export const PlayerStats: CollectionConfig = {
   slug: 'player-stats',
-  access: { read: readAdmin, create: readAdmin, update: readAdmin, delete: readAdmin },
+  access: { read: anyAdminOnly, create: anyAdminOnly, update: anyAdminOnly, delete: anyAdminOnly },
   admin: { useAsTitle: 'id', defaultColumns: ['game', 'membership', 'points'], group: 'Competition', description: 'Scaffold: per-player box scores. Disabled until a consent model exists.' },
   fields: [
     { name: 'game', type: 'relationship', relationTo: 'games', required: true, index: true },

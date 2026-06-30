@@ -1,6 +1,6 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 
-import { authenticated, isSuperAdmin, superAdminFieldOnly } from '../access/index'
+import { authenticated, isSuperAdmin, ownerOrSuperAdmin, superAdminFieldOnly } from '../access/index'
 import { addMonths, computeCertStatus } from '../lib/certStatus'
 
 /*
@@ -14,12 +14,6 @@ import { addMonths, computeCertStatus } from '../lib/certStatus'
  * - Verification fields (`verifiedBy`/`verifiedAt`) are admin-only.
  * - Access: a participant CRUDs only their OWN certifications; super admins all.
  */
-const ownerOrSuperAdmin: Access = ({ req: { user } }) => {
-  if (!user) return false
-  if (isSuperAdmin(user)) return true
-  return { user: { equals: user.id } }
-}
-
 export const Certifications: CollectionConfig = {
   slug: 'certifications',
   access: {

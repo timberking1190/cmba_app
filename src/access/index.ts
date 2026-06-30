@@ -51,8 +51,32 @@ export const clubIdOf = (user: UserLike): string | number | undefined => {
 /** Only super admins. */
 export const superAdminOnly: Access = ({ req: { user } }) => isSuperAdmin(user)
 
+/** Any staff-level admin (club admin or super admin). */
+export const anyAdminOnly: Access = ({ req: { user } }) => isAnyAdmin(user)
+
 /** Signed-in users only (any authenticated account). */
 export const authenticated: Access = ({ req: { user } }) => Boolean(user)
+
+/**
+ * Owner (by the `user` relationship) or a super admin. Scoped reads return a
+ * `Where` limiting to the caller's own rows. The canonical owner-scoped helper
+ * for per-user records like certifications.
+ */
+export const ownerOrSuperAdmin: Access = ({ req: { user } }) => {
+  if (!user) return false
+  if (isSuperAdmin(user)) return true
+  return { user: { equals: user.id } }
+}
+
+/**
+ * Owner (by the `user` relationship) or any staff admin (club or super). Like
+ * `ownerOrSuperAdmin` but club admins also see all rows (e.g. team memberships).
+ */
+export const ownerOrAnyAdmin: Access = ({ req: { user } }) => {
+  if (!user) return false
+  if (isAnyAdmin(user)) return true
+  return { user: { equals: user.id } }
+}
 
 /** Published content readable by anyone; drafts/unpublished only by admins. */
 export const publishedOrAdmin: Access = ({ req: { user } }) => {

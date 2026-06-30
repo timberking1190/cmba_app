@@ -4,7 +4,9 @@
  * Pure-ish helpers over the Payload Local API that compute, from REAL data:
  *  - getComplianceForUser: required vs held certifications, what's missing/expiring
  *  - getPathwayProgress: per-stage completion for the user's pathways
- *  - getUserProgress: real XP, level, and badges (replaces the static demo values)
+ *
+ * XP/level/badge progress lives in ./gamification/progress (getUnifiedProgress),
+ * which builds on getPathwayProgress here.
  *
  * Display status is recomputed from expiry at read time so it is always current
  * even between runs of the Phase 2 refresh cron.
@@ -13,7 +15,6 @@ import type { Payload, TypedUser, Where } from 'payload'
 
 import type { Certification, CertificationType, Pathway } from '../payload-types'
 import { computeCertStatus, daysUntil, type CertStatus } from './certStatus'
-import { COACH_BADGES, REF_BADGES, getLevelForXP, type Badge } from './gamification'
 
 type Role = NonNullable<TypedUser['roles']>[number]
 
@@ -188,46 +189,4 @@ export async function getPathwayProgress(
       : 0
     return { pathway, stages, overallPercent }
   })
-}
-
-export type UserProgress = {
-  xp: number
-  level: number
-  levelTitle: string
-  nextLevelXp: number
-  progress: number
-  completedStages: number
-  earnedBadges: Badge[]
-  lockedBadges: Badge[]
-}
-
-/** Real XP/level/badges from completed pathway stages (no static demo values). */
-export async function getUserProgress(payload: Payload, user: UserLike): Promise<UserProgress> {
-  const roles = user.roles ?? []
-  const audience: 'coach' | 'official' | undefined = roles.includes('coach')
-    ? 'coach'
-    : roles.includes('official')
-      ? 'official'
-      : undefined
-  const pathways = await getPathwayProgress(payload, user, audience)
-  const completedStages = pathways.reduce((n, p) => n + p.stages.filter((s) => s.complete).length, 0)
-  const xp = pathways.reduce(
-    (sum, p) => sum + p.stages.filter((s) => s.complete).reduce((a, s) => a + s.xpReward, 0),
-    0,
-  )
-  const lvl = getLevelForXP(xp)
-  const badgeSet = audience === 'official' ? REF_BADGES : COACH_BADGES
-  const earnedBadges = badgeSet.slice(0, Math.min(completedStages, badgeSet.length))
-  const lockedBadges = badgeSet.slice(earnedBadges.length)
-
-  return {
-    xp,
-    level: lvl.level,
-    levelTitle: lvl.title,
-    nextLevelXp: lvl.nextLevelXp,
-    progress: lvl.progress,
-    completedStages,
-    earnedBadges,
-    lockedBadges,
-  }
 }
