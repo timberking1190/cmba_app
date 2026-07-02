@@ -8,6 +8,12 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# local build-prompt / spec working directory (not app code)
+/cmba-backend-build/
 
 # next.js
 /.next/

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { Archivo, Inter, JetBrains_Mono } from "next/font/google";
+import { Archivo, Inter, JetBrains_Mono, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -27,6 +27,15 @@ const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
   variable: "--font-jetbrains",
+  display: "swap",
+});
+
+// Retro pixel font for the home-page arcade game (self-hosted by next/font, so it
+// is served from our own origin and satisfies the strict CSP font-src 'self').
+const pressStart = Press_Start_2P({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-arcade",
   display: "swap",
 });
 
@@ -63,7 +72,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${archivo.variable} ${inter.variable} ${jetbrains.variable} font-body antialiased text-cmba-grey-light`}
+        className={`${archivo.variable} ${inter.variable} ${jetbrains.variable} ${pressStart.variable} font-body antialiased text-cmba-grey-light`}
       >
         {/* Editorial chrome */}
         <FluidBackground />

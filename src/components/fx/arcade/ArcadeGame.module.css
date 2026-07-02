@@ -1,0 +1,298 @@
+/* Retro CRT arcade cabinet look. Scanlines, vignette, a faint screen glow, and a
+   slight rounded curve. All motion (blink, shake, flash) is opt-in via classes the
+   component omits in calm mode / prefers-reduced-motion. */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #050506;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 60px rgba(0, 0, 0, 0.9),
+    inset 0 0 12px rgba(235, 28, 36, 0.12);
+  font-family: var(--font-arcade), "Courier New", monospace;
+  color: #ffe14d;
+  isolation: isolate;
+}
+
+.canvasWrap {
+  position: absolute;
+  inset: 0;
+}
+
+/* Chunky upscaling for the low-res 3D render. */
+.canvasWrap :global(canvas) {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Scanlines + vignette, drawn above the canvas but below the HUD text. */
+.crt {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0) 0px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0.28) 3px,
+      rgba(0, 0, 0, 0.28) 3px
+    ),
+    radial-gradient(120% 120% at 50% 50%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.55) 100%);
+  mix-blend-mode: multiply;
+}
+
+.hud {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+}
+
+.hud button,
+.hud a,
+.hud input,
+.hud [data-interactive] {
+  pointer-events: auto;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 9px;
+  gap: 8px;
+}
+
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.bigStreak {
+  font-size: 44px;
+  color: #ffe14d;
+  text-shadow: 0 0 8px rgba(255, 225, 77, 0.6);
+}
+
+.label {
+  font-size: 8px;
+  color: #9aa0b0;
+}
+
+.title {
+  font-size: 15px;
+  color: #eb1c24;
+  text-shadow: 0 0 8px rgba(235, 28, 36, 0.5);
+}
+
+.powerTrack {
+  width: 60%;
+  max-width: 220px;
+  height: 12px;
+  border: 2px solid #ffe14d;
+  padding: 2px;
+  margin: 0 auto;
+}
+
+.powerFill {
+  height: 100%;
+  background: #eb1c24;
+  transition: none;
+}
+
+.btn {
+  font-family: inherit;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #050506;
+  background: #ffe14d;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.btn:focus-visible,
+.iconBtn:focus-visible,
+.tableRow:focus-visible {
+  outline: 3px solid #eb1c24;
+  outline-offset: 2px;
+}
+
+.btnGhost {
+  font-family: inherit;
+  font-size: 9px;
+  color: #ffe14d;
+  background: transparent;
+  border: 2px solid #ffe14d;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.iconBtn {
+  font-family: inherit;
+  font-size: 9px;
+  color: #9aa0b0;
+  background: transparent;
+  border: 1px solid #3a3a42;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.scores {
+  width: 100%;
+  max-width: 300px;
+  font-size: 9px;
+  color: #ffe14d;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.scoreRow {
+  display: grid;
+  grid-template-columns: 22px 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.scoreRowNew {
+  color: #4dff88;
+  animation: arcadeBlink 0.6s steps(2, start) 6;
+}
+
+.reportBtn {
+  font-family: inherit;
+  font-size: 8px;
+  color: #6a6a76;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.initials {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  font-size: 34px;
+}
+
+.initialCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.initialChar {
+  width: 34px;
+  padding: 2px 0;
+  border-bottom: 3px solid #3a3a42;
+}
+
+.initialActive {
+  color: #4dff88;
+  border-bottom-color: #4dff88;
+}
+
+.arrowBtn {
+  font-family: inherit;
+  font-size: 12px;
+  color: #ffe14d;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.msg {
+  font-size: 9px;
+  color: #eb1c24;
+  min-height: 12px;
+}
+
+.hint {
+  font-size: 7px;
+  color: #6a6a76;
+  max-width: 320px;
+}
+
+.hpField {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* Motion (omitted in calm mode) */
+.blink {
+  animation: arcadeBlink 1.1s steps(2, start) infinite;
+}
+
+.shake {
+  animation: arcadeShake 0.32s ease-out;
+}
+
+.flash::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+  animation: arcadeFlash 0.28s ease-out forwards;
+}
+
+@keyframes arcadeBlink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes arcadeShake {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(3px, -2px);
+  }
+  50% {
+    transform: translate(-3px, 2px);
+  }
+  75% {
+    transform: translate(2px, 2px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes arcadeFlash {
+  0% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+  }
+}

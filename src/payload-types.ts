@@ -119,6 +119,7 @@ export interface Config {
     challenges: Challenge;
     'challenge-submissions': ChallengeSubmission;
     'quiz-attempts': QuizAttempt;
+    'arcade-scores': ArcadeScore;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -178,6 +179,7 @@ export interface Config {
     challenges: ChallengesSelect<false> | ChallengesSelect<true>;
     'challenge-submissions': ChallengeSubmissionsSelect<false> | ChallengeSubmissionsSelect<true>;
     'quiz-attempts': QuizAttemptsSelect<false> | QuizAttemptsSelect<true>;
+    'arcade-scores': ArcadeScoresSelect<false> | ArcadeScoresSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -2016,6 +2018,35 @@ export interface QuizAttempt {
   createdAt: string;
 }
 /**
+ * Public arcade high scores from the home-page game. Hide or delete abusive entries.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "arcade-scores".
+ */
+export interface ArcadeScore {
+  id: number;
+  name: string;
+  score: number;
+  /**
+   * Game slug, for future games on the same table.
+   */
+  game?: string | null;
+  /**
+   * Hashed submitter fingerprint (moderation only).
+   */
+  submitterFingerprint?: string | null;
+  /**
+   * Community report count.
+   */
+  reports?: number | null;
+  /**
+   * Hidden from the public table (moderation). Delete to remove entirely.
+   */
+  hidden?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -2246,6 +2277,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'quiz-attempts';
         value: number | QuizAttempt;
+      } | null)
+    | ({
+        relationTo: 'arcade-scores';
+        value: number | ArcadeScore;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -3469,6 +3504,20 @@ export interface QuizAttemptsSelect<T extends boolean = true> {
   total?: T;
   passed?: T;
   takenAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "arcade-scores_select".
+ */
+export interface ArcadeScoresSelect<T extends boolean = true> {
+  name?: T;
+  score?: T;
+  game?: T;
+  submitterFingerprint?: T;
+  reports?: T;
+  hidden?: T;
   updatedAt?: T;
   createdAt?: T;
 }

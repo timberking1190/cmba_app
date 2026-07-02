@@ -61,6 +61,7 @@ import { Recognitions } from './collections/Recognitions'
 import { Challenges } from './collections/Challenges'
 import { ChallengeSubmissions } from './collections/ChallengeSubmissions'
 import { QuizAttempts } from './collections/QuizAttempts'
+import { ArcadeScores } from './collections/ArcadeScores'
 import { FooterNav } from './globals/FooterNav'
 import { HeaderNav } from './globals/HeaderNav'
 import { PolicyVersions } from './globals/PolicyVersions'
@@ -191,6 +192,7 @@ export default buildConfig({
     Challenges,
     ChallengeSubmissions,
     QuizAttempts,
+    ArcadeScores,
   ],
   globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav],
   editor: lexicalEditor(),

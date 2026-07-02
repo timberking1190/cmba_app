@@ -1005,3 +1005,84 @@ kill-switch.
 - Gate: 242/242 tests (+4 registration policy), tsc + lint clean, build exit 0.
 - Remaining S4: email verification on sign-up (needs SES), token-based invite flow,
   stricter minor-read access logging.
+
+## Home-page retro arcade basketball shooter (2026-07-02)
+
+Replaced the spinning 3D ball in the home BentoGrid tile with a playable early-arcade
+basketball game and a shared, server-side high-score table. Branch feat/arcade-shooter,
+based on main (production line). Built for review, not auto-deployed.
+
+### What shipped
+- Game: three.js (react-three-fiber, reused from the old ball) rendered low fidelity
+  (flat shading, low internal resolution upscaled with image-rendering pixelated) with
+  a CRT shell (scanlines, vignette, glow, pixel font Press Start 2P self-hosted by
+  next/font). Aim (mouse, drag, or arrow keys), hold-to-charge power, shoot on release
+  or space. Deterministic projectile physics with a scoring sphere at the rim; makes in
+  a row are the score; a miss ends the run. Difficulty ramps by streak: hoop sway from
+  streak 5, distance from 6, crosswind from 8.
+- Shared leaderboard: ArcadeScores collection (public create + read of non-hidden rows,
+  admin hide/delete), the arcade_scores table created in the production Supabase
+  (ca-central-1, Canadian residency) with RLS enabled to match the rollout. Fingerprint
+  is a hashed IP, never shown. A public report endpoint increments a report count and
+  auto-hides at 5 reports pending admin review.
+- Name safety: an authoritative, isomorphic filter runs on the SERVER (collection hook)
+  and mirrored on the client for instant feedback. Normalizes (lowercase, strip accents,
+  leetspeak fold, repeat collapse), blocks a maintained profanity and slur list as whole
+  words and substrings, and rejects URLs, emails, phones, handles, and unsafe characters.
+  Reuses the existing honeypot, durable rate limit, and Turnstile gates. Errs toward
+  rejection. Honest code comments note no filter is perfect, which is why reporting and
+  moderation exist.
+- Accessibility and performance: keyboard playable with visible focus, an aria-live
+  announcer, clear instructions, a sound toggle (default OFF, remembered), and a calm
+  mode (auto for prefers-reduced-motion, plus a toggle) that removes shake and flash and
+  slows spin. Lazy loaded and WebGL-gated with a static fallback (shows the live scores);
+  three.js stays code-split so the home page first-load JS is unchanged at 116 kB.
+
+### Difficulty and physics tuning (values that felt right)
+Everything is in GAME_CONFIG (src/components/fx/arcade/gameConfig.ts). Tuned with a
+headless physics playtest (scripts/arcade-playtest.ts) modelling two player skill levels
+as noise on aim, power, and release timing, over 4000 runs each. Adjusted one group at a
+time (forgiveness and power range, then the ramp).
+
+Final values: launch angle 52 deg, gravity 9.2, power 6.6 to 9.6, makeForgiveness 0.9,
+rimBand 0.32, aim yaw range 26 deg; sway from streak 5 (grow 0.14 per make, cap 1.9),
+distance from streak 6 (0.45 every 2 makes, cap 3.4), wind from streak 8 (0.07 per make,
+cap 0.75).
+
+Playtest result vs targets:
+- New player (loose aim and power): first-shot make 50 percent, one of first three
+  88 percent (welcoming). Average streak 1, rarely reaches 5. Target met.
+- Focused player (tight aim and power): median streak 8 (the 5 to 8 sweet spot), reaches
+  5 in 71 percent of runs and 8 in 56 percent, but past 12 only 20 percent and past 15
+  only 2.4 percent (rare and earned). Target met.
+- One attempt runs a few seconds; difficulty rises smoothly across staggered ramps.
+Note: this is a physics simulation. Final human feel (aim and power on mouse vs touch vs
+keyboard) still wants a manual pass on a phone and a laptop before public launch.
+
+### Gate
+| Check | Result |
+|---|---|
+| tsc noEmit (source) | clean, 0 errors outside stale .next/types |
+| npm run lint | clean |
+| npm run build | exit 0; home first-load 116 kB (three.js code-split, lazy) |
+| npm test (vitest) | 392 of 392 pass, 47 files |
+| Name filter unit tests | 57 pass (explicit, slurs, leetspeak, spaced, accented, URL, email, phone, charset, length; allows normal names) |
+| Physics unit tests | 8 pass (winnable, forgiveness is a real knob, ramp works) |
+| Server-gate integration tests | 7 pass (rejects bad and leetspeak name even when client bypassed, honeypot, rate limit, Turnstile required, read filter) |
+| Playwright e2e | 1 pass (start, streak of 5, game over, clean name appears on the table, bad name rejected) |
+| Payload types regenerated | yes |
+| Migration created and applied to prod | yes (arcade_scores, RLS enabled, owner payload_app, 0 rows) |
+
+### Manual checklist before public launch (needs a human)
+- Confirm the ball reads clearly as a basketball and the retro feel lands on real screens.
+- Play on a phone (drag to aim, hold to charge) and a laptop (mouse and keyboard); confirm
+  the keyboard-only path is fully playable.
+- Set NEXT_PUBLIC_TURNSTILE_SITE_KEY and TURNSTILE_SECRET to arm the bot challenge on score
+  submission (today they are unset, so the challenge is disabled by design).
+- Expand the blocklist as needed; it updates on the next deploy.
+
+### Not done by design
+- Scores are client-reported (the game runs in the browser), so this is a fun leaderboard,
+  not an anti-cheat system. It is guarded by a believable score ceiling, Turnstile, rate
+  limits, public reporting, and admin moderation, not by trusting the client.
+- Not deployed. The code is on feat/arcade-shooter for review; the prod table is ready.

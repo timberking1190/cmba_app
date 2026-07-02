@@ -18,6 +18,7 @@ import * as migration_20260630_205617_f3_notification_prefs from './20260630_205
 import * as migration_20260630_205953_now_challenges from './20260630_205953_now_challenges';
 import * as migration_20260630_214120_challenge_team from './20260630_214120_challenge_team';
 import * as migration_20260630_220346_now_quiz_attempts from './20260630_220346_now_quiz_attempts';
+import * as migration_20260702_175004_arcade_scores from './20260702_175004_arcade_scores';
 
 export const migrations = [
   {
@@ -118,6 +119,11 @@ export const migrations = [
   {
     up: migration_20260630_220346_now_quiz_attempts.up,
     down: migration_20260630_220346_now_quiz_attempts.down,
-    name: '20260630_220346_now_quiz_attempts'
+    name: '20260630_220346_now_quiz_attempts',
+  },
+  {
+    up: migration_20260702_175004_arcade_scores.up,
+    down: migration_20260702_175004_arcade_scores.down,
+    name: '20260702_175004_arcade_scores'
   },
 ];

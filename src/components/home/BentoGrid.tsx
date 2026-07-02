@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Trophy, Shield, Flag, Users, BookOpen, ArrowUpRight, Sparkles } from "lucide-react";
 import { CountUp } from "@/components/CountUp";
-import { Basketball3DLazy } from "@/components/fx/Basketball3DLazy";
+import { ArcadeGameLazy } from "@/components/fx/arcade/ArcadeGameLazy";
 
 // cursor-following sheen (sets the CSS vars the .bento-tile::after gradient reads)
 function sheen(e: React.MouseEvent<HTMLElement>) {
@@ -31,21 +31,9 @@ export function BentoGrid() {
         </div>
 
         <div className="bento">
-          {/* 3D feature tile */}
-          <div
-            onMouseMove={sheen}
-            className="bento-tile reveal rv-scale bento-c2 bento-r2 min-h-[300px] group"
-          >
-            <Basketball3DLazy />
-            <div className="relative z-10 pointer-events-none">
-              <span className="label-xs text-cmba-red">Live 3D</span>
-            </div>
-            <div className="relative z-10 pointer-events-none">
-              <h3 className="font-display font-black uppercase tracking-tighter2 text-2xl lg:text-3xl leading-[0.95]">
-                Calgary&apos;s game,<br />in your hands
-              </h3>
-              <p className="text-sm text-cmba-grey mt-2">Move your cursor to spin the ball.</p>
-            </div>
+          {/* Playable retro arcade basketball game (lazy, WebGL-gated, shared high scores) */}
+          <div className="bento-tile reveal rv-scale bento-c2 bento-r2 min-h-[300px] lg:min-h-[460px] relative overflow-hidden">
+            <ArcadeGameLazy />
           </div>
 
           {/* Hub tiles */}
