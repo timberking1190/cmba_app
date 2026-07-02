@@ -164,9 +164,18 @@ Operator setup tasks: `docs/member-cards/HUMAN_SETUP_CHECKLIST.md`.
     verified **read-only** against prod (role enums = the 5 current values, `league_official` absent,
     FK targets present, no column/table conflicts). **Not applied anywhere yet** — it reaches prod via the
     normal deploy `migrate` step (operator-driven). **Never run `migrate` against prod ad hoc.**
-  - ⏳ **Needs the migration applied to a reachable DB (prod-deploy or staging) to be runtime-verified:**
-    auto-issuance hook (D19), `/verify` + `/verify-serial` route handlers (thin I/O over `verify.ts`),
-    requirement-matrix seed (coach→3 creds), ~10k synthetic seed, integration tests.
+  - ✅ **Written + typecheck/lint/448-tests green (runtime-verification awaits the migration applied to a
+    reachable DB):** auto-issuance hook (`src/collections/hooks/memberCards.ts`, wired into `users`
+    afterChange), `/api/v1/member-cards/verify` + `/verify-serial` route handlers (thin I/O over
+    `verify.ts`), env key resolution (`keys.ts`), and both seed scripts:
+    `npm run seed:member-cards` (real coach matrix — prod-appropriate) and
+    `npm run seed:member-cards:synthetic` (dev-only, prod-guarded, `MEMBERCARD_SEED_ALLOW=1`,
+    `MEMBERCARD_SEED_COUNT`, default 200 / target 10k).
+  - ⏳ **The one remaining gate — apply `member_cards_core` to a reachable DB** (merge/deploy → prod
+    `migrate`, or a staging DB), then: `npm run seed:member-cards`, optionally the synthetic seed, and
+    a runtime pass over the hook + `/verify` endpoints (+ integration tests). No local Docker/pg here;
+    a fresh Supabase branch lacks the Payload schema. Signing keys (`MEMBERCARD_SIGNING_*`) must be set
+    for tokens to mint/verify — until then, scannable passes are created without a token (logged).
   - 📌 **Deferred to a follow-up migration:** append-only DB trigger on `scans` (app-layer `denyAll`
     already enforces it) + composite unique index on
     `import-field-mappings(source_name, source_column, target_field)` — both are raw SQL not expressible
