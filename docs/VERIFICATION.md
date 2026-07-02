@@ -1058,3 +1058,52 @@ render even if the embed itself is unavailable).
 Residual risk: the resilience states are proven by static + unit + the Next boundary
 contract, but not yet by an end-to-end browser test that forces a data-source failure.
 That browser proof is scheduled for the Playwright harness (P1.7 / Phase LR6).
+
+## Phase LR2 — P0.2 Email health surface + failure alerting
+
+Date: 2026-07-01 · Branch: `feat/launch-readiness`
+
+The SES composers, adapter auto-switch, and PII-free bodies already existed. This
+phase adds the admin-visible health surface and never-silent failure handling. SES
+DNS, production access, and SMTP creds remain operator steps (see below).
+
+New:
+- `src/lib/email/adapter.ts`: wraps the nodemailer adapter so EVERY send (app
+  composers, crons, Payload auth emails, email OTP) is recorded once. Failures are
+  logged at error level and the log write is guarded so it can never break a send.
+- `src/lib/email/meta.ts`: PII-free helpers (salted recipient hash, bare domain,
+  category from header or subject, error sanitizer). Pure and unit tested.
+- `src/lib/email/health.ts`: `computeEmailHealth` rollups (24h/7d/30d, failure rate,
+  recent failures, SES-configured, alert flag). Pure over a minimal payload shape.
+- `src/collections/EmailSendLog.ts`: append-only, super-admin read, PII-free, 90-day
+  retention. Registered in `payload.config.ts`.
+- `GET /api/v1/admin/email-health` (super admin; 503 when alerting) and
+  `POST /api/v1/admin/email-test` (super admin; sends only to the caller's own email,
+  never a relay).
+- Migration `20260702_054408_add_email_send_log` (additive: table + enums + indexes;
+  down() reverses). Generated offline (config-vs-snapshot), not applied to prod.
+- `src/lib/__tests__/emailHealth.test.ts` (8 tests).
+
+Edits:
+- App composers (`emailEvents.ts` x7, both reminder crons, `GameReports`, guardian
+  hook) tag sends with the `x-cmba-email-category` header for precise health labels.
+- `ttl-sweep` cron now also sweeps `email-send-log` past ~90 days.
+- Fixed two em dashes in existing email copy while adding the category headers.
+- `docs/SES_SETUP.md` Step 6 and `docs/OPERATOR_ACTIONS.md` updated for in-app
+  verification (test-send + health endpoint) and the new migration.
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ no warnings or errors |
+| `npm test` | ✅ 328/328 pass (45 files, +8 email) |
+| `npm run generate:types` | ✅ `email-send-log` types present, in sync |
+| Migration generated | ✅ additive, offline (no prod contact); apply is an operator step |
+| No em/en dashes in new files | ✅ verified |
+
+Residual risk / operator blockers (cannot be closed from the repo):
+- SES DNS (DKIM/SPF/DMARC via RAMP), production access, and SMTP creds in Vercel.
+- Applying the migration to the ca-central-1 DB.
+- Real end-to-end delivery of password reset, MFA OTP, and reminders is verifiable
+  only after the above, using the new test-send + health endpoints (SES_SETUP Step 6).

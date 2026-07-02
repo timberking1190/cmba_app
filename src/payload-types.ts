@@ -111,6 +111,7 @@ export interface Config {
     'mfa-totp': MfaTotp;
     'recovery-codes': RecoveryCode;
     'email-otp': EmailOtp;
+    'email-send-log': EmailSendLog;
     badges: Badge;
     'badge-awards': BadgeAward;
     'xp-events': XpEvent;
@@ -170,6 +171,7 @@ export interface Config {
     'mfa-totp': MfaTotpSelect<false> | MfaTotpSelect<true>;
     'recovery-codes': RecoveryCodesSelect<false> | RecoveryCodesSelect<true>;
     'email-otp': EmailOtpSelect<false> | EmailOtpSelect<true>;
+    'email-send-log': EmailSendLogSelect<false> | EmailSendLogSelect<true>;
     badges: BadgesSelect<false> | BadgesSelect<true>;
     'badge-awards': BadgeAwardsSelect<false> | BadgeAwardsSelect<true>;
     'xp-events': XpEventsSelect<false> | XpEventsSelect<true>;
@@ -1736,6 +1738,49 @@ export interface EmailOtp {
   updatedAt: string;
 }
 /**
+ * Delivery health for transactional email. Read only, PII free, append only.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-send-log".
+ */
+export interface EmailSendLog {
+  id: number;
+  category:
+    | 'report_request'
+    | 'contested'
+    | 'schedule_change'
+    | 'announcement'
+    | 'assignment'
+    | 'weekly_digest'
+    | 'recognition'
+    | 'cert_reminder'
+    | 'score_reminder'
+    | 'score_report'
+    | 'guardian'
+    | 'password_reset'
+    | 'verify'
+    | 'email_otp'
+    | 'test'
+    | 'other';
+  /**
+   * PII free by design.
+   */
+  subject?: string | null;
+  /**
+   * Salted hash of the recipient. Not reversible.
+   */
+  recipientHash?: string | null;
+  recipientDomain?: string | null;
+  recipientCount?: number | null;
+  status: 'sent' | 'failed';
+  transport: 'ses' | 'json';
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  sentAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Catalog of badge definitions with declarative earn criteria. No personal data.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2214,6 +2259,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'email-otp';
         value: number | EmailOtp;
+      } | null)
+    | ({
+        relationTo: 'email-send-log';
+        value: number | EmailSendLog;
       } | null)
     | ({
         relationTo: 'badges';
@@ -3328,6 +3377,24 @@ export interface EmailOtpSelect<T extends boolean = true> {
   consumedAt?: T;
   createdAt?: T;
   updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-send-log_select".
+ */
+export interface EmailSendLogSelect<T extends boolean = true> {
+  category?: T;
+  subject?: T;
+  recipientHash?: T;
+  recipientDomain?: T;
+  recipientCount?: T;
+  status?: T;
+  transport?: T;
+  errorCode?: T;
+  errorMessage?: T;
+  sentAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -18,10 +18,16 @@ tracked in `docs/VERIFICATION.md`. Items are ordered by urgency.
 
 - [ ] **AWS SES (ca-central-1).** Follow `docs/SES_SETUP.md`: pick the sending
   domain, have RAMP publish the DKIM/SPF/DMARC records for `cmba.ab.ca` (their
-  nameservers host it), create the SMTP credentials, set `SES_SMTP_*` + `EMAIL_FROM`,
-  and request SES production access (it is in sandbox now). Until then transactional
-  email (guardian confirmation, reminders, contested escalations, email-OTP) is
-  logged but not delivered.
+  nameservers host it, see `docs/SES_RAMP_DNS_REQUEST.md`), create the SMTP
+  credentials, set `SES_SMTP_*` + `EMAIL_FROM`, and request SES production access (it
+  is in sandbox now). Until then transactional email (guardian confirmation,
+  reminders, contested escalations, email-OTP) is logged but not delivered.
+  - **Then verify in-app (Step 6 of SES_SETUP):** POST `/api/v1/admin/email-test`
+    (super admin) to send a real test to your own inbox and confirm
+    `transport: ses`; GET `/api/v1/admin/email-health` for delivery rollups. Browse
+    the `EmailSendLog` collection (System group) to watch for failures. The health
+    endpoint returns 503 when SES is unconfigured in production or the failure rate
+    is elevated, so it can back an uptime alert.
 - [ ] **Framework upgrade (BLOCKED upstream, not actionable now).** Verified
   2026-06-30: Payload 3.85.1 (latest) caps Next at `<15.5.0`, but the Next advisory
   fixes are in `15.5.15+`. Upgrading to 15.4.11 (the max Payload allows) clears none
@@ -44,6 +50,10 @@ tracked in `docs/VERIFICATION.md`. Items are ordered by urgency.
 - [ ] Future Payload migrations are committed but applied by you. Run
   `npm run migrate` against a Supabase branch first, then production. (The
   `add_mfa_schema` migration is already applied.)
+- [ ] **Apply `20260702_054408_add_email_send_log`** (adds the `email_send_log`
+  table for the email health surface, P0.2). Additive and non-destructive: new
+  table, enums, and indexes only. Run `npm run migrate` on a Supabase branch, then
+  production.
 
 ## Data / cutover
 
