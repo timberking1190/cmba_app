@@ -9,6 +9,7 @@ import { REGISTER } from "@/lib/cmbaLinks";
 import { safeInternalPath } from "@/lib/security/redirect";
 import { Wordmark } from "@/components/Wordmark";
 import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
+import { TurnstileWidget } from "@/components/security/TurnstileWidget";
 
 const hubCards = [
   { label: "Athletes", role: "athlete", href: "/athlete", desc: "Development pathway, guides, and drills" },
@@ -152,9 +153,13 @@ export default function LoginPage() {
       }
 
       const hpSignal = hp ? "hp" : Date.now() - mountedAt.current < 1500 ? "timing" : "";
+      const turnstileToken =
+        typeof window !== "undefined"
+          ? ((window as unknown as { __cmbaTurnstileToken?: string }).__cmbaTurnstileToken || "")
+          : "";
       const res = await fetch("/api/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-cmba-hp": hpSignal },
+        headers: { "Content-Type": "application/json", "x-cmba-hp": hpSignal, "x-cmba-turnstile": turnstileToken },
         body: JSON.stringify(body),
       });
       const data = await res.json();
@@ -336,6 +341,9 @@ export default function LoginPage() {
                 <p className="text-[11px] text-cmba-grey leading-relaxed border-t border-white/10 pt-3">
                   We keep your information safe and in Canada, we never sell it, and you can view, correct, download, or delete it at any time.
                 </p>
+
+                {/* Bot challenge (renders only when NEXT_PUBLIC_TURNSTILE_SITE_KEY is set) */}
+                <TurnstileWidget />
 
                 <button type="submit" disabled={busy || !requiredOk}
                   className="w-full bg-cmba-red hover:bg-cmba-hot disabled:opacity-40 disabled:cursor-not-allowed text-white font-display font-bold text-sm uppercase tracking-wider py-3 transition-colors flex items-center justify-center gap-2">

@@ -15,7 +15,7 @@ import {
   type ShotOutcome,
 } from './physics'
 import { ArcadeAudio } from './sound'
-import { TurnstileWidget } from './TurnstileWidget'
+import { TurnstileWidget } from '@/components/security/TurnstileWidget'
 import { useArcadeScores } from './useArcadeScores'
 
 const C = GAME_CONFIG
@@ -73,6 +73,7 @@ export function ArcadeGame() {
   const containerRef = useRef<HTMLDivElement>(null)
   const honeypotRef = useRef<HTMLInputElement>(null)
   const timersRef = useRef<number[]>([])
+  const initialsRef = useRef<string[]>(['A', 'A', 'A']) // mirrors initials for imperative reads
 
   useEffect(() => {
     phaseRef.current = phase
@@ -80,6 +81,9 @@ export function ArcadeGame() {
   useEffect(() => {
     streakRef.current = streak
   }, [streak])
+  useEffect(() => {
+    initialsRef.current = initials
+  }, [initials])
 
   // Init preferences + audio + reduced-motion.
   useEffect(() => {
@@ -260,7 +264,7 @@ export function ArcadeGame() {
 
   const submitEntry = useCallback(async () => {
     if (submitting) return
-    const name = initials.join('').trim()
+    const name = initialsRef.current.join('').trim()
     const local = checkName(name, { maxLen: INITIALS_LEN })
     if (!local.ok) {
       setEntryMsg(local.message || 'PICK ANOTHER NAME')
@@ -281,7 +285,7 @@ export function ArcadeGame() {
       setEntryMsg((res.error || 'TRY AGAIN').toUpperCase())
       audio()?.rim()
     }
-  }, [finalStreak, initials, submit, submitting])
+  }, [finalStreak, submit, submitting])
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const p = phaseRef.current
@@ -356,7 +360,11 @@ export function ArcadeGame() {
       start: () => beginRun(),
       make: () => onArrived('make'),
       miss: () => onArrived('miss'),
-      setName: (name: string) => setInitials(name.toUpperCase().slice(0, 3).padEnd(3, 'A').split('')),
+      setName: (name: string) => {
+        const chars = name.toUpperCase().slice(0, 3).padEnd(3, 'A').split('')
+        initialsRef.current = chars // set synchronously so a follow-up submit() reads it
+        setInitials(chars)
+      },
       submit: () => void submitEntry(),
       phase: () => phaseRef.current,
       streak: () => streakRef.current,

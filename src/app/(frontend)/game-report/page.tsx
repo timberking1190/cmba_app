@@ -5,6 +5,7 @@ import { AlertTriangle, Star, Send, Upload, CheckCircle } from "lucide-react";
 import { CMBA } from "@/lib/cmbaLinks";
 import { PhotoBand } from "@/components/media/PhotoBand";
 import { CourtLines } from "@/components/graphics/CourtLines";
+import { TurnstileWidget } from "@/components/security/TurnstileWidget";
 
 const divisions = ["Tykes", "U11 Boys", "U11 Girls", "U13 Boys", "U13 Girls", "U15 Boys", "U15 Girls", "U18 Boys", "U18 Girls"];
 const reportedPartyOptions = ["Officials", "Coaches", "Players", "Spectators", "Gym Monitors", "CMBA Operations"];
@@ -282,6 +283,9 @@ export default function GameReportPage() {
                 </span>
               </label>
             </div>
+
+            {/* Bot challenge (renders only when NEXT_PUBLIC_TURNSTILE_SITE_KEY is set) */}
+            <TurnstileWidget />
 
             {/* Submit */}
             <button
