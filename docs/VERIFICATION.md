@@ -1375,3 +1375,44 @@ Date: 2026-07-02 · Branch: `feat/launch-readiness`
 | `npm run lint` | ✅ clean |
 | `npm test` | ✅ 346/346 pass |
 | No em/en dashes in new files | ✅ verified |
+
+## Launch Readiness — closing summary
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness` (10 commits off `feat/backend`)
+
+All items in docs/CRITICAL_REVIEW.md are addressed. The repo had already advanced past
+that snapshot (CSP was on the strict-nonce profile by default, the assurance docs
+existed, and cmbaSchedule already served own data with a TeamLinkt fallback), so this
+work closed the genuinely-remaining gaps:
+
+- P0.1 route-level error/loading/not-found/empty states + global error boundary.
+- P0.2 admin email-health surface + never-silent failure logging (code + runbook).
+- P0.3 CSP: already strict-nonce and enforcing (verified; no change needed).
+- P0.4 ASVS 5.0 + NIST 800-63B-4 crosswalks, rendered DFD, interim ZAP config, one-page
+  assessor scope.
+- P1.5 Sentry + Vercel Analytics + Web Vitals, privacy respecting, disclosed.
+- P1.6 own-data source-awareness + honest copy + post-commit recompute + cutover runbook.
+- P1.7 Playwright + axe + Lighthouse harness wired to CI (activates on a preview URL).
+- P2.8 robots, sitemap, structured data, generated OG image, manifest, offline SW.
+- P2.9 site-wide search + season survey with visible aggregate results.
+- P2.10 consolidation staged (single-path already) + Later decisions recorded (D1-D4).
+
+Final gate (2026-07-02): tsc clean, lint clean, 346/346 unit and integration tests
+pass, dependency audit 0 un-allowlisted, payload types in sync, 28 e2e specs compile.
+
+### What still needs an external service or decision before public registration
+These are the operator/board items this work cannot perform (documented in
+OPERATOR_ACTIONS.md, DECISIONS.md, and the processor register):
+1. SES: DKIM/SPF/DMARC via RAMP, production access, SMTP creds; then verify with the
+   in-app test-send + health endpoint.
+2. Apply the two additive migrations (email_send_log, season_surveys).
+3. Enable Sentry (EU project + DSN) and Vercel Analytics; sync the PolicyVersions
+   global to the new privacy version.
+4. Import a real season, verify /schedule and /standings read "from CMBA Connect",
+   then set FEATURE_LEGACY_TEAMLINKT=false and monitor; afterward the P2.10 code strip.
+5. Enable Vercel preview deploys and set E2E_BASE_URL to activate the e2e/a11y/perf CI
+   gate; run the interim OWASP ZAP scan against the preview and record it.
+6. Commission the independent penetration test and third-party privacy review; sign the
+   Supabase, AWS, and Vercel DPAs; name the Privacy Officer; board decision on
+   US-headquartered processors.
+7. Board decision on registration and payments (D2).
