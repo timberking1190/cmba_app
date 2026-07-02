@@ -197,6 +197,14 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL,
+      // Serverless (Vercel) + Supabase pooler: keep per-instance connections tiny so
+      // concurrent lambdas (page loads, RSC prefetches, cron) don't exhaust the pooler.
+      // Previously unset -> pg default max of 10 per instance overran the 15-client
+      // session pool and crashed /admin and /account (EMAXCONNSESSION).
+      max: process.env.DATABASE_POOL_MAX ? Number(process.env.DATABASE_POOL_MAX) : 1,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+      allowExitOnIdle: true,
     },
     // Migrations are the single source of truth (no dev push) so the schema is
     // committable, deterministic, and verifiable. Run `npm run migrate:create`
