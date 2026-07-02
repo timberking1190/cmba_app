@@ -1351,3 +1351,27 @@ Date: 2026-07-02 · Branch: `feat/launch-readiness`
 
 Residual / operator: apply the survey migration; create and open a survey in the
 admin to activate `/survey`.
+
+## Phase LR9 — P2.10 Consolidation (staged) + Later decisions
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+- P2.10: the schedule/standings architecture is already single-path (cmbaSchedule is
+  the data layer, standings/ the engine, teamlinkt fallback-only + config). The only
+  remaining consolidation (deleting the legacy teamlinkt getters and the fallback
+  branch) is STAGED because removing it now would break the still-active TeamLinkt
+  fallback (flag is true, no season imported). Marked the legacy functions clearly in
+  `src/lib/teamlinkt.ts` and recorded the exact deferred deletion steps in
+  `docs/DECISIONS.md` (D1) and the cutover runbook.
+- Later decisions recorded in `docs/DECISIONS.md`: registration and payments in house
+  vs TeamLinkt (D2, board decision pending, recommendation noted), push with the
+  native apps (D3, deferred, notify.ts is push-ready), bilingual content (D4,
+  deferred, noted for the Alberta and Canada context).
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 346/346 pass |
+| No em/en dashes in new files | ✅ verified |

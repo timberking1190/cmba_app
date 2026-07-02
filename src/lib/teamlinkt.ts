@@ -256,6 +256,14 @@ const cachedStandings = unstable_cache(
   { revalidate: 3600 }
 );
 
+/*
+ * LEGACY FALLBACK ONLY. Do not import these directly from pages or new code; always
+ * go through src/lib/cmbaSchedule.ts (getEventsWithSource / getStandingsWithSource),
+ * which serves our own data first and only calls these when our data is empty while
+ * FEATURE_LEGACY_TEAMLINKT is true. After the TeamLinkt cutover (flag set to false and
+ * verified, see docs/OPERATOR_ACTIONS.md and docs/DECISIONS.md), delete these two
+ * functions and the fallback branches in cmbaSchedule; getTeamLinktConfig stays.
+ */
 export async function getEvents(): Promise<Game[]> {
   const { base, assoc } = cfg();
   return (await cachedEvents(base, assoc)).map(deserializeGame);
