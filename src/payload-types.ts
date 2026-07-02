@@ -484,9 +484,13 @@ export interface CertificationType {
    */
   validityMonths?: number | null;
   /**
-   * Is this certification mandatory for its required roles?
+   * Is this certification mandatory for its required roles? (org compliance)
    */
   isRequired?: boolean | null;
+  /**
+   * Gates the digital Member Card sideline scan (coach clearance). Distinct from org compliance.
+   */
+  gatesMemberCard?: boolean | null;
   /**
    * Roles for which this certification is mandatory.
    */
@@ -2779,6 +2783,7 @@ export interface CertificationTypesSelect<T extends boolean = true> {
   appliesToRoles?: T;
   validityMonths?: T;
   isRequired?: T;
+  gatesMemberCard?: T;
   requiredForRoles?: T;
   renewalUrl?: T;
   relatedCourse?: T;

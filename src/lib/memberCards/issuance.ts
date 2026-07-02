@@ -62,7 +62,7 @@ export function tokenExpirySeconds(iat: Date, channel: PassChannel): number {
 export async function loadRequirementMatrix(payload: Payload): Promise<RequirementRow[]> {
   const types = await payload.find({
     collection: 'certification-types',
-    where: { isRequired: { equals: true } },
+    where: { gatesMemberCard: { equals: true } },
     limit: 1000,
     depth: 0,
     overrideAccess: true,
