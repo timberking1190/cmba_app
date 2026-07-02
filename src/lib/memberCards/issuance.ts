@@ -15,7 +15,7 @@
  */
 import { randomUUID } from 'node:crypto'
 
-import type { Payload } from 'payload'
+import type { Payload, PayloadRequest } from 'payload'
 
 import { mintPassToken, type PassChannel } from './token'
 import { isRoleScannable, type RequirementRow, type RoleKey } from './requirements'
@@ -59,13 +59,14 @@ export function tokenExpirySeconds(iat: Date, channel: PassChannel): number {
  * RequirementRow[] keyed by a stable credential key (the type's slug/name).
  * `requiredForRoles` × the type identifies the required (role, credential) pairs.
  */
-export async function loadRequirementMatrix(payload: Payload): Promise<RequirementRow[]> {
+export async function loadRequirementMatrix(payload: Payload, req?: PayloadRequest): Promise<RequirementRow[]> {
   const types = await payload.find({
     collection: 'certification-types',
     where: { gatesMemberCard: { equals: true } },
     limit: 1000,
     depth: 0,
     overrideAccess: true,
+    req,
   })
   const rows: RequirementRow[] = []
   for (const t of types.docs as Array<{ id: number | string; requiredForRoles?: string[] | null }>) {
@@ -99,18 +100,24 @@ export interface IssueUserInput {
 export async function issueCardForUser(
   payload: Payload,
   user: IssueUserInput,
-  opts: { season: string; now?: Date; matrixRows?: RequirementRow[] },
+  opts: { season: string; now?: Date; matrixRows?: RequirementRow[]; req?: PayloadRequest },
 ): Promise<IssueResult> {
   const now = opts.now ?? new Date()
-  const matrixRows = opts.matrixRows ?? (await loadRequirementMatrix(payload))
+  const req = opts.req
+  const matrixRows = opts.matrixRows ?? (await loadRequirementMatrix(payload, req))
   const plan = planIssuance({ userId: user.id, roles: user.roles, matrixRows })
 
-  // 1. Member number (system field; bypass user hooks).
+  // 1. Member number. overrideAccess bypasses the superAdmin-only field lock; `req`
+  // joins the parent transaction so the just-created user row is visible. The users
+  // afterChange hooks all guard on operation==='create' (issuance, guardian email) or a
+  // specific change (consent/password), so this update neither recurses nor re-fires them.
   if (!user.memberNumber) {
-    await payload.db.updateOne({
+    await payload.update({
       collection: 'users',
       id: user.id,
-      data: { memberNumber: plan.memberNumber },
+      data: { memberNumber: plan.memberNumber } as never,
+      overrideAccess: true,
+      req,
     })
   }
 
@@ -121,6 +128,7 @@ export async function issueCardForUser(
     limit: 1,
     depth: 0,
     overrideAccess: true,
+    req,
   })
   let passId: number
   let tokenMinted = false
@@ -140,6 +148,7 @@ export async function issueCardForUser(
         issuedAt: now.toISOString(),
       },
       overrideAccess: true,
+      req,
     })
     passId = (created as { id: number }).id
 
@@ -154,8 +163,9 @@ export async function issueCardForUser(
         collection: 'verification-tokens',
         data: { jti, pass: passId, member: user.id, channel: 'print', kid: signingKey.kid, expiresAt: new Date(exp * 1000).toISOString() },
         overrideAccess: true,
+        req,
       })
-      await payload.update({ collection: 'passes', id: passId, data: { currentJti: jti }, overrideAccess: true })
+      await payload.update({ collection: 'passes', id: passId, data: { currentJti: jti }, overrideAccess: true, req })
       tokenMinted = true
     }
   }

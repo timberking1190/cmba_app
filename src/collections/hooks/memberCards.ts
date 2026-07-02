@@ -26,7 +26,7 @@ export const issueMemberCardOnCreate: CollectionAfterChangeHook = async ({ doc, 
     await issueCardForUser(
       payload,
       { id: user.id, roles: user.roles ?? [], memberNumber: user.memberNumber ?? null },
-      { season },
+      { season, req },
     )
   } catch (err) {
     payload.logger.error({ err, userId: user.id }, 'member-card issuance failed (signup unaffected)')
