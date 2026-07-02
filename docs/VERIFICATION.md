@@ -1005,3 +1005,56 @@ kill-switch.
 - Gate: 242/242 tests (+4 registration policy), tsc + lint clean, build exit 0.
 - Remaining S4: email verification on sign-up (needs SES), token-based invite flow,
   stricter minor-read access logging.
+
+---
+
+# Launch Readiness (branch `feat/launch-readiness`)
+
+Remediation of docs/CRITICAL_REVIEW.md. The repo had already advanced past that
+snapshot: P0.3 CSP is on the strict-nonce profile by default, the assurance docs
+exist, and cmbaSchedule.ts already serves own data with a TeamLinkt fallback. This
+log records only the genuinely remaining work, phase by phase.
+
+## Phase LR1 — P0.1 Route-level resilience
+
+Date: 2026-07-01 · Branch: `feat/launch-readiness`
+
+Added graceful failure and waiting states so no failed or slow fetch shows a blank
+screen.
+
+New files:
+- `src/app/global-error.tsx` (root, self-contained html/body, on-brand, retry + home)
+- `src/app/(frontend)/error.tsx`, `loading.tsx`, `not-found.tsx` (group fallback)
+- `src/components/feedback/ErrorState.tsx`, `EmptyState.tsx`, `Skeletons.tsx`
+- Per-route `error.tsx` + `loading.tsx` with route-matched skeletons: calendar,
+  schedule, standings, account, rep, coach, ref, athlete, athlete/challenges,
+  athlete/quiz, manage, manage/import.
+
+Design note: Next error/loading boundaries are hierarchical. A section boundary
+(coach/, ref/, manage/, athlete/) covers all of its subpages, so we place boundaries
+at section roots plus the explicitly named engagement/import leaves rather than
+duplicating identical files under every subpage.
+
+Edits:
+- `account/page.tsx`: non-critical queries (recognitions, recommended courses) now
+  degrade to empty on failure (logged) instead of blanking the page; critical data
+  still surfaces via the account error boundary.
+- `athlete/challenges/page.tsx`: empty state now uses the shared EmptyState.
+
+Schedule and standings already fall back to the read-only TeamLinkt embed on empty
+data, so the dual-fail path is graceful (page chrome + managed-in-TeamLinkt callout
+render even if the embed itself is unavailable).
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ no warnings or errors |
+| `npm test` | ✅ 320/320 pass (44 files) |
+| No em/en dashes in new files | ✅ verified (grep) |
+| Production build | Verified on Vercel per CI policy (not run locally; needs live DB env) |
+| Resilience smoke (force a failure/slow response) | ⏳ recommend manual check on a preview: temporarily throw in a page loader and confirm the error boundary + skeleton render. Automated coverage lands in Phase LR6 (Playwright). |
+
+Residual risk: the resilience states are proven by static + unit + the Next boundary
+contract, but not yet by an end-to-end browser test that forces a data-source failure.
+That browser proof is scheduled for the Playwright harness (P1.7 / Phase LR6).
