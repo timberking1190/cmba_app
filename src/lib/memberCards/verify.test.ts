@@ -24,7 +24,7 @@ const validCoachCreds = [
 ]
 
 function member(over: Partial<ScannedMember> = {}): ScannedMember {
-  return { id: 1, role: 'coach', isActive: true, held: validCoachCreds, memberNumber: 'CMBA-00001', ...over }
+  return { id: 1, roles: ['coach'], isActive: true, held: validCoachCreds, memberNumber: 'CMBA-00001', ...over }
 }
 function pass(over: Partial<ScannedPass> = {}): ScannedPass {
   return { serialNumber: 'serial-1', status: 'issued', currentJti: 'jti-1', member: member(), ...over }
@@ -98,10 +98,19 @@ describe('QR verdicts', () => {
   it('non-coach (ID-only) pass → not_scannable', () => {
     const v = decideQrVerdict({
       token: okToken(),
-      pass: pass({ member: member({ role: 'participant', held: [] }) }),
+      pass: pass({ member: member({ roles: ['participant'], held: [] }) }),
       ctx: CTX,
     })
     expect(v.result).toBe('not_scannable')
+  })
+
+  it('multi-role member (coach + participant) is verified as a coach', () => {
+    const v = decideQrVerdict({
+      token: okToken(),
+      pass: pass({ member: member({ roles: ['participant', 'coach'] }) }),
+      ctx: CTX,
+    })
+    expect(v.result).toBe('valid')
   })
 
   it('inactive coach → member_inactive', () => {

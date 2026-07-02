@@ -37,7 +37,7 @@ export interface HeldCredential {
 export type CredentialVerdict = 'valid' | 'expired_credentials' | 'not_scannable' | 'member_inactive'
 
 export interface MemberEval {
-  role: RoleKey
+  roles: RoleKey[]
   isActive: boolean
   held: HeldCredential[]
   now: Date
@@ -69,6 +69,13 @@ export function requiredCredentialsFor(rows: RequirementRow[], role: RoleKey): C
   return [...keys]
 }
 
+/** Union of required credentials across a member's roles (members are multi-role). */
+export function requiredCredentialsForRoles(rows: RequirementRow[], roles: RoleKey[]): CredentialKey[] {
+  const keys = new Set<CredentialKey>()
+  for (const role of roles) for (const c of requiredCredentialsFor(rows, role)) keys.add(c)
+  return [...keys]
+}
+
 /**
  * A credential satisfies a requirement when it is verified (valid or within its
  * expiring window) AND not past its expiry date. `pending-verification` and
@@ -87,7 +94,7 @@ export function isCredentialSatisfied(cred: Pick<HeldCredential, 'status' | 'exp
  * Precedence: role-not-scannable (ID-only card) → member inactive → credential eval.
  */
 export function evaluateMember(rows: RequirementRow[], member: MemberEval): EvalOutcome {
-  const requiredCredentials = requiredCredentialsFor(rows, member.role)
+  const requiredCredentials = requiredCredentialsForRoles(rows, member.roles)
 
   if (requiredCredentials.length === 0) {
     return { verdict: 'not_scannable', requiredCredentials, missing: [], expiredOrInvalid: [] }

@@ -19,7 +19,7 @@ import type { VerifyFailure } from './token'
 /** The member facts the verdict needs (resolved by the route from `users`+`certifications`). */
 export interface ScannedMember {
   id: string | number
-  role: RoleKey
+  roles: RoleKey[]
   isActive: boolean
   held: HeldCredential[]
   /** Display-safe fields the scanner may show (D18). */
@@ -105,7 +105,7 @@ function decidePassState(pass: ScannedPass | null, ctx: VerifyDecisionCtx, seria
   }
 
   const outcome = evaluateMember(ctx.requirementRows, {
-    role: pass.member.role,
+    roles: pass.member.roles,
     isActive: pass.member.isActive,
     held: pass.member.held,
     now: ctx.now,

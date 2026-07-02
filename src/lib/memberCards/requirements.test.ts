@@ -68,7 +68,7 @@ describe('evaluateMember', () => {
 
   it('coach with all three valid → valid', () => {
     const res = evaluateMember(MATRIX, {
-      role: 'coach',
+      roles: ['coach'],
       isActive: true,
       now: NOW,
       held: [
@@ -84,7 +84,7 @@ describe('evaluateMember', () => {
 
   it('coach missing one credential → expired_credentials, reported in `missing`', () => {
     const res = evaluateMember(MATRIX, {
-      role: 'coach',
+      roles: ['coach'],
       isActive: true,
       now: NOW,
       held: [held({ key: 'record_check' }), held({ key: 'safesport' })],
@@ -95,7 +95,7 @@ describe('evaluateMember', () => {
 
   it('coach with an expired credential → expired_credentials, reported in `expiredOrInvalid`', () => {
     const res = evaluateMember(MATRIX, {
-      role: 'coach',
+      roles: ['coach'],
       isActive: true,
       now: NOW,
       held: [
@@ -110,7 +110,7 @@ describe('evaluateMember', () => {
 
   it('prefers a satisfying duplicate over a non-satisfying one for the same key', () => {
     const res = evaluateMember(MATRIX, {
-      role: 'coach',
+      roles: ['coach'],
       isActive: true,
       now: NOW,
       held: [
@@ -125,7 +125,7 @@ describe('evaluateMember', () => {
 
   it('non-scannable role → not_scannable regardless of credentials', () => {
     const res = evaluateMember(MATRIX, {
-      role: 'participant',
+      roles: ['participant'],
       isActive: true,
       now: NOW,
       held: [held({ key: 'record_check' })],
@@ -136,7 +136,7 @@ describe('evaluateMember', () => {
 
   it('inactive scannable member → member_inactive (before credential eval)', () => {
     const res = evaluateMember(MATRIX, {
-      role: 'coach',
+      roles: ['coach'],
       isActive: false,
       now: NOW,
       held: [

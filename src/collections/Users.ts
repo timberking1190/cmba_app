@@ -13,6 +13,7 @@ import { validatePassword } from './hooks/passwordPolicy'
 import { enforceMfaRequired } from './hooks/mfa'
 import { flagPasswordChange, invalidateSessionsOnPasswordChange } from './hooks/sessionInvalidation'
 import { registrationGate } from './hooks/registration'
+import { issueMemberCardOnCreate } from './hooks/memberCards'
 
 /*
  * Users — the auth collection.
@@ -50,7 +51,12 @@ export const Users: CollectionConfig = {
     // validatePassword rejects a weak/breached password before any other processing.
     beforeValidate: [registrationGate, validatePassword, deriveIsMinor, enforceConsent],
     beforeChange: [guardianFlow, enforceMfaRequired, flagPasswordChange],
-    afterChange: [sendGuardianConfirmation, logConsentRecord, invalidateSessionsOnPasswordChange],
+    afterChange: [
+      sendGuardianConfirmation,
+      logConsentRecord,
+      invalidateSessionsOnPasswordChange,
+      issueMemberCardOnCreate,
+    ],
   },
   fields: [
     { name: 'fullName', type: 'text', required: true, label: 'Full name' },
