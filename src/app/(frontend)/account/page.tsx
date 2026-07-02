@@ -37,30 +37,45 @@ export default async function AccountPage() {
   const roles = user.roles ?? []
   const audience = pathwayAudienceFor(roles)
 
+  // Non-critical sections (recognitions) degrade to empty on failure so one
+  // decorative query cannot blank the whole account. Critical data (compliance,
+  // progress, certifications) still surfaces via the account error boundary.
+  const emptyDocs = <T,>() => ({ docs: [] as T[] })
   const [compliance, pathways, progress, certRes, certTypesRes, recRes] = await Promise.all([
     getComplianceForUser(payload, user),
     getPathwayProgress(payload, user, audience),
     getUnifiedProgress(payload, user),
     payload.find({ collection: 'certifications', where: { user: { equals: user.id } }, depth: 2, limit: 200, overrideAccess: true }),
     payload.find({ collection: 'certification-types', limit: 200, depth: 0, overrideAccess: true }),
-    payload.find({ collection: 'recognitions', where: { and: [{ subject: { equals: user.id } }, { moderationStatus: { equals: 'approved' } }] }, depth: 0, limit: 20, overrideAccess: true, sort: '-moderatedAt' }),
+    payload
+      .find({ collection: 'recognitions', where: { and: [{ subject: { equals: user.id } }, { moderationStatus: { equals: 'approved' } }] }, depth: 0, limit: 20, overrideAccess: true, sort: '-moderatedAt' })
+      .catch((err) => {
+        console.error('account: recognitions query failed, degrading to empty:', err)
+        return emptyDocs<Recognition>()
+      }),
   ])
   const certs = certRes.docs as Certification[]
   const certTypes = certTypesRes.docs as CertificationType[]
   const recognitions = recRes.docs as Recognition[]
 
-  // Recommended courses: those tied to a missing required certification.
+  // Recommended courses: those tied to a missing required certification. This is
+  // a helpful extra, so a failure here degrades to no recommendations rather than
+  // erroring the whole page.
   const missingTypeIds = new Set(compliance.missing.map((m) => m.type.id))
   let recommended: Course[] = []
   if (missingTypeIds.size > 0) {
-    const recRes = await payload.find({
-      collection: 'courses',
-      where: { relatedCertificationType: { in: Array.from(missingTypeIds) } },
-      limit: 20,
-      depth: 0,
-      overrideAccess: true,
-    })
-    recommended = recRes.docs as Course[]
+    try {
+      const courseRes = await payload.find({
+        collection: 'courses',
+        where: { relatedCertificationType: { in: Array.from(missingTypeIds) } },
+        limit: 20,
+        depth: 0,
+        overrideAccess: true,
+      })
+      recommended = courseRes.docs as Course[]
+    } catch (err) {
+      console.error('account: recommended courses query failed, degrading to empty:', err)
+    }
   }
 
   const overallChip =
