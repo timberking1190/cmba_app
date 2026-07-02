@@ -21,6 +21,7 @@
     "seed:member-cards": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/seed-member-card-requirements.ts",
     "seed:member-cards:synthetic": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/seed-member-card-synthetic.ts",
     "smoke:member-cards": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/smoke-member-cards.ts",
+    "backfill:member-cards": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/backfill-member-cards.ts",
     "create-admin": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/create-admin.ts",
     "smoke:b1": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/smoke-b1.ts",
     "smoke:b2": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/smoke-b2.ts",

@@ -60,19 +60,18 @@ export function tokenExpirySeconds(iat: Date, channel: PassChannel): number {
  * `requiredForRoles` × the type identifies the required (role, credential) pairs.
  */
 export async function loadRequirementMatrix(payload: Payload, req?: PayloadRequest): Promise<RequirementRow[]> {
-  const types = await payload.find({
-    collection: 'certification-types',
-    where: { gatesMemberCard: { equals: true } },
-    limit: 1000,
-    depth: 0,
-    overrideAccess: true,
-    req,
-  })
+  const [types, cfg] = await Promise.all([
+    payload.find({ collection: 'certification-types', where: { gatesMemberCard: { equals: true } }, limit: 1000, depth: 0, overrideAccess: true, req }),
+    payload.findGlobal({ slug: 'member-card-config', depth: 0, req }).catch(() => null),
+  ])
+  // D20: only roles marked scannable in config get card rows, even if a gating credential
+  // is (org-)required for other roles too. Default coach-only.
+  const scannable = new Set((cfg as { scannableRoles?: string[] | null } | null)?.scannableRoles ?? ['coach'])
   const rows: RequirementRow[] = []
   for (const t of types.docs as Array<{ id: number | string; requiredForRoles?: string[] | null }>) {
     const credential = String(t.id)
     for (const role of t.requiredForRoles ?? []) {
-      rows.push({ role, credential, isRequired: true })
+      if (scannable.has(role)) rows.push({ role, credential, isRequired: true })
     }
   }
   return rows

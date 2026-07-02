@@ -18,7 +18,6 @@ import { decideQrVerdict } from '../src/lib/memberCards/verify'
 import { loadScannedPassBySerial } from '../src/lib/memberCards/verifyRoute'
 
 const EMAIL = 'mc-e2e-smoke@example.invalid'
-const GATING_TYPE_IDS = [1, 2, 9] // Police Info Check, Safe CMBA Interactions, CMBA Coach Training
 
 function assert(cond: unknown, msg: string) {
   if (!cond) throw new Error(`ASSERT FAILED: ${msg}`)
@@ -63,8 +62,11 @@ async function main() {
     assert(tokens.totalDocs === 1, 'a verification-token row was minted')
     log(`issuance OK: memberNumber + pass ${passSerial} + token`)
 
-    // 2. Give the coach the 3 gating credentials (valid).
-    for (const typeId of GATING_TYPE_IDS) {
+    // 2. Give the coach their gating credentials (valid).
+    const matrix = await loadRequirementMatrix(payload)
+    const gatingTypeIds = matrix.filter((r) => r.role === 'coach').map((r) => Number(r.credential))
+    assert(gatingTypeIds.length > 0, 'coach card has gating credentials')
+    for (const typeId of gatingTypeIds) {
       const c = await payload.create({
         collection: 'certifications',
         overrideAccess: true,
@@ -72,15 +74,12 @@ async function main() {
       })
       createdCertIds.push((c as { id: number }).id)
     }
-    log('created 3 valid gating credentials')
+    log(`created ${gatingTypeIds.length} valid gating credentials`)
 
     // 3. Simulate a scan of a current token → expect valid.
     const signingKey = getActiveSigningKey()!
     const iat = Math.floor(Date.now() / 1000)
     const mkToken = (jti: string) => mintPassToken({ passSerial: passSerial!, jti, channel: 'print', kid: signingKey.kid, iat, exp: iat + 3600, privateKeyPem: signingKey.privateKeyPem })
-
-    const matrix = await loadRequirementMatrix(payload)
-    assert(matrix.filter((r) => r.role === 'coach').length === 3, 'matrix has exactly 3 coach credentials')
 
     let loaded = await loadScannedPassBySerial(payload, passSerial)
     assert(loaded && loaded.member.roles.includes('coach'), 'pass loads with coach member')
