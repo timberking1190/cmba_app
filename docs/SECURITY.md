@@ -19,11 +19,62 @@ and `cmba-backend-build/docs/SECURITY_CONTROLS.md` for the source requirements.
 
 | Phase | Scope | Status |
 | --- | --- | --- |
-| S0 | Baseline hardening of the current site | Implemented (this commit) |
-| S1 | Identity and authentication (passkeys, TOTP, OTP, MFA, sessions) | Planned |
-| S2 | Authorization, data protection, application hardening | Partly in place from Stage A/B; to be completed in S2 |
-| S3 | API security, monitoring, incident readiness | Partly in place from Stage B; to be completed in S3 |
-| S4 | Children's data, registration readiness, evidence | Planned |
+| S0 | Baseline hardening of the current site | Implemented (CSP now on the strict-nonce profile by default) |
+| S1 | Identity and authentication (passkeys, TOTP, OTP, MFA, sessions) | Implemented; email-OTP recovery delivery pending SES |
+| S2 | Authorization, data protection, application hardening | Implemented; optional upload malware scan is an operator add-on |
+| S3 | API security, monitoring, incident readiness | Implemented; email health surface added; centralized log shipping + anomaly alerting pending the observability phase |
+| S4 | Children's data, registration readiness, evidence | Implemented; sign-up email verification pending SES; invite-only self-serve flow planned |
+
+Last reviewed 2026-07-01 (launch-readiness pass). The ASVS 5.0 and NIST SP
+800-63B-4 crosswalks below map each standard chapter to the concrete control and its
+status, so an external assessor can start from the standard rather than our phases.
+
+---
+
+## OWASP ASVS 5.0 chapter crosswalk
+
+ASVS 5.0 (May 2025) organizes requirements into 17 chapters. Target is Level 2
+across the app, Level 3 for admin, children's data, certification documents, and
+score reporting. This maps each chapter to where it is met. "N/A" means the feature
+class is not present in the app (recorded, not skipped).
+
+| ASVS 5.0 chapter | Target | Where met | Status |
+| --- | --- | --- | --- |
+| V1 Encoding and Sanitization | L2 | React auto-escaping; no `dangerouslySetInnerHTML` in app code; upload byte sniffing and image re-encode (`src/lib/uploads/sniff.ts`, `exif.ts`) | Met |
+| V2 Validation and Business Logic | L2 | Game state machine (`src/lib/gameStateMachine.ts`), conflict detection, idempotency (`src/lib/api/idempotency.ts`), server-enforced versioned consent, registration gate | Met |
+| V3 Web Frontend Security | L2/L3 | Strict-nonce CSP + `strict-dynamic`, security headers, `frame-ancestors 'self'`, `X-Frame-Options`, Permissions-Policy (`src/lib/security/headers.ts`, `src/middleware.ts`) | Met |
+| V4 API and Web Service | L2 | Per-endpoint auth + durable rate limit, CORS/CSRF allowlist, idempotent writes, safe errors (`src/lib/api/*`) | Met |
+| V5 File Handling | L2/L3 | Magic-number validation + size caps + sharp re-encode; EXIF/GPS stripped; private buckets keep Payload access control on (`src/lib/uploads/*`, `payload.config.ts`) | Met |
+| V6 Authentication | L2/L3 | 800-63B-4 password policy + HIBP screening; WebAuthn passkeys (phishing-resistant); TOTP; recovery codes; MFA enforcement (`src/lib/mfa/*`) | Met; OTP delivery pending SES |
+| V7 Session Management | L2/L3 | Payload sessions bound by `sid`; per-session AAL; device list + revoke; sign-out-everywhere; invalidation on password change; httpOnly SameSite cookies + bearer for native (`src/lib/mfa/session.ts`, `sessionInvalidation.ts`) | Met |
+| V8 Authorization | L2/L3 | Default-deny access, owner-scoped `Where`, role helpers, adversarial IDOR tests, mass-assignment field locks, access-checked private downloads (`src/access/*`) | Met |
+| V9 Self-contained Tokens | L2 | HS256 access JWT bound to a server session, short TTL; refresh rotation with reuse detection + family revoke; tokens hashed at rest (`src/lib/api/auth.ts`) | Met |
+| V10 OAuth and OIDC | n/a | No OAuth/OIDC provider or relying party; local password + WebAuthn/TOTP only | N/A |
+| V11 Cryptography | L2 | AES-256-GCM for TOTP secrets; PBKDF2 for passwords + recovery codes; salted/HMAC hashes for IP and email recipients; `TOTP_ENC_KEY` separate from `PAYLOAD_SECRET` (`src/lib/mfa/crypto.ts`) | Met |
+| V12 Secure Communication | L2 | TLS at Vercel; HSTS preload in production; `requireTLS` SMTP to SES; all processors ca-central-1 | Met |
+| V13 Configuration | L2 | Secrets out of repo + gitleaks; dependency-audit gate + Semgrep SAST in CI; minimal Permissions-Policy; CSP report-only rollout switch | Met |
+| V14 Data Protection | L2/L3 | PIPEDA/PIPA data minimization; PII-free logs and emails; retention TTL sweep; DSAR export + erase; residency ca-central-1 (`docs/PRIVACY_IMPACT_ASSESSMENT.md`) | Met |
+| V15 Secure Coding and Architecture | L2 | Default-deny posture; migrations as source of truth; tamper-evident audit log; typed access layer; no raw SQL; CI SAST + dependency gates | Met |
+| V16 Security Logging and Error Handling | L2 | Append-only, HMAC tamper-evident AuditLog; `safeClientError` (no leakage); CSP violation reporting; email health + never-silent failure logging; incident runbook | Met; centralized shipping + anomaly alerting is an operator add-on / observability phase |
+| V17 WebRTC | n/a | No WebRTC in the app | N/A |
+
+## NIST SP 800-63B-4 authentication crosswalk
+
+Target: AAL2 for member accounts; step up to a phishing-resistant method for admins
+and sensitive actions.
+
+| 800-63B-4 area | Requirement | Where met |
+| --- | --- | --- |
+| Authenticator Assurance Level (§4) | AAL2 for members; phishing-resistant step-up for admins; "admin never ok while AAL1" invariant | `src/lib/mfa/guard.ts` (`decideMfa`), `src/lib/mfa/enforce.ts` |
+| Memorized secrets (§5.1.1) | Min length, allow long passphrases and all characters, NO composition/rotation/hints; screen against breach corpus | `src/collections/hooks/passwordPolicy.ts`, `src/lib/security/hibp.ts` (k-anonymity, full password never leaves server) |
+| Single-factor OTP / TOTP (§5.1.4/5.1.5) | Authenticator app, replay-protected | `src/lib/mfa/totp.ts` (otpauth, lastStep floor) |
+| Multi-factor cryptographic / phishing-resistant (§5.1.7-5.1.9) | WebAuthn/FIDO2, origin-pinned, counter regression rejected | `src/lib/mfa/webauthn.ts` (RP ID + origin allowlist from env) |
+| Look-up secrets (§5.1.2) | One-time recovery codes, salted KDF, single-use | `src/lib/mfa/recovery.ts` |
+| Verifier secret storage (§5.1.1.2) | Slow hash for passwords; MFA secrets encrypted/never serialized | Payload PBKDF2; TOTP secret AES-256-GCM (`crypto.ts`); `read:()=>false` on secret fields |
+| Rate limiting / throttling (§5.2.2) | Limit online guessing at the verifier | Durable per-IP + global rate limit on auth/MFA buckets, hashed IP keys (`src/lib/rateLimit.ts`) |
+| Reauthentication and session (§7) | Session binding, step-up, termination | `sid`-bound JWT, device revoke, sign-out-everywhere, invalidation on password change (`src/lib/mfa/session.ts`, `sessionInvalidation.ts`) |
+| Account recovery (§6.1.4) | Recovery channel that does not weaken admin MFA | Email-OTP recovery only, never satisfies admin MFA; force-enrollment, never a hard lockout (`src/collections/EmailOtp.ts`, `enforce.ts`); delivery pending SES |
+| Records and audit | Authentication events recorded | Tamper-evident AuditLog (mfa.* events) |
 
 ---
 
@@ -201,7 +252,9 @@ Before any public registration launch:
    register current (`docs/DATA_RESIDENCY_AND_COMPLIANCE.md`).
 
 This document, the threat model, and the data flow diagram are the evidence those
-reviews consume.
+reviews consume. A one-page brief to hand an assessor is
+`docs/EXTERNAL_ASSESSMENT_SCOPE.md`. An interim automated dynamic scan (OWASP ZAP
+baseline) is wired in `docs/DAST_ZAP.md`, pending a reachable preview URL.
 
 ## Security and privacy evidence package
 
@@ -216,4 +269,8 @@ reviews consume.
 - `docs/PENTEST_READINESS.md` — scope, architecture, test accounts, the full
   adversarial/pentest matrix as a checklist, known residuals, disclosure contact.
 - `docs/SES_SETUP.md` — SES (ca-central-1) provisioning runbook (sandbox + RAMP DNS
-  blockers documented).
+  blockers documented) + in-app email health verification.
+- `docs/EXTERNAL_ASSESSMENT_SCOPE.md` — one-page scope and readiness brief for the
+  penetration testing firm and the privacy reviewer.
+- `docs/DAST_ZAP.md` — interim OWASP ZAP baseline scan config, runbook, and results
+  log (pending a preview URL).

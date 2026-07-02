@@ -1107,3 +1107,41 @@ Residual risk / operator blockers (cannot be closed from the repo):
 - Applying the migration to the ca-central-1 DB.
 - Real end-to-end delivery of password reset, MFA OTP, and reminders is verifiable
   only after the above, using the new test-send + health endpoints (SES_SETUP Step 6).
+
+## Phase LR3 — P0.4 Independent assurance package
+
+Date: 2026-07-01 · Branch: `feat/launch-readiness`
+
+The assurance docs already existed and were substantive (STRIDE threat model with a
+textual DFD, PIA, processor register, pentest readiness, security.txt). This phase
+closes the specific gaps the module called out. Docs and CI config only, no src change.
+
+- `docs/SECURITY.md`: added an explicit OWASP ASVS 5.0 chapter crosswalk (V1..V17,
+  each mapped to the control, file, and status, with N/A recorded for OAuth/OIDC and
+  WebRTC) and a NIST SP 800-63B-4 authentication crosswalk (AAL, memorized secrets,
+  authenticator types, verifier throttling, session, recovery, audit). Refreshed the
+  stale phase-status table to current reality; added a last-reviewed date.
+- `docs/THREAT_MODEL.md`: added a rendered Mermaid data flow diagram with trust
+  boundaries alongside the existing textual DFD.
+- `docs/EXTERNAL_ASSESSMENT_SCOPE.md` (new): one-page scope + readiness brief for the
+  penetration testing firm and the privacy reviewer.
+- `docs/DAST_ZAP.md` + `.zap/rules.tsv` + `.github/workflows/dast-zap.yml` (new):
+  interim OWASP ZAP baseline scan wired (manual workflow + local docker recipe + rule
+  tuning + a results log). Advisory, not a merge gate.
+- security.txt disclosure contact confirmed present (`security@cmba.ab.ca`).
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean (no src change) |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 328/328 pass |
+| No em/en dashes in new files | ✅ verified |
+
+Residual risk / external (cannot be closed from the repo):
+- The independent penetration test and third-party security/privacy review are not
+  yet done (firm to be engaged).
+- The interim ZAP scan has not been run: it needs a reachable preview or production
+  URL. Config and workflow are ready; results table in `docs/DAST_ZAP.md` is "pending".
+- DPAs with Supabase, AWS, Vercel remain unsigned; sub-processor Canada-residency to
+  be confirmed. Named Privacy Officer + US-processor board decision still open.
