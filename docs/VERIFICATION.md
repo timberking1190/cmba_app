@@ -1195,3 +1195,42 @@ stores no IP; Sentry `scrubEvent` removes IP; Vercel Analytics does not expose I
 Residual / operator: Sentry DSN + EU project + DPA, enable Vercel Analytics in the
 dashboard, sync the PolicyVersions global to the new privacy version. Full runtime
 proof (real events, PII-free captures) is confirmable only on a deploy with the DSN set.
+
+## Phase LR5 — P1.6 Own schedule and standings
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+The app already served its own data with a TeamLinkt fallback. This phase makes the
+ownership honest, fresh, and provable, and stages the cutover (flag stays true until
+the operator imports a season).
+
+- `src/lib/cmbaSchedule.ts`: added `getEventsWithSource` / `getStandingsWithSource`
+  returning a `source` of `own` | `legacy` | `empty`; kept `getEvents`/`getStandings`
+  as wrappers.
+- `calendar` and `standings` pages: header and footer copy is now conditional on the
+  source, so it only says "from CMBA Connect" when serving our own data and "via
+  TeamLinkt" while falling back. Removes the misleading "straight from TeamLinkt" line.
+- `src/lib/csvImport/commit.ts`: a games or teams commit now recomputes standings for
+  the affected divisions immediately (best-effort, outside the transaction; the
+  nightly cron is the safety net), so standings are fresh after an import instead of
+  waiting until the next night.
+- New `POST /api/v1/admin/standings/recompute` (admin): force a recompute of one
+  division or all, for manual fixes.
+- `src/lib/__tests__/cmbaScheduleSource.test.ts` (6 tests) proves own data is served
+  first and TeamLinkt is used only when ours is empty.
+- Cutover runbook added to `docs/OPERATOR_ACTIONS.md` (import, verify own data, flip
+  `FEATURE_LEGACY_TEAMLINKT=false`, monitor, then P2.10 consolidation).
+
+`FEATURE_LEGACY_TEAMLINKT` stays `true` (no season seeded yet); flipping it is the
+operator step in the runbook.
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 341/341 pass (47 files, +6) |
+| No em/en dashes in new files | ✅ verified |
+
+Residual / operator: import a real season, verify the source note reads "from CMBA
+Connect", then flip the flag. Browser-level own-data proof lands with Playwright (LR6).

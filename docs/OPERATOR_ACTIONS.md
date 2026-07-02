@@ -75,5 +75,22 @@ tracked in `docs/VERIFICATION.md`. Items are ordered by urgency.
 - [ ] Set `TOTP_ENC_KEY` in Vercel (a 32-byte base64 key, separate from
   `PAYLOAD_SECRET`; one was generated into local `.env`). Treat it as a managed key:
   rotating it invalidates existing TOTP enrollments.
-- [ ] Decide the TeamLinkt cutover: set `FEATURE_LEGACY_TEAMLINKT=false` once a real
-  season is imported, so `/schedule` and `/standings` read only our data.
+- [ ] **TeamLinkt cutover runbook** (make this app the source of truth for schedule
+  and standings). Do these in order:
+  1. **Import the season.** Use the admin importer at `/manage/import` (or the API
+     `/api/v1/import/validate` then `/commit`) to load venues, teams, officials, and
+     the games CSV. Import games with `publishMode: published`. The commit now
+     recomputes standings for the affected divisions automatically.
+  2. **Verify own data.** Load `/schedule` and `/standings`. The source note should
+     read "from CMBA Connect" (not "via TeamLinkt"), which confirms the pages are
+     serving our own data. Spot-check a few games and that standings totals match the
+     official TeamLinkt figures. Force a recompute if needed with
+     `POST /api/v1/admin/standings/recompute` (admin; optional `{ "divisionId": N }`).
+  3. **Cut over.** Set `FEATURE_LEGACY_TEAMLINKT=false` in Vercel (Production +
+     Preview) and redeploy. Now `/schedule` and `/standings` read ONLY our data; the
+     TeamLinkt embed is no longer used as a fallback.
+  4. **Monitor for about 7 days.** Watch the pages and error monitoring. If anything
+     looks wrong, set `FEATURE_LEGACY_TEAMLINKT=true` to restore the fallback instantly.
+  5. **After the monitoring window,** the schedule/standings library consolidation
+     (removing the legacy fallback code) can be completed (see docs/VERIFICATION.md,
+     P2.10). That is a code step, gated on this cutover being stable.

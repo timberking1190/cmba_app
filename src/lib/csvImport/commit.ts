@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 
 import { detectConflicts, type Conflict, type ConflictGame } from '../conflicts/detect'
+import { recomputeDivision } from '../standings'
 import { buildLookups, publishedConflictGames, type ImportLookups } from './lookups'
 import type { ImportKind } from './parse'
 import { validateCsv, type ValidationResult } from './validate'
@@ -106,14 +107,17 @@ export async function commitImport(
   })
 
   const created: Created[] = []
+  // Divisions touched by this import, so standings can be recomputed right after
+  // commit instead of waiting for the nightly cron.
+  const affectedDivisions = new Set<string | number>()
   const transactionID = await payload.db.beginTransaction?.()
   const req = (transactionID != null ? { transactionID } : undefined) as never
 
   try {
-    if (kind === 'teams') await commitTeams(payload, okRows, lk, batch.id, created, req)
+    if (kind === 'teams') await commitTeams(payload, okRows, lk, batch.id, created, affectedDivisions, req)
     else if (kind === 'venues') await commitVenues(payload, okRows, created, req)
     else if (kind === 'officials') await commitOfficials(payload, okRows, batch.id, created, req)
-    else await commitGames(payload, okRows, lk, publishMode, batch.id, actor, created, req)
+    else await commitGames(payload, okRows, lk, publishMode, batch.id, actor, created, affectedDivisions, req)
 
     if (transactionID != null) await payload.db.commitTransaction?.(transactionID)
   } catch (err) {
@@ -131,15 +135,27 @@ export async function commitImport(
   })
   await payload.create({ collection: 'audit-log', overrideAccess: true, data: { actor: actor.id, action: 'import.commit', entity: 'import-batches', entityId: String(batch.id), after: { kind, imported: created.length, publishMode }, at: new Date().toISOString() } as never })
 
+  // Recompute standings for the divisions this import touched, so the standings
+  // page reflects the new teams/games immediately. Best-effort and outside the
+  // transaction; the nightly cron is the safety net if any recompute fails.
+  for (const divisionId of affectedDivisions) {
+    try {
+      await recomputeDivision(payload, divisionId)
+    } catch (err) {
+      payload.logger.error(`[import] post-commit standings recompute failed for division ${divisionId}: ${String(err)}`)
+    }
+  }
+
   const counts: Record<string, number> = {}
   for (const c of created) counts[c.collection] = (counts[c.collection] ?? 0) + 1
   return { ok: true, batchId: batch.id, counts }
 }
 
-async function commitTeams(payload: Payload, rows: Row[], lk: ImportLookups, batchId: string | number, created: Created[], req: never) {
+async function commitTeams(payload: Payload, rows: Row[], lk: ImportLookups, batchId: string | number, created: Created[], affectedDivisions: Set<string | number>, req: never) {
   for (const r of rows) {
     const d = r.data
     const div = lk.divisionsByPath.get(norm(d.division))!
+    affectedDivisions.add(div.id)
     let clubId = d.club ? relId(lk.clubsByName.get(norm(d.club))) : undefined
     if (d.club && clubId == null) {
       const club = await payload.create({ collection: 'clubs', overrideAccess: true, req, data: { name: d.club.trim() } as never })
@@ -184,10 +200,11 @@ async function commitOfficials(payload: Payload, rows: Row[], batchId: string | 
   }
 }
 
-async function commitGames(payload: Payload, rows: Row[], lk: ImportLookups, publishMode: 'draft' | 'published', batchId: string | number, actor: { id: string | number }, created: Created[], req: never) {
+async function commitGames(payload: Payload, rows: Row[], lk: ImportLookups, publishMode: 'draft' | 'published', batchId: string | number, actor: { id: string | number }, created: Created[], affectedDivisions: Set<string | number>, req: never) {
   for (const r of rows) {
     const d = r.data
     const div = lk.divisionsByPath.get(norm(d.division))!
+    affectedDivisions.add(div.id)
     const venue = lk.venuesByName.get(norm(d.venue))
     const home = lk.teamsByDivisionAndName.get(`${div.id}|${norm(d.home_team)}`)!
     const away = lk.teamsByDivisionAndName.get(`${div.id}|${norm(d.away_team)}`)!
