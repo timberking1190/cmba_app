@@ -157,13 +157,22 @@ Operator setup tasks: `docs/member-cards/HUMAN_SETUP_CHECKLIST.md`.
     `payload.config.ts`; `payload-types.ts` regenerated. Core libs in `src/lib/memberCards/`: `token.ts`
     (Ed25519 JWS mint/verify), `requirements.ts` (matrix eval), `verify.ts` (verdict decision core +
     adversarial suite), `region.ts` (residency assertion), `scanResults.ts`. 46 member-card unit tests.
-  - ⏳ **Blocked on an off-prod DB:** generating/applying the Payload migration. No local Docker/Postgres
-    here and the app is wired only to prod ca-central-1 — needs a Supabase preview branch (paid, operator
-    OK) or local Docker. **Do not run `migrate:create`/`migrate` against prod.** After the DB exists:
-    wire the auto-issuance hook (D19), the `/verify` + `/verify-serial` route handlers (thin I/O layer over
-    `verify.ts`), the requirement-matrix seed (coach→3 creds), and the ~10k synthetic seed; add a
-    composite unique index on `import-field-mappings(source_name, source_column, target_field)` and the
-    `scans`/`admin_actions` append-only DB triggers in that migration.
+  - ✅ **Migration generated + verified:** `src/migrations/20260702_195156_member_cards_core.ts`.
+    `payload migrate:create` generates **fully offline** (diffs config vs the in-repo snapshot; no DB) —
+    a Supabase preview branch is NOT needed to generate, and a *fresh* branch is unsuitable to apply
+    against (it lacks this app's Payload schema; no `supabase/migrations` to replay). Preconditions
+    verified **read-only** against prod (role enums = the 5 current values, `league_official` absent,
+    FK targets present, no column/table conflicts). **Not applied anywhere yet** — it reaches prod via the
+    normal deploy `migrate` step (operator-driven). **Never run `migrate` against prod ad hoc.**
+  - ⏳ **Needs the migration applied to a reachable DB (prod-deploy or staging) to be runtime-verified:**
+    auto-issuance hook (D19), `/verify` + `/verify-serial` route handlers (thin I/O over `verify.ts`),
+    requirement-matrix seed (coach→3 creds), ~10k synthetic seed, integration tests.
+  - 📌 **Deferred to a follow-up migration:** append-only DB trigger on `scans` (app-layer `denyAll`
+    already enforces it) + composite unique index on
+    `import-field-mappings(source_name, source_column, target_field)` — both are raw SQL not expressible
+    in the collection config; kept out of the generated migration to avoid snapshot drift.
+  - 🔑 **member_number generation:** derive `CMBA-<lpad(user.id,5)>` in the issuance hook (unique,
+    sequential, race-free) — no Postgres sequence needed.
 - **Phase 2** wallet issuance (gated on tasks 2–3). **Phase 3** card UI. **Phase 4** `/scan` PWA.
   **Phase 5** admin/analytics/imports. **Phase 6** hardening.
 
