@@ -5,6 +5,8 @@ import { TeamLinktActions } from "@/components/TeamLinktActions";
 import { TeamLinktEmbed } from "@/components/TeamLinktEmbed";
 import { DOCS } from "@/lib/cmbaLinks";
 import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
+import { JsonLd } from "@/components/JsonLd";
+import { siteUrl } from "@/lib/siteUrl";
 
 // Dynamically rendered (the root layout reads the CSP nonce). TeamLinkt data stays
 // cached for an hour via unstable_cache in lib/teamlinkt, so dropping page-level
@@ -55,8 +57,24 @@ export default async function SchedulePage() {
     : "Game times, venues, and scores come straight from TeamLinkt. Account actions and full standings live in the TeamLinkt app.";
   const sourceNote = isOwn ? "Live schedule data from CMBA Connect" : "Live schedule data via TeamLinkt";
 
+  // SportsEvent structured data for the next games (bounded so the page stays light).
+  const base = siteUrl();
+  const upcoming = games.filter((g) => g.start && g.start.getTime() >= now).slice(0, 25);
+  const eventsLd = upcoming.map((g) => ({
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: `${g.homeTeam} vs ${g.awayTeam}`,
+    sport: "Basketball",
+    startDate: g.start ? g.start.toISOString() : undefined,
+    ...(g.location ? { location: { "@type": "Place", name: g.location } } : {}),
+    homeTeam: { "@type": "SportsTeam", name: g.homeTeam },
+    awayTeam: { "@type": "SportsTeam", name: g.awayTeam },
+    organizer: { "@type": "SportsOrganization", name: "Calgary Minor Basketball Association", url: base },
+  }));
+
   return (
     <div>
+      {eventsLd.length > 0 && <JsonLd data={eventsLd} />}
       {/* Editorial header */}
       <section className="relative px-4 md:px-10 lg:px-14 pt-12 lg:pt-20 pb-8 overflow-hidden">
         <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-24 text-white/5" />

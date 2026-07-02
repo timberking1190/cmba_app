@@ -184,7 +184,7 @@ order in `docs/VERIFICATION.md`; each appends its rows here.
 | Default deny + IDOR | Non-admins scoped to their own records; no cross-user access by id tampering | `src/access/users.ts` (owner-scoped Where clauses), `src/access/index.ts` role helpers; MFA collections deny-all | `src/access/__tests__/accessControl.test.ts` (adversarial) |
 | Private document downloads | Certificates / scoresheet / incident photos are access-checked, never public | Private Supabase buckets keep Payload access control ON (`payload.config.ts`); only the public Media bucket disables it | code review |
 | EXIF / GPS stripping | Remove location metadata from uploaded photos | `src/lib/uploads/exif.ts` (`sharp().rotate()` bakes orientation, drops EXIF + GPS) | `src/lib/__tests__/exif.test.ts` |
-| Output encoding (XSS) | No raw HTML injection | React escapes by default; no `dangerouslySetInnerHTML` in app code (S0 finding) | code review |
+| Output encoding (XSS) | No raw HTML injection | React escapes by default. The single controlled `dangerouslySetInnerHTML` is the JSON-LD structured data (`src/components/JsonLd.tsx`): our own server data only, every `<` escaped so a value cannot close the tag, and nonce-stamped under the strict CSP. No user input reaches it. | code review |
 | SQL injection | Parameterized access only | Payload + Drizzle ORM (no raw string SQL in app paths) | code review |
 | CSRF | State-changing requests protected | Payload `csrf` allowlist (S0) + SameSite=Lax cookies (cross-site POST drops the cookie) | code review |
 | Secure file upload | Verify real bytes (magic number) + size, not declared type | `src/lib/uploads/sniff.ts` (`validateUpload`/`sniffType`) on CertificateFiles; images re-encoded via sharp on all photo collections | `sniff.test.ts` |

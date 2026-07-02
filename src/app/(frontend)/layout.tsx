@@ -9,6 +9,9 @@ import { FluidBackground } from "@/components/FluidBackground";
 import { GlobalFX } from "@/components/GlobalFX";
 import { FloatingNav } from "@/components/FloatingNav";
 import { Observability } from "@/components/Observability";
+import { JsonLd } from "@/components/JsonLd";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { siteUrl, SITE_DESCRIPTION } from "@/lib/siteUrl";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -34,13 +37,27 @@ const jetbrains = JetBrains_Mono({
 // Deploys: this repo (cmba_app) auto-deploys to the cmba_platform Vercel project
 // at cmbaplatform.vercel.app on every push to main.
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: "CMBA+ | Calgary Minor Basketball Association",
-  description:
-    "The official platform for Calgary Minor Basketball Association: rules, education, certification tracking, and game reports for coaches, referees, parents, and admins.",
+  description: SITE_DESCRIPTION,
   keywords: ["CMBA", "Calgary", "basketball", "minor basketball", "coaches", "referees"],
+  applicationName: "CMBA Connect",
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "CMBA Connect",
+    title: "CMBA Connect | Calgary Minor Basketball Association",
+    description: SITE_DESCRIPTION,
+    url: siteUrl(),
+    locale: "en_CA",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CMBA Connect | Calgary Minor Basketball Association",
+    description: SITE_DESCRIPTION,
   },
 };
 
@@ -61,6 +78,17 @@ export default async function RootLayout({
   // emits. Without this, statically rendered pages would ship un-nonced scripts
   // that a nonce + strict-dynamic policy would block. (Stage C / S0->S1.)
   await headers();
+  const base = siteUrl();
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "SportsOrganization",
+    name: "Calgary Minor Basketball Association",
+    alternateName: "CMBA",
+    url: base,
+    logo: `${base}/cmba-logo.png`,
+    sport: "Basketball",
+    areaServed: "Calgary, Alberta, Canada",
+  };
   return (
     <html lang="en" className="dark">
       <body
@@ -78,6 +106,8 @@ export default async function RootLayout({
         <MobileNav />
         <FloatingNav />
         <Observability />
+        <ServiceWorkerRegister />
+        <JsonLd data={orgLd} />
       </body>
     </html>
   );

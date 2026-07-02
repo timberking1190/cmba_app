@@ -1281,3 +1281,40 @@ environment). The e2e/a11y/perf gate activates when Vercel preview deploys are e
 and `E2E_BASE_URL` is set (operator step); the first CI run may need minor selector or
 budget tuning against the real deploy. The authenticated journeys additionally need a
 seeded test account (`E2E_EMAIL`/`E2E_PASSWORD`).
+
+## Phase LR7 — P2.8 Discovery and offline
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+- `src/app/robots.ts`: public crawlable; member, admin, API, guardian disallowed;
+  points at the sitemap.
+- `src/app/sitemap.ts`: static public routes plus every published CMS page (degrades
+  to the static routes if the CMS query fails).
+- `src/app/manifest.ts`: installable web manifest (standalone, Calgary black theme).
+- Structured data via a nonce-stamped, `<`-escaped `JsonLd` component
+  (`src/components/JsonLd.tsx`): `SportsOrganization` site-wide in the layout, and up
+  to 25 upcoming `SportsEvent` items on the schedule.
+- Social share image generated on the fly (`src/app/(frontend)/opengraph-image.tsx`,
+  1200x630, on brand) plus Open Graph + Twitter metadata and `metadataBase` in the
+  layout.
+- Offline: `public/sw.js` (network-first for /schedule, /calendar, /standings so the
+  last-seen copy is available offline; stale-while-revalidate for static assets; no
+  member data cached) registered in production by `ServiceWorkerRegister`.
+- Documented the one controlled `dangerouslySetInnerHTML` (JSON-LD) in SECURITY.md.
+
+CSP note: robots.txt, sitemap.xml, and manifest.webmanifest are served outside
+middleware (excluded extensions); the JSON-LD scripts carry the request nonce so they
+pass the strict-nonce CSP; the service worker is same-origin (`worker-src 'self'`).
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 341/341 pass |
+| No em/en dashes in new files | ✅ verified |
+| Route output (/robots.txt, /sitemap.xml, /manifest.webmanifest, OG image) | Verified on Vercel deploy (not run locally; needs the build + DB env) |
+
+Residual: validate the JSON-LD with Google Rich Results and the manifest/SW in a
+mobile browser once deployed. Provide brand-specific OG art later if desired (the
+generated card is the default).
