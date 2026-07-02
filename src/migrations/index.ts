@@ -21,6 +21,7 @@ import * as migration_20260630_220346_now_quiz_attempts from './20260630_220346_
 import * as migration_20260702_175004_arcade_scores from './20260702_175004_arcade_scores';
 import * as migration_20260702_195156_member_cards_core from './20260702_195156_member_cards_core';
 import * as migration_20260702_205536_add_gates_member_card from './20260702_205536_add_gates_member_card';
+import * as migration_20260702_214557_member_card_scannable_roles from './20260702_214557_member_card_scannable_roles';
 
 export const migrations = [
   {
@@ -136,6 +137,11 @@ export const migrations = [
   {
     up: migration_20260702_205536_add_gates_member_card.up,
     down: migration_20260702_205536_add_gates_member_card.down,
-    name: '20260702_205536_add_gates_member_card'
+    name: '20260702_205536_add_gates_member_card',
+  },
+  {
+    up: migration_20260702_214557_member_card_scannable_roles.up,
+    down: migration_20260702_214557_member_card_scannable_roles.down,
+    name: '20260702_214557_member_card_scannable_roles'
   },
 ];

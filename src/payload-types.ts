@@ -4150,6 +4150,10 @@ export interface MemberCardConfig {
    * Flag-and-alert on odd scan patterns (D6). Never auto-blocks.
    */
   anomalyAlertsEnabled?: boolean | null;
+  /**
+   * Roles whose card is scannable (carries a QR, gated by credentials). Default: coach only (D20).
+   */
+  scannableRoles?: ('participant' | 'coach' | 'official' | 'league_official' | 'club_admin' | 'super_admin')[] | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -4247,6 +4251,7 @@ export interface MemberCardConfigSelect<T extends boolean = true> {
   serialLookupEnabled?: T;
   currentSeason?: T;
   anomalyAlertsEnabled?: T;
+  scannableRoles?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
