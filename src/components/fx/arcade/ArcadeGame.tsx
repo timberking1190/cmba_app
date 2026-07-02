@@ -23,8 +23,25 @@ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 const TOP_N = 10
 const SOUND_KEY = 'cmba_arcade_sound'
 const CALM_KEY = 'cmba_arcade_calm'
+const DIFF_KEY = 'cmba_arcade_diff'
 
 type Phase = 'attract' | 'ready' | 'shooting' | 'result' | 'gameover' | 'entry' | 'submitted'
+
+type Difficulty = 'rookie' | 'standard' | 'pro'
+// Difficulty scales only the rim scoring zone (makeForgiveness): wider for rookies,
+// tighter for pros. The arc, power, and ramp are unchanged so it stays fair.
+const DIFF_MULT: Record<Difficulty, number> = { rookie: 1.4, standard: 1.0, pro: 0.72 }
+const DIFF_LABEL: Record<Difficulty, string> = { rookie: 'Rookie', standard: 'Standard', pro: 'Pro' }
+
+function readDifficulty(): Difficulty {
+  if (typeof window === 'undefined') return 'standard'
+  try {
+    const v = localStorage.getItem(DIFF_KEY)
+    return v === 'rookie' || v === 'pro' ? v : 'standard'
+  } catch {
+    return 'standard'
+  }
+}
 
 function readBool(key: string, fallback: boolean): boolean {
   if (typeof window === 'undefined') return fallback
@@ -58,6 +75,7 @@ export function ArcadeGame() {
   const [reducedMotion, setReducedMotion] = useState(false)
   const [soundOn, setSoundOn] = useState(false)
   const [calmUser, setCalmUser] = useState(false)
+  const [difficulty, setDifficulty] = useState<Difficulty>('standard')
   const calm = calmUser || reducedMotion
 
   const aimXRef = useRef(0)
@@ -74,6 +92,7 @@ export function ArcadeGame() {
   const honeypotRef = useRef<HTMLInputElement>(null)
   const timersRef = useRef<number[]>([])
   const initialsRef = useRef<string[]>(['A', 'A', 'A']) // mirrors initials for imperative reads
+  const difficultyRef = useRef<Difficulty>('standard')
 
   useEffect(() => {
     phaseRef.current = phase
@@ -84,14 +103,20 @@ export function ArcadeGame() {
   useEffect(() => {
     initialsRef.current = initials
   }, [initials])
+  useEffect(() => {
+    difficultyRef.current = difficulty
+  }, [difficulty])
 
   // Init preferences + audio + reduced-motion.
   useEffect(() => {
     setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
     const s = readBool(SOUND_KEY, false)
     const cm = readBool(CALM_KEY, false)
+    const d = readDifficulty()
     setSoundOn(s)
     setCalmUser(cm)
+    setDifficulty(d)
+    difficultyRef.current = d
     audioRef.current = new ArcadeAudio()
     audioRef.current.setEnabled(s)
     const timers = timersRef.current // stable array; cleared on unmount
@@ -119,11 +144,13 @@ export function ArcadeGame() {
   const shoot = useCallback(
     (p: number) => {
       const st = streakRef.current
+      // Difficulty only widens/narrows the rim scoring zone; everything else is fixed.
+      const cfg = { ...C, makeForgiveness: C.makeForgiveness * DIFF_MULT[difficultyRef.current] }
       const rim = { x: hoopXRef.current, y: C.rimHeight, z: -(C.baseDistance + distanceForStreak(st)) }
       const dir = shotSeqRef.current % 2 === 0 ? 1 : -1
       const wind = windForStreak(st) * dir
-      const vel = launchVelocity(aimXRef.current, p)
-      const result = simulateShot({ x: 0, y: C.startHeight, z: 0 }, vel, { hoop: () => rim, wind })
+      const vel = launchVelocity(aimXRef.current, p, cfg)
+      const result = simulateShot({ x: 0, y: C.startHeight, z: 0 }, vel, { hoop: () => rim, wind, cfg })
       shotSeqRef.current += 1
       setActiveShot({ id: shotSeqRef.current, points: result.points, outcome: result.outcome })
       setPhase('shooting')
@@ -347,6 +374,14 @@ export function ArcadeGame() {
       localStorage.setItem(CALM_KEY, next ? '1' : '0')
     } catch {}
   }
+  const chooseDifficulty = (d: Difficulty) => {
+    setDifficulty(d)
+    difficultyRef.current = d
+    try {
+      localStorage.setItem(DIFF_KEY, d)
+    } catch {}
+    audio()?.select()
+  }
 
   // Test seam for the Playwright e2e. Only attached when the spec sets the flag on
   // window before load; it drives the state machine deterministically since the
@@ -370,8 +405,6 @@ export function ArcadeGame() {
       streak: () => streakRef.current,
     }
   }, [beginRun, onArrived, submitEntry])
-
-  const showScores = phase === 'attract' || phase === 'gameover' || phase === 'submitted'
 
   return (
     <div
@@ -413,17 +446,19 @@ export function ArcadeGame() {
         <div className={styles.topbar}>
           <div>
             <div className={styles.label}>Streak</div>
-            <div>{String(streak).padStart(3, '0')}</div>
+            <div className={styles.value}>{String(streak).padStart(3, '0')}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div className={styles.label}>CMBA Hoops</div>
+            <div className={styles.value}>Best {best}</div>
             {windForStreak(streak) > 0 && phase !== 'attract' ? (
-              <div className={styles.label} style={{ color: '#eb1c24' }}>
+              <div className={styles.label} style={{ color: '#ff6a70' }}>
                 Wind {shotSeqRef.current % 2 === 0 ? 'RIGHT' : 'LEFT'}
               </div>
-            ) : null}
+            ) : (
+              <div className={styles.label}>{DIFF_LABEL[difficulty]}</div>
+            )}
           </div>
-          <div style={{ textAlign: 'right', display: 'flex', gap: 6 }}>
+          <div style={{ textAlign: 'right', display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <button className={styles.iconBtn} onClick={toggleSound} aria-pressed={soundOn} type="button">
               Sound {soundOn ? 'ON' : 'OFF'}
             </button>
@@ -437,15 +472,29 @@ export function ArcadeGame() {
           {phase === 'attract' && (
             <>
               <div className={styles.title}>CMBA HOOPS</div>
-              <div className={`${calm ? '' : styles.blink} ${styles.label}`} style={{ fontSize: 11 }}>
-                Press Start
+              <div className={`${calm ? '' : styles.blink} ${styles.subtitle}`}>Press Start</div>
+              <div className={styles.label}>Difficulty</div>
+              <div className={styles.diffRow} data-interactive>
+                {(['rookie', 'standard', 'pro'] as Difficulty[]).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    className={`${styles.diffBtn} ${difficulty === d ? styles.diffBtnActive : ''}`}
+                    onClick={() => chooseDifficulty(d)}
+                    aria-pressed={difficulty === d}
+                  >
+                    {DIFF_LABEL[d]}
+                  </button>
+                ))}
               </div>
               <HighScores scores={scores} newId={newEntryId} onReport={report} />
               <button className={styles.btn} onClick={beginRun} type="button">
                 Start
               </button>
               <p className={styles.hint}>
-                Aim with the mouse or arrow keys. Hold to charge power, release to shoot. Make shots in a row.
+                Aim with the mouse, drag, or arrow keys. Hold to charge power, then release to shoot. Make shots
+                in a row for a bigger streak. It gets harder as you go: the hoop starts to sway, then backs away,
+                then a crosswind kicks in.
               </p>
             </>
           )}
@@ -454,14 +503,16 @@ export function ArcadeGame() {
             <>
               <div className={styles.label}>Streak</div>
               <div className={styles.bigStreak}>{streak}</div>
+              <Mods streak={streak} />
               {phase === 'result' && lastOutcome === 'make' && <div className={styles.title}>SWISH</div>}
               {phase === 'result' && lastOutcome !== 'make' && (
                 <div className={styles.title}>{lastOutcome === 'rim' ? 'RIM OUT' : 'MISS'}</div>
               )}
+              <div className={styles.label}>Power</div>
               <div className={styles.powerTrack} aria-hidden="true">
                 <div className={styles.powerFill} style={{ width: `${Math.round(power * 100)}%` }} />
               </div>
-              <div className={styles.label}>{phase === 'ready' ? 'Hold to charge, release to shoot' : ''}</div>
+              <div className={styles.hint}>{phase === 'ready' ? 'Hold to charge, release to shoot' : ' '}</div>
             </>
           )}
 
@@ -544,18 +595,30 @@ export function ArcadeGame() {
             </>
           )}
         </div>
-
-        {!showScores && (
-          <div className={styles.topbar}>
-            <div className={styles.label}>Best {best}</div>
-            <div className={styles.label}>{calm ? 'Calm mode' : ''}</div>
-          </div>
-        )}
       </div>
 
       <div aria-live="polite" className={styles.hpField}>
         {announce}
       </div>
+    </div>
+  )
+}
+
+/* Difficulty-ramp readout: the modifiers light up as the streak crosses each
+   threshold, so a player can see why it is getting harder. */
+function Mods({ streak }: { streak: number }) {
+  const items = [
+    { label: 'Sway', on: streak >= C.swayStartStreak },
+    { label: 'Far', on: streak >= C.distanceStartStreak },
+    { label: 'Wind', on: streak >= C.windStartStreak },
+  ]
+  return (
+    <div className={styles.mods} aria-hidden="true">
+      {items.map((m) => (
+        <span key={m.label} className={`${styles.mod} ${m.on ? styles.modOn : ''}`}>
+          {m.label}
+        </span>
+      ))}
     </div>
   )
 }
@@ -572,7 +635,7 @@ function HighScores({
   const [reported, setReported] = useState<Set<number>>(new Set())
   return (
     <div className={styles.scores} data-interactive>
-      <div className={styles.scoreRow} style={{ color: '#9aa0b0' }}>
+      <div className={`${styles.scoreRow} ${styles.scoreHead}`}>
         <span>#</span>
         <span>Name</span>
         <span>Streak</span>

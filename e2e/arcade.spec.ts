@@ -44,10 +44,8 @@ test('play, build a streak, game over, submit a clean name (it appears), and rej
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ docs }) })
   })
 
-  await page.goto('/')
-
-  // Scroll the lazy, in-view-gated game into the viewport and wait for it to mount.
-  await page.getByText('everything in reach').scrollIntoViewIfNeeded()
+  // The game lives on its own page now (the home tile is just a preview link).
+  await page.goto('/arcade')
   await page.waitForFunction(() => !!window.__arcade, null, { timeout: 40_000 })
 
   // Start and build a streak of makes.

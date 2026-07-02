@@ -1,6 +1,10 @@
 /* Retro CRT arcade cabinet look. Scanlines, vignette, a faint screen glow, and a
    slight rounded curve. All motion (blink, shake, flash) is opt-in via classes the
-   component omits in calm mode / prefers-reduced-motion. */
+   component omits in calm mode / prefers-reduced-motion.
+
+   Text sizes are container-relative (cqw = 1% of the screen width) with clamps, so
+   the HUD is legible at every size: big on the dedicated /arcade page, still
+   readable in the smaller home preview and on phones. */
 
 .screen {
   position: absolute;
@@ -10,10 +14,11 @@
   border-radius: 14px;
   box-shadow:
     inset 0 0 60px rgba(0, 0, 0, 0.9),
-    inset 0 0 12px rgba(235, 28, 36, 0.12);
+    inset 0 0 12px rgba(235, 28, 36, 0.14);
   font-family: var(--font-arcade), "Courier New", monospace;
   color: #ffe14d;
   isolation: isolate;
+  container-type: inline-size;
 }
 
 .canvasWrap {
@@ -27,7 +32,8 @@
   image-rendering: crisp-edges;
 }
 
-/* Scanlines + vignette, drawn above the canvas but below the HUD text. */
+/* Scanlines + vignette, drawn above the canvas but below the HUD text. Lightened
+   so the pixel text underneath stays crisp and readable. */
 .crt {
   position: absolute;
   inset: 0;
@@ -38,10 +44,10 @@
       0deg,
       rgba(0, 0, 0, 0) 0px,
       rgba(0, 0, 0, 0) 2px,
-      rgba(0, 0, 0, 0.28) 3px,
-      rgba(0, 0, 0, 0.28) 3px
+      rgba(0, 0, 0, 0.18) 3px,
+      rgba(0, 0, 0, 0.18) 3px
     ),
-    radial-gradient(120% 120% at 50% 50%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.55) 100%);
+    radial-gradient(120% 120% at 50% 50%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.5) 100%);
   mix-blend-mode: multiply;
 }
 
@@ -51,11 +57,11 @@
   z-index: 3;
   display: flex;
   flex-direction: column;
-  padding: 10px 12px;
+  padding: clamp(10px, 2.4cqw, 22px);
   pointer-events: none;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  line-height: 1.4;
+  letter-spacing: 0.05em;
+  line-height: 1.5;
 }
 
 .hud button,
@@ -69,8 +75,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  font-size: 9px;
-  gap: 8px;
+  font-size: clamp(10px, 2cqw, 15px);
+  gap: 10px;
 }
 
 .center {
@@ -80,31 +86,41 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 10px;
+  gap: clamp(10px, 1.8cqw, 18px);
 }
 
 .bigStreak {
-  font-size: 44px;
+  font-size: clamp(46px, 12cqw, 104px);
   color: #ffe14d;
-  text-shadow: 0 0 8px rgba(255, 225, 77, 0.6);
+  text-shadow: 0 0 10px rgba(255, 225, 77, 0.65);
 }
 
 .label {
-  font-size: 8px;
-  color: #9aa0b0;
+  font-size: clamp(10px, 2cqw, 15px);
+  color: #c6ccdb;
+}
+
+.value {
+  font-size: clamp(13px, 2.6cqw, 20px);
+  color: #ffffff;
 }
 
 .title {
-  font-size: 15px;
-  color: #eb1c24;
-  text-shadow: 0 0 8px rgba(235, 28, 36, 0.5);
+  font-size: clamp(18px, 4.4cqw, 40px);
+  color: #ff3b42;
+  text-shadow: 0 0 10px rgba(235, 28, 36, 0.55);
+}
+
+.subtitle {
+  font-size: clamp(12px, 2.6cqw, 19px);
+  color: #ffe14d;
 }
 
 .powerTrack {
-  width: 60%;
-  max-width: 220px;
-  height: 12px;
-  border: 2px solid #ffe14d;
+  width: 66%;
+  max-width: 320px;
+  height: clamp(14px, 3cqw, 22px);
+  border: 3px solid #ffe14d;
   padding: 2px;
   margin: 0 auto;
 }
@@ -117,58 +133,108 @@
 
 .btn {
   font-family: inherit;
-  font-size: 10px;
+  font-size: clamp(13px, 2.8cqw, 20px);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #050506;
   background: #ffe14d;
   border: none;
-  padding: 8px 12px;
+  padding: clamp(9px, 1.8cqw, 16px) clamp(16px, 3.4cqw, 30px);
   cursor: pointer;
 }
 
 .btn:focus-visible,
 .iconBtn:focus-visible,
-.tableRow:focus-visible {
-  outline: 3px solid #eb1c24;
-  outline-offset: 2px;
-}
-
-.btnGhost {
-  font-family: inherit;
-  font-size: 9px;
-  color: #ffe14d;
-  background: transparent;
-  border: 2px solid #ffe14d;
-  padding: 6px 10px;
-  cursor: pointer;
+.diffBtn:focus-visible,
+.arrowBtn:focus-visible,
+.reportBtn:focus-visible,
+.initialChar:focus-visible {
+  outline: 3px solid #ff3b42;
+  outline-offset: 3px;
 }
 
 .iconBtn {
   font-family: inherit;
-  font-size: 9px;
-  color: #9aa0b0;
-  background: transparent;
-  border: 1px solid #3a3a42;
-  padding: 4px 6px;
+  font-size: clamp(10px, 1.9cqw, 14px);
+  color: #c6ccdb;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid #4a4a54;
+  padding: clamp(5px, 1cqw, 9px) clamp(7px, 1.4cqw, 12px);
   cursor: pointer;
+}
+
+.iconBtn[aria-pressed='true'] {
+  color: #4dff88;
+  border-color: #4dff88;
+}
+
+/* Difficulty selector */
+.diffRow {
+  display: flex;
+  gap: clamp(6px, 1.4cqw, 12px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.diffBtn {
+  font-family: inherit;
+  font-size: clamp(11px, 2.2cqw, 16px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #c6ccdb;
+  background: transparent;
+  border: 2px solid #4a4a54;
+  padding: clamp(6px, 1.2cqw, 11px) clamp(10px, 2cqw, 18px);
+  cursor: pointer;
+}
+
+.diffBtnActive {
+  color: #050506;
+  background: #ffe14d;
+  border-color: #ffe14d;
+}
+
+/* Level + modifier badges (light up as the difficulty ramps) */
+.mods {
+  display: flex;
+  gap: clamp(5px, 1cqw, 10px);
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: clamp(10px, 1.9cqw, 14px);
+}
+
+.mod {
+  padding: clamp(3px, 0.7cqw, 6px) clamp(6px, 1.2cqw, 11px);
+  border: 1px solid #3a3a42;
+  color: #6f7686;
+}
+
+.modOn {
+  color: #050506;
+  background: #ff3b42;
+  border-color: #ff3b42;
 }
 
 .scores {
   width: 100%;
-  max-width: 300px;
-  font-size: 9px;
+  max-width: clamp(260px, 62cqw, 460px);
+  font-size: clamp(11px, 2.3cqw, 17px);
   color: #ffe14d;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: clamp(3px, 0.8cqw, 7px);
 }
 
 .scoreRow {
   display: grid;
-  grid-template-columns: 22px 1fr auto auto;
-  gap: 8px;
+  grid-template-columns: clamp(24px, 5cqw, 40px) 1fr auto auto;
+  gap: clamp(8px, 1.6cqw, 14px);
   align-items: center;
+}
+
+.scoreHead {
+  color: #c6ccdb;
 }
 
 .scoreRowNew {
@@ -178,8 +244,8 @@
 
 .reportBtn {
   font-family: inherit;
-  font-size: 8px;
-  color: #6a6a76;
+  font-size: clamp(9px, 1.7cqw, 13px);
+  color: #8a8f9c;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -187,9 +253,9 @@
 
 .initials {
   display: flex;
-  gap: 10px;
+  gap: clamp(10px, 2.4cqw, 20px);
   justify-content: center;
-  font-size: 34px;
+  font-size: clamp(32px, 8cqw, 64px);
 }
 
 .initialCol {
@@ -200,9 +266,9 @@
 }
 
 .initialChar {
-  width: 34px;
+  width: clamp(34px, 9cqw, 66px);
   padding: 2px 0;
-  border-bottom: 3px solid #3a3a42;
+  border-bottom: 4px solid #4a4a54;
 }
 
 .initialActive {
@@ -212,7 +278,7 @@
 
 .arrowBtn {
   font-family: inherit;
-  font-size: 12px;
+  font-size: clamp(14px, 3cqw, 24px);
   color: #ffe14d;
   background: transparent;
   border: none;
@@ -221,15 +287,16 @@
 }
 
 .msg {
-  font-size: 9px;
-  color: #eb1c24;
-  min-height: 12px;
+  font-size: clamp(11px, 2.2cqw, 16px);
+  color: #ff6a70;
+  min-height: 1.2em;
 }
 
 .hint {
-  font-size: 7px;
-  color: #6a6a76;
-  max-width: 320px;
+  font-size: clamp(10px, 2cqw, 15px);
+  color: #aab0c0;
+  max-width: clamp(280px, 78cqw, 620px);
+  line-height: 1.6;
 }
 
 .hpField {
@@ -254,7 +321,7 @@
   position: absolute;
   inset: 0;
   z-index: 4;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.5);
   pointer-events: none;
   animation: arcadeFlash 0.28s ease-out forwards;
 }
@@ -266,7 +333,7 @@
   }
   50%,
   100% {
-    opacity: 0.15;
+    opacity: 0.2;
   }
 }
 
@@ -290,7 +357,7 @@
 
 @keyframes arcadeFlash {
   0% {
-    opacity: 0.55;
+    opacity: 0.5;
   }
   100% {
     opacity: 0;

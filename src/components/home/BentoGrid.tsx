@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Trophy, Shield, Flag, Users, BookOpen, ArrowUpRight, Sparkles } from "lucide-react";
 import { CountUp } from "@/components/CountUp";
-import { ArcadeGameLazy } from "@/components/fx/arcade/ArcadeGameLazy";
+import { ArcadePreview } from "@/components/fx/arcade/ArcadePreview";
 
 // cursor-following sheen (sets the CSS vars the .bento-tile::after gradient reads)
 function sheen(e: React.MouseEvent<HTMLElement>) {
@@ -31,9 +31,9 @@ export function BentoGrid() {
         </div>
 
         <div className="bento">
-          {/* Playable retro arcade basketball game (lazy, WebGL-gated, shared high scores) */}
-          <div className="bento-tile reveal rv-scale bento-c2 bento-r2 min-h-[300px] lg:min-h-[460px] relative overflow-hidden">
-            <ArcadeGameLazy />
+          {/* Retro arcade preview; the full playable game lives on /arcade */}
+          <div className="bento-tile reveal rv-scale bento-c2 bento-r2 min-h-[300px] lg:min-h-[420px] relative overflow-hidden">
+            <ArcadePreview />
           </div>
 
           {/* Hub tiles */}
