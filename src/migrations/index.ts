@@ -19,6 +19,7 @@ import * as migration_20260630_205953_now_challenges from './20260630_205953_now
 import * as migration_20260630_214120_challenge_team from './20260630_214120_challenge_team';
 import * as migration_20260630_220346_now_quiz_attempts from './20260630_220346_now_quiz_attempts';
 import * as migration_20260702_054408_add_email_send_log from './20260702_054408_add_email_send_log';
+import * as migration_20260702_063142_add_season_surveys from './20260702_063142_add_season_surveys';
 
 export const migrations = [
   {
@@ -124,6 +125,11 @@ export const migrations = [
   {
     up: migration_20260702_054408_add_email_send_log.up,
     down: migration_20260702_054408_add_email_send_log.down,
-    name: '20260702_054408_add_email_send_log'
+    name: '20260702_054408_add_email_send_log',
+  },
+  {
+    up: migration_20260702_063142_add_season_surveys.up,
+    down: migration_20260702_063142_add_season_surveys.down,
+    name: '20260702_063142_add_season_surveys'
   },
 ];

@@ -45,7 +45,9 @@ import { Sanctions } from './collections/Sanctions'
 import { ScoreReports } from './collections/ScoreReports'
 import { ScoresheetFiles } from './collections/ScoresheetFiles'
 import { Seasons } from './collections/Seasons'
+import { SeasonSurvey } from './collections/SeasonSurvey'
 import { StandingsCache } from './collections/StandingsCache'
+import { SurveyResponse } from './collections/SurveyResponse'
 import { TeamMemberships } from './collections/TeamMemberships'
 import { Teams } from './collections/Teams'
 import { Users } from './collections/Users'
@@ -194,6 +196,8 @@ export default buildConfig({
     Challenges,
     ChallengeSubmissions,
     QuizAttempts,
+    SeasonSurvey,
+    SurveyResponse,
   ],
   globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav],
   editor: lexicalEditor(),

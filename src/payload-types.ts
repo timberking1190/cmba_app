@@ -120,6 +120,8 @@ export interface Config {
     challenges: Challenge;
     'challenge-submissions': ChallengeSubmission;
     'quiz-attempts': QuizAttempt;
+    'season-surveys': SeasonSurvey;
+    'survey-responses': SurveyResponse;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -180,6 +182,8 @@ export interface Config {
     challenges: ChallengesSelect<false> | ChallengesSelect<true>;
     'challenge-submissions': ChallengeSubmissionsSelect<false> | ChallengeSubmissionsSelect<true>;
     'quiz-attempts': QuizAttemptsSelect<false> | QuizAttemptsSelect<true>;
+    'season-surveys': SeasonSurveysSelect<false> | SeasonSurveysSelect<true>;
+    'survey-responses': SurveyResponsesSelect<false> | SurveyResponsesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -2061,6 +2065,63 @@ export interface QuizAttempt {
   createdAt: string;
 }
 /**
+ * Short season feedback surveys. Members answer once; results are aggregate only.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "season-surveys".
+ */
+export interface SeasonSurvey {
+  id: number;
+  title: string;
+  intro?: string | null;
+  season?: (number | null) | Season;
+  status: 'draft' | 'open' | 'closed';
+  /**
+   * Publish aggregate results to members.
+   */
+  showResults?: boolean | null;
+  questions?:
+    | {
+        /**
+         * Stable id for this question (e.g. q1).
+         */
+        key: string;
+        prompt: string;
+        type: 'rating' | 'choice' | 'text';
+        options?:
+          | {
+              label: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Individual survey answers. Admin-read only; members see aggregate results.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "survey-responses".
+ */
+export interface SurveyResponse {
+  id: number;
+  survey: number | SeasonSurvey;
+  respondent?: (number | null) | User;
+  answers?:
+    | {
+        key: string;
+        value?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  submittedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -2295,6 +2356,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'quiz-attempts';
         value: number | QuizAttempt;
+      } | null)
+    | ({
+        relationTo: 'season-surveys';
+        value: number | SeasonSurvey;
+      } | null)
+    | ({
+        relationTo: 'survey-responses';
+        value: number | SurveyResponse;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -3536,6 +3605,51 @@ export interface QuizAttemptsSelect<T extends boolean = true> {
   total?: T;
   passed?: T;
   takenAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "season-surveys_select".
+ */
+export interface SeasonSurveysSelect<T extends boolean = true> {
+  title?: T;
+  intro?: T;
+  season?: T;
+  status?: T;
+  showResults?: T;
+  questions?:
+    | T
+    | {
+        key?: T;
+        prompt?: T;
+        type?: T;
+        options?:
+          | T
+          | {
+              label?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "survey-responses_select".
+ */
+export interface SurveyResponsesSelect<T extends boolean = true> {
+  survey?: T;
+  respondent?: T;
+  answers?:
+    | T
+    | {
+        key?: T;
+        value?: T;
+        id?: T;
+      };
+  submittedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

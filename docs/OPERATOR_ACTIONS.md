@@ -69,6 +69,11 @@ tracked in `docs/VERIFICATION.md`. Items are ordered by urgency.
   table for the email health surface, P0.2). Additive and non-destructive: new
   table, enums, and indexes only. Run `npm run migrate` on a Supabase branch, then
   production.
+- [ ] **Apply `20260702_063142_add_season_surveys`** (adds the `season_surveys` and
+  `survey_responses` tables for the P2.9 season survey). Additive and
+  non-destructive. Then, to run a survey: create a SeasonSurvey in the admin panel
+  (Engagement group), add questions, set status to Open, and optionally turn on
+  "Show results" to publish the aggregate to members at `/survey`.
 
 ## Data / cutover
 

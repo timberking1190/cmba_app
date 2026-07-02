@@ -1318,3 +1318,36 @@ pass the strict-nonce CSP; the service worker is same-origin (`worker-src 'self'
 Residual: validate the JSON-LD with Google Rich Results and the manifest/SW in a
 mobile browser once deployed. Provide brand-specific OG art later if desired (the
 generated card is the default).
+
+## Phase LR8 — P2.9 Communication and feedback
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+- Weekly family digest: already implemented (weekly-digest cron + `emailWeeklyDigest`,
+  PII-free, over SES). Verified present; no change needed.
+- Site-wide search (new): `src/lib/search/site.ts` searches the rulebook (existing
+  engine), published CMS pages, and schedule entities (teams, venues). PII-free, never
+  searches members. Public `GET /api/v1/search` + a server-rendered `/search` page
+  (works with no client JS under the strict CSP).
+- Season survey (new): `SeasonSurvey` + `SurveyResponse` collections (migration
+  `20260702_063142_add_season_surveys`), `POST /api/v1/surveys/[id]/respond` (auth,
+  one response per member, validated) and `GET /api/v1/surveys/[id]/results`
+  (aggregate, gated on showResults or admin). `/survey` page renders the open survey
+  form and, when published, aggregate results with a visible bar chart. Individual
+  responses are admin-only and text answers are never exposed (count only), so no one
+  is profiled.
+- Unit tests: `surveyAndSearch.test.ts` (5) cover aggregation (rating/choice/text,
+  text never exposed) and search grouping/links.
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 346/346 pass (48 files, +5) |
+| `npm run generate:types` | ✅ survey collections present, in sync |
+| Migration generated offline | ✅ additive (2 new tables + enums); operator applies |
+| No em/en dashes in new files | ✅ verified |
+
+Residual / operator: apply the survey migration; create and open a survey in the
+admin to activate `/survey`.
