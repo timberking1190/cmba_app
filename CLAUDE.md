@@ -171,11 +171,20 @@ Operator setup tasks: `docs/member-cards/HUMAN_SETUP_CHECKLIST.md`.
     `npm run seed:member-cards` (real coach matrix — prod-appropriate) and
     `npm run seed:member-cards:synthetic` (dev-only, prod-guarded, `MEMBERCARD_SEED_ALLOW=1`,
     `MEMBERCARD_SEED_COUNT`, default 200 / target 10k).
-  - ⏳ **The one remaining gate — apply `member_cards_core` to a reachable DB** (merge/deploy → prod
-    `migrate`, or a staging DB), then: `npm run seed:member-cards`, optionally the synthetic seed, and
-    a runtime pass over the hook + `/verify` endpoints (+ integration tests). No local Docker/pg here;
-    a fresh Supabase branch lacks the Payload schema. Signing keys (`MEMBERCARD_SIGNING_*`) must be set
-    for tokens to mint/verify — until then, scannable passes are created without a token (logged).
+  - ✅ **Migration APPLIED to prod** ca-central-1 on 2026-07-02 via `npm run migrate:env` (Payload's own
+    migrator; batch 19). Verified through the Supabase MCP: 11 tables created (empty), `enum_users_roles`
+    now has `league_official`, `users.member_number/external_id` + `certifications.source/source_import_id`
+    present, bookkeeping row recorded. Schema is now AHEAD of the deployed code (correct order — additive
+    + backward-compatible; old code ignores the new tables/nullable columns).
+  - ⏳ **Remaining to make the feature functional / verified:**
+    1. **Requirements seed** — `npm run seed:member-cards` (real coach matrix). HELD pending go-ahead: it
+       adds 3 required-for-coach certification-types, which are publicly readable and may surface in the
+       live catalog/coach-pathway before the feature launches.
+    2. **Signing keys** — set `MEMBERCARD_SIGNING_*` (env). Until then, issuance creates scannable passes
+       WITHOUT a token (logged), and `/verify` has nothing to verify.
+    3. **Deploy/merge the branch** so the `/verify` endpoints + card UI go live against the new schema.
+    4. **Synthetic seed** — staging only (`MEMBERCARD_SEED_ALLOW=1`); it refuses to run against the prod ref.
+    5. **Runtime E2E** — issuance hook + `/verify` + `/verify-serial`, once keys + a running env exist.
   - 📌 **Deferred to a follow-up migration:** append-only DB trigger on `scans` (app-layer `denyAll`
     already enforces it) + composite unique index on
     `import-field-mappings(source_name, source_column, target_field)` — both are raw SQL not expressible
