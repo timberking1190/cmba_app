@@ -196,13 +196,20 @@ export default buildConfig({
   editor: lexicalEditor(),
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URL,
-      // Serverless (Vercel) + Supabase pooler: keep per-instance connections tiny so
-      // concurrent lambdas (page loads, RSC prefetches, cron) don't exhaust the pooler.
-      // Previously unset -> pg default max of 10 per instance overran the 15-client
-      // session pool and crashed /admin and /account (EMAXCONNSESSION).
+      // Serverless (Vercel) MUST use Supabase's TRANSACTION pooler (port 6543), which
+      // multiplexes many clients over few server connections. The SESSION pooler (5432)
+      // holds a dedicated connection per client and caps at 15, so concurrent lambdas
+      // (page loads + RSC prefetches) overran it and crashed /admin and /account
+      // (EMAXCONNSESSION, then connect timeouts). Rewrite a 5432 pooler URL to 6543 here
+      // so the fix ships even if the env var still points at the session pooler. Local
+      // direct connections (db.<ref>.supabase.co) don't match and are left untouched.
+      connectionString: (process.env.DATABASE_URL || '').replace(
+        /(\.pooler\.supabase\.com):5432\b/,
+        '$1:6543',
+      ),
+      // Keep per-instance connections minimal on serverless.
       max: process.env.DATABASE_POOL_MAX ? Number(process.env.DATABASE_POOL_MAX) : 1,
-      idleTimeoutMillis: 30_000,
+      idleTimeoutMillis: 10_000,
       connectionTimeoutMillis: 10_000,
       allowExitOnIdle: true,
     },
