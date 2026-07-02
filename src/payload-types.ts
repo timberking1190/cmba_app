@@ -120,6 +120,16 @@ export interface Config {
     'challenge-submissions': ChallengeSubmission;
     'quiz-attempts': QuizAttempt;
     'arcade-scores': ArcadeScore;
+    passes: Pass;
+    'verification-tokens': VerificationToken;
+    scans: Scan;
+    'scanner-devices': ScannerDevice;
+    'apple-registrations': AppleRegistration;
+    'wallet-logs': WalletLog;
+    'pass-claims': PassClaim;
+    'client-events': ClientEvent;
+    'import-field-mappings': ImportFieldMapping;
+    'import-exceptions': ImportException;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -180,6 +190,16 @@ export interface Config {
     'challenge-submissions': ChallengeSubmissionsSelect<false> | ChallengeSubmissionsSelect<true>;
     'quiz-attempts': QuizAttemptsSelect<false> | QuizAttemptsSelect<true>;
     'arcade-scores': ArcadeScoresSelect<false> | ArcadeScoresSelect<true>;
+    passes: PassesSelect<false> | PassesSelect<true>;
+    'verification-tokens': VerificationTokensSelect<false> | VerificationTokensSelect<true>;
+    scans: ScansSelect<false> | ScansSelect<true>;
+    'scanner-devices': ScannerDevicesSelect<false> | ScannerDevicesSelect<true>;
+    'apple-registrations': AppleRegistrationsSelect<false> | AppleRegistrationsSelect<true>;
+    'wallet-logs': WalletLogsSelect<false> | WalletLogsSelect<true>;
+    'pass-claims': PassClaimsSelect<false> | PassClaimsSelect<true>;
+    'client-events': ClientEventsSelect<false> | ClientEventsSelect<true>;
+    'import-field-mappings': ImportFieldMappingsSelect<false> | ImportFieldMappingsSelect<true>;
+    'import-exceptions': ImportExceptionsSelect<false> | ImportExceptionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -194,12 +214,14 @@ export interface Config {
     'site-settings': SiteSetting;
     'header-nav': HeaderNav;
     'footer-nav': FooterNav;
+    'member-card-config': MemberCardConfig;
   };
   globalsSelect: {
     'policy-versions': PolicyVersionsSelect<false> | PolicyVersionsSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     'header-nav': HeaderNavSelect<false> | HeaderNavSelect<true>;
     'footer-nav': FooterNavSelect<false> | FooterNavSelect<true>;
+    'member-card-config': MemberCardConfigSelect<false> | MemberCardConfigSelect<true>;
   };
   locale: null;
   widgets: {
@@ -249,11 +271,19 @@ export interface User {
   isMinor?: boolean | null;
   profilePhoto?: (number | null) | Media;
   bio?: string | null;
+  /**
+   * Display-safe member id on the card. System-assigned at issuance.
+   */
+  memberNumber?: string | null;
+  /**
+   * Governing-body id. Never exposed.
+   */
+  externalId?: string | null;
   club?: (number | null) | Club;
   /**
    * Role assignment is restricted to super admins.
    */
-  roles: ('participant' | 'coach' | 'official' | 'club_admin' | 'super_admin')[];
+  roles: ('participant' | 'coach' | 'official' | 'league_official' | 'club_admin' | 'super_admin')[];
   /**
    * Pending = awaiting guardian confirmation (minors). System/admin set.
    */
@@ -448,19 +478,23 @@ export interface CertificationType {
   /**
    * Roles this certification is relevant to.
    */
-  appliesToRoles?: ('participant' | 'coach' | 'official' | 'club_admin' | 'super_admin')[] | null;
+  appliesToRoles?: ('participant' | 'coach' | 'official' | 'league_official' | 'club_admin' | 'super_admin')[] | null;
   /**
    * Months a certification of this type stays valid. Blank = does not expire. Used to auto-compute expiry.
    */
   validityMonths?: number | null;
   /**
-   * Is this certification mandatory for its required roles?
+   * Is this certification mandatory for its required roles? (org compliance)
    */
   isRequired?: boolean | null;
   /**
+   * Gates the digital Member Card sideline scan (coach clearance). Distinct from org compliance.
+   */
+  gatesMemberCard?: boolean | null;
+  /**
    * Roles for which this certification is mandatory.
    */
-  requiredForRoles?: ('participant' | 'coach' | 'official' | 'club_admin' | 'super_admin')[] | null;
+  requiredForRoles?: ('participant' | 'coach' | 'official' | 'league_official' | 'club_admin' | 'super_admin')[] | null;
   /**
    * Deep-link to renew / take the course.
    */
@@ -495,7 +529,7 @@ export interface Course {
   targetAudience?: string | null;
   registerUrl?: string | null;
   mandatory?: boolean | null;
-  requiredForRoles?: ('participant' | 'coach' | 'official' | 'club_admin' | 'super_admin')[] | null;
+  requiredForRoles?: ('participant' | 'coach' | 'official' | 'league_official' | 'club_admin' | 'super_admin')[] | null;
   relatedCertificationType?: (number | null) | CertificationType;
   /**
    * Provider course id (e.g. Reach360 course UUID), for sync/dedupe.
@@ -550,6 +584,14 @@ export interface Certification {
    */
   verifiedAt?: string | null;
   notes?: string | null;
+  /**
+   * How this credential was recorded (D15).
+   */
+  source: 'registration' | 'import';
+  /**
+   * The import batch that wrote this credential, if any.
+   */
+  sourceImport?: (number | null) | ImportBatch;
   updatedAt: string;
   createdAt: string;
 }
@@ -576,6 +618,51 @@ export interface CertificateFile {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+}
+/**
+ * Audit record and undo manifest for a CSV import.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "import-batches".
+ */
+export interface ImportBatch {
+  id: number;
+  kind: 'teams' | 'venues' | 'officials' | 'games';
+  fileName?: string | null;
+  /**
+   * Ready / warnings / errors / imported counts.
+   */
+  counts?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  publishMode?: ('draft' | 'published') | null;
+  status: 'pending' | 'committed' | 'undone';
+  /**
+   * Undo manifest: the collections and ids created by this import.
+   */
+  createdRecords?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  committedBy?: (number | null) | User;
+  committedAt?: string | null;
+  undoneBy?: (number | null) | User;
+  undoneAt?: string | null;
+  undoExpiresAt?: string | null;
+  undoWindowMinutes?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -959,51 +1046,6 @@ export interface Team {
   externalId?: string | null;
   active?: boolean | null;
   importBatch?: (number | null) | ImportBatch;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Audit record and undo manifest for a CSV import.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "import-batches".
- */
-export interface ImportBatch {
-  id: number;
-  kind: 'teams' | 'venues' | 'officials' | 'games';
-  fileName?: string | null;
-  /**
-   * Ready / warnings / errors / imported counts.
-   */
-  counts?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  publishMode?: ('draft' | 'published') | null;
-  status: 'pending' | 'committed' | 'undone';
-  /**
-   * Undo manifest: the collections and ids created by this import.
-   */
-  createdRecords?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  committedBy?: (number | null) | User;
-  committedAt?: string | null;
-  undoneBy?: (number | null) | User;
-  undoneAt?: string | null;
-  undoExpiresAt?: string | null;
-  undoWindowMinutes?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2047,6 +2089,254 @@ export interface ArcadeScore {
   createdAt: string;
 }
 /**
+ * Wallet/print passes. Managed by issuance — do not hand-edit tokens.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "passes".
+ */
+export interface Pass {
+  id: number;
+  member: number | User;
+  platform: 'apple' | 'google' | 'print';
+  /**
+   * Unguessable per-pass id (Apple serialNumber / Google object suffix / print no.).
+   */
+  serialNumber: string;
+  /**
+   * The ONLY accepted token id for this pass (D1). Rotated on events.
+   */
+  currentJti?: string | null;
+  /**
+   * HMAC-SHA256 of the PassKit web-service authenticationToken.
+   */
+  appleAuthTokenHash?: string | null;
+  status: 'requested' | 'issued' | 'revoked' | 'superseded';
+  /**
+   * Season this pass belongs to, e.g. 2026-27.
+   */
+  season: string;
+  issuedAt?: string | null;
+  revokedAt?: string | null;
+  revokeReason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Audit of minted pass tokens. No secret material.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "verification-tokens".
+ */
+export interface VerificationToken {
+  id: number;
+  jti: string;
+  pass: number | Pass;
+  member: number | User;
+  channel: 'wallet' | 'print';
+  /**
+   * Signing key id used to mint.
+   */
+  kid: string;
+  expiresAt: string;
+  revokedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Append-only scan audit log (Scan Analytics source).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scans".
+ */
+export interface Scan {
+  id: number;
+  /**
+   * Idempotency key for retries.
+   */
+  clientUuid?: string | null;
+  scannedBy?: (number | null) | User;
+  deviceId?: string | null;
+  venue?: (number | null) | Venue;
+  game?: (number | null) | Game;
+  /**
+   * Token id presented (null for serial lookups).
+   */
+  jti?: string | null;
+  /**
+   * Who was scanned (resolved from the pass).
+   */
+  member?: (number | null) | User;
+  result:
+    | 'valid'
+    | 'expired_credentials'
+    | 'revoked'
+    | 'revoked_token'
+    | 'not_found'
+    | 'not_scannable'
+    | 'token_expired'
+    | 'invalid_signature'
+    | 'member_inactive'
+    | 'rate_limited';
+  method: 'qr' | 'serial';
+  scannedAt: string;
+  ip?: string | null;
+  deviceInfo?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Registered scanner browsers. Revoke to block immediately.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scanner-devices".
+ */
+export interface ScannerDevice {
+  id: number;
+  deviceId: string;
+  user: number | User;
+  /**
+   * Browser/OS string, set on registration.
+   */
+  label?: string | null;
+  lastSeen?: string | null;
+  /**
+   * Set to revoke; blocks the device server-side.
+   */
+  revokedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "apple-registrations".
+ */
+export interface AppleRegistration {
+  id: number;
+  deviceLibId: string;
+  passSerial: string;
+  pushToken: string;
+  pass?: (number | null) | Pass;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "wallet-logs".
+ */
+export interface WalletLog {
+  id: number;
+  /**
+   * e.g. apple-webservice, google-webhook.
+   */
+  source?: string | null;
+  payload:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pass-claims".
+ */
+export interface PassClaim {
+  id: number;
+  pass: number | Pass;
+  /**
+   * SHA-256 of the 128-bit claim code. Plaintext never stored.
+   */
+  codeHash: string;
+  expiresAt: string;
+  consumedAt?: string | null;
+  supersededAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "client-events".
+ */
+export interface ClientEvent {
+  id: number;
+  /**
+   * e.g. camera_error, decode_timeout, js_error.
+   */
+  event: string;
+  deviceId?: string | null;
+  user?: (number | null) | User;
+  detail?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Named column→field mappings per credential upload source.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "import-field-mappings".
+ */
+export interface ImportFieldMapping {
+  id: number;
+  /**
+   * Mapping set, e.g. 'record_check', 'nccp', 'registration'.
+   */
+  sourceName: string;
+  /**
+   * Header exactly as it appears in the file.
+   */
+  sourceColumn: string;
+  /**
+   * e.g. 'member.external_id', 'credential.record_check.expires_on'.
+   */
+  targetField: string;
+  transform: 'none' | 'date_mdy' | 'date_ymd' | 'status_map' | 'trim_upper';
+  /**
+   * A missing required column fails the whole import.
+   */
+  isRequired?: boolean | null;
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Per-row credential-import exceptions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "import-exceptions".
+ */
+export interface ImportException {
+  id: number;
+  importBatch: number | ImportBatch;
+  rowNumber: number;
+  rawRow:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  errorCode: string;
+  message: string;
+  resolved?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -2281,6 +2571,46 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'arcade-scores';
         value: number | ArcadeScore;
+      } | null)
+    | ({
+        relationTo: 'passes';
+        value: number | Pass;
+      } | null)
+    | ({
+        relationTo: 'verification-tokens';
+        value: number | VerificationToken;
+      } | null)
+    | ({
+        relationTo: 'scans';
+        value: number | Scan;
+      } | null)
+    | ({
+        relationTo: 'scanner-devices';
+        value: number | ScannerDevice;
+      } | null)
+    | ({
+        relationTo: 'apple-registrations';
+        value: number | AppleRegistration;
+      } | null)
+    | ({
+        relationTo: 'wallet-logs';
+        value: number | WalletLog;
+      } | null)
+    | ({
+        relationTo: 'pass-claims';
+        value: number | PassClaim;
+      } | null)
+    | ({
+        relationTo: 'client-events';
+        value: number | ClientEvent;
+      } | null)
+    | ({
+        relationTo: 'import-field-mappings';
+        value: number | ImportFieldMapping;
+      } | null)
+    | ({
+        relationTo: 'import-exceptions';
+        value: number | ImportException;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2337,6 +2667,8 @@ export interface UsersSelect<T extends boolean = true> {
   isMinor?: T;
   profilePhoto?: T;
   bio?: T;
+  memberNumber?: T;
+  externalId?: T;
   club?: T;
   roles?: T;
   status?: T;
@@ -2451,6 +2783,7 @@ export interface CertificationTypesSelect<T extends boolean = true> {
   appliesToRoles?: T;
   validityMonths?: T;
   isRequired?: T;
+  gatesMemberCard?: T;
   requiredForRoles?: T;
   renewalUrl?: T;
   relatedCourse?: T;
@@ -2474,6 +2807,8 @@ export interface CertificationsSelect<T extends boolean = true> {
   verifiedBy?: T;
   verifiedAt?: T;
   notes?: T;
+  source?: T;
+  sourceImport?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3523,6 +3858,147 @@ export interface ArcadeScoresSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "passes_select".
+ */
+export interface PassesSelect<T extends boolean = true> {
+  member?: T;
+  platform?: T;
+  serialNumber?: T;
+  currentJti?: T;
+  appleAuthTokenHash?: T;
+  status?: T;
+  season?: T;
+  issuedAt?: T;
+  revokedAt?: T;
+  revokeReason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "verification-tokens_select".
+ */
+export interface VerificationTokensSelect<T extends boolean = true> {
+  jti?: T;
+  pass?: T;
+  member?: T;
+  channel?: T;
+  kid?: T;
+  expiresAt?: T;
+  revokedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scans_select".
+ */
+export interface ScansSelect<T extends boolean = true> {
+  clientUuid?: T;
+  scannedBy?: T;
+  deviceId?: T;
+  venue?: T;
+  game?: T;
+  jti?: T;
+  member?: T;
+  result?: T;
+  method?: T;
+  scannedAt?: T;
+  ip?: T;
+  deviceInfo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scanner-devices_select".
+ */
+export interface ScannerDevicesSelect<T extends boolean = true> {
+  deviceId?: T;
+  user?: T;
+  label?: T;
+  lastSeen?: T;
+  revokedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "apple-registrations_select".
+ */
+export interface AppleRegistrationsSelect<T extends boolean = true> {
+  deviceLibId?: T;
+  passSerial?: T;
+  pushToken?: T;
+  pass?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "wallet-logs_select".
+ */
+export interface WalletLogsSelect<T extends boolean = true> {
+  source?: T;
+  payload?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pass-claims_select".
+ */
+export interface PassClaimsSelect<T extends boolean = true> {
+  pass?: T;
+  codeHash?: T;
+  expiresAt?: T;
+  consumedAt?: T;
+  supersededAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "client-events_select".
+ */
+export interface ClientEventsSelect<T extends boolean = true> {
+  event?: T;
+  deviceId?: T;
+  user?: T;
+  detail?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "import-field-mappings_select".
+ */
+export interface ImportFieldMappingsSelect<T extends boolean = true> {
+  sourceName?: T;
+  sourceColumn?: T;
+  targetField?: T;
+  transform?: T;
+  isRequired?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "import-exceptions_select".
+ */
+export interface ImportExceptionsSelect<T extends boolean = true> {
+  importBatch?: T;
+  rowNumber?: T;
+  rawRow?: T;
+  errorCode?: T;
+  message?: T;
+  resolved?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -3654,6 +4130,31 @@ export interface FooterNav {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "member-card-config".
+ */
+export interface MemberCardConfig {
+  id: number;
+  /**
+   * Minimum scanner app version; older clients are asked to refresh.
+   */
+  verifierMinVersion?: string | null;
+  /**
+   * Master switch for the manual serial-lookup fallback (D17).
+   */
+  serialLookupEnabled?: boolean | null;
+  /**
+   * Season label stamped on newly issued passes, e.g. 2026-27.
+   */
+  currentSeason?: string | null;
+  /**
+   * Flag-and-alert on odd scan patterns (D6). Never auto-blocks.
+   */
+  anomalyAlertsEnabled?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "policy-versions_select".
  */
 export interface PolicyVersionsSelect<T extends boolean = true> {
@@ -3733,6 +4234,19 @@ export interface FooterNavSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "member-card-config_select".
+ */
+export interface MemberCardConfigSelect<T extends boolean = true> {
+  verifierMinVersion?: T;
+  serialLookupEnabled?: T;
+  currentSeason?: T;
+  anomalyAlertsEnabled?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -54,7 +54,19 @@ export const CertificationTypes: CollectionConfig = {
       name: 'isRequired',
       type: 'checkbox',
       defaultValue: false,
-      admin: { description: 'Is this certification mandatory for its required roles?' },
+      admin: { description: 'Is this certification mandatory for its required roles? (org compliance)' },
+    },
+    {
+      // Member Cards D14/D20: the DISTINCT set that gates the sideline scan — separate
+      // from broad org compliance (isRequired). A role is scannable iff it has ≥1
+      // gatesMemberCard type naming it in requiredForRoles. Seed exactly the coach three
+      // (record check + Safe Sport + Coaching in CMBA). Admin-editable, no deploy needed.
+      name: 'gatesMemberCard',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Gates the digital Member Card sideline scan (coach clearance). Distinct from org compliance.',
+      },
     },
     {
       name: 'requiredForRoles',

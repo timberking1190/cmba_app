@@ -138,5 +138,26 @@ export const Certifications: CollectionConfig = {
       admin: { readOnly: true, description: 'Set when an admin verifies. Admin-only.' },
     },
     { name: 'notes', type: 'textarea' },
+    {
+      // Member Cards D15: provenance. In-app registration flows write 'registration';
+      // bulk credential imports write 'import' + the batch that produced them.
+      name: 'source',
+      type: 'select',
+      required: true,
+      defaultValue: 'registration',
+      options: [
+        { label: 'Registration', value: 'registration' },
+        { label: 'Import', value: 'import' },
+      ],
+      access: { update: superAdminFieldOnly },
+      admin: { description: 'How this credential was recorded (D15).' },
+    },
+    {
+      name: 'sourceImport',
+      type: 'relationship',
+      relationTo: 'import-batches',
+      access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
+      admin: { description: 'The import batch that wrote this credential, if any.' },
+    },
   ],
 }

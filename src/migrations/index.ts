@@ -19,6 +19,8 @@ import * as migration_20260630_205953_now_challenges from './20260630_205953_now
 import * as migration_20260630_214120_challenge_team from './20260630_214120_challenge_team';
 import * as migration_20260630_220346_now_quiz_attempts from './20260630_220346_now_quiz_attempts';
 import * as migration_20260702_175004_arcade_scores from './20260702_175004_arcade_scores';
+import * as migration_20260702_195156_member_cards_core from './20260702_195156_member_cards_core';
+import * as migration_20260702_205536_add_gates_member_card from './20260702_205536_add_gates_member_card';
 
 export const migrations = [
   {
@@ -124,6 +126,16 @@ export const migrations = [
   {
     up: migration_20260702_175004_arcade_scores.up,
     down: migration_20260702_175004_arcade_scores.down,
-    name: '20260702_175004_arcade_scores'
+    name: '20260702_175004_arcade_scores',
+  },
+  {
+    up: migration_20260702_195156_member_cards_core.up,
+    down: migration_20260702_195156_member_cards_core.down,
+    name: '20260702_195156_member_cards_core',
+  },
+  {
+    up: migration_20260702_205536_add_gates_member_card.up,
+    down: migration_20260702_205536_add_gates_member_card.down,
+    name: '20260702_205536_add_gates_member_card'
   },
 ];

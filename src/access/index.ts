@@ -10,12 +10,23 @@
  */
 import type { Access, FieldAccess } from 'payload'
 
-export type Role = 'participant' | 'coach' | 'official' | 'club_admin' | 'super_admin'
+export type Role =
+  | 'participant'
+  | 'coach'
+  | 'official'
+  | 'league_official'
+  | 'club_admin'
+  | 'super_admin'
 
 export const ROLES: { label: string; value: Role }[] = [
   { label: 'Participant', value: 'participant' },
   { label: 'Coach', value: 'coach' },
   { label: 'Official', value: 'official' },
+  // League Official (Member Cards D23): the scanner login tier. Scans coach passes at
+  // venues and reads Scan Analytics; not a data admin. Added to the DB enum by a
+  // deliberately-generated Payload migration (ALTER TYPE ... ADD VALUE) — see
+  // docs/member-cards/PHASE1_DATA_MODEL.md.
+  { label: 'League Official', value: 'league_official' },
   { label: 'Club Admin', value: 'club_admin' },
   { label: 'Super Admin', value: 'super_admin' },
 ]
@@ -37,6 +48,26 @@ export const isClubAdmin = (user: UserLike): boolean => hasRole(user, 'club_admi
 /** Any staff-level admin (club admin or super admin). */
 export const isAnyAdmin = (user: UserLike): boolean =>
   isSuperAdmin(user) || isClubAdmin(user)
+
+/** League official — the Member-Cards scanner login tier (D23). */
+export const isLeagueOfficial = (user: UserLike): boolean => hasRole(user, 'league_official')
+
+/**
+ * Member Cards D23 — may operate the scanner (`/scan`, `/verify`, `/verify-serial`).
+ * Spec vocabulary referee/league_official/admin/commissioner maps here to
+ * official/league_official + any staff admin.
+ */
+export const canScan = (user: UserLike): boolean =>
+  hasRole(user, 'official') || isLeagueOfficial(user) || isAnyAdmin(user)
+
+/**
+ * Member Cards D24 — verification-domain admin: reads ALL scans (Scan Analytics) and
+ * holds revoke-pass / revoke-device powers. League officials + any staff admin.
+ * Narrower than isAnyAdmin on the analytics side (adds league_official), but credential
+ * review / imports / requirement-matrix edits stay isAnyAdmin-only (D16).
+ */
+export const isVerificationAdmin = (user: UserLike): boolean =>
+  isLeagueOfficial(user) || isAnyAdmin(user)
 
 /** Resolve the club id from a user whether the relation is populated or an id. */
 export const clubIdOf = (user: UserLike): string | number | undefined => {
