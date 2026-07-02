@@ -12,6 +12,8 @@
 
 import { useEffect } from 'react'
 
+import { captureClientError } from '@/lib/observability/events'
+
 export default function GlobalError({
   error,
   reset,
@@ -20,8 +22,9 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Surface to the browser console; error monitoring (P1.5) hooks in here too.
     console.error('global-error boundary:', error)
+    // Report to Sentry when monitoring is enabled (no-op otherwise).
+    captureClientError(error)
   }, [error])
 
   return (

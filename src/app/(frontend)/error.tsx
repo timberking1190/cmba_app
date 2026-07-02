@@ -11,6 +11,7 @@
 
 import { useEffect } from 'react'
 import { ErrorState } from '@/components/feedback/ErrorState'
+import { captureClientError } from '@/lib/observability/events'
 
 export default function FrontendError({
   error,
@@ -20,8 +21,9 @@ export default function FrontendError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Error monitoring (P1.5) hooks in here; for now surface to the console.
     console.error('frontend error boundary:', error)
+    // Report to Sentry when monitoring is enabled (no-op otherwise).
+    captureClientError(error)
   }, [error])
 
   return <ErrorState reset={reset} />

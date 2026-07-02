@@ -8,6 +8,7 @@ import { MobileNav } from "@/components/MobileNav";
 import { FluidBackground } from "@/components/FluidBackground";
 import { GlobalFX } from "@/components/GlobalFX";
 import { FloatingNav } from "@/components/FloatingNav";
+import { Observability } from "@/components/Observability";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -76,6 +77,7 @@ export default async function RootLayout({
         <Footer />
         <MobileNav />
         <FloatingNav />
+        <Observability />
       </body>
     </html>
   );

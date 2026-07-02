@@ -45,6 +45,21 @@ tracked in `docs/VERIFICATION.md`. Items are ordered by urgency.
 - [ ] **Fill legal-doc placeholders** (effective dates, Privacy Officer contact in
   Site Settings) and confirm the `security@cmba.ab.ca` disclosure mailbox.
 
+## Observability (P1.5)
+
+- [ ] **Sentry (error monitoring).** Create a Sentry project in the EU region, sign
+  Sentry's DPA, and set `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` in Vercel (Production
+  + Preview). It stays off until the DSN is set. No personal data is sent
+  (`sendDefaultPii` off + `scrubEvent`); confirm this on the first captured event.
+  Board decision to record: accept a US-headquartered processor for non-personal
+  diagnostics.
+- [ ] **Vercel Web Analytics + Speed Insights.** Enable both in the Vercel project
+  dashboard (no key needed). Cookieless and aggregate; no child profiling.
+- [ ] **Sync the privacy policy version.** The privacy policy now discloses Sentry
+  and Vercel Analytics and is bumped to `2026-07-01` in `src/content/legal.ts`. Bump
+  the `PolicyVersions` global's privacy version to match at launch so consent
+  re-acceptance reflects the disclosure (safe now, before any public accounts).
+
 ## Migrations
 
 - [ ] Future Payload migrations are committed but applied by you. Run

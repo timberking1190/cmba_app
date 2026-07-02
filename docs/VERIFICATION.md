@@ -1145,3 +1145,53 @@ Residual risk / external (cannot be closed from the repo):
   URL. Config and workflow are ready; results table in `docs/DAST_ZAP.md` is "pending".
 - DPAs with Supabase, AWS, Vercel remain unsigned; sub-processor Canada-residency to
   be confirmed. Named Privacy Officer + US-processor board decision still open.
+
+## Phase LR4 — P1.5 Observability (privacy respecting)
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+Wired error monitoring (Sentry) + product analytics + Web Vitals (Vercel Web
+Analytics + Speed Insights) per the chosen stack, all privacy-respecting and OFF
+until env is set, so the build and local dev never phone home.
+
+New:
+- `src/lib/observability/sentry.ts`: `scrubEvent` (removes user/IP, cookies, auth and
+  nonce headers, request body, query strings), `sentryInitOptions` (sendDefaultPii
+  off, no session replay, low trace sampling), `serverDsn`, `sentryEnvironment`. Pure
+  and unit tested.
+- `src/lib/observability/events.ts`: `trackEvent` (Vercel analytics, anonymous and
+  aggregate, no user identifier) + `captureClientError` (dynamic Sentry import,
+  guarded).
+- `src/instrumentation.ts`: server/edge Sentry init when a DSN is set + `onRequestError`.
+- `src/components/Observability.tsx`: browser Sentry init (guarded) + `<Analytics/>`
+  + `<SpeedInsights/>`, mounted in the root layout.
+- `src/lib/__tests__/sentryScrub.test.ts` (7 tests).
+
+Edits:
+- Error boundaries (`global-error.tsx`, `(frontend)/error.tsx`) now report to Sentry
+  via `captureClientError` (no-op when off).
+- Engagement events fired on challenge submit and quiz completion (anonymous, no PII).
+- `.env.example`: SENTRY_DSN / NEXT_PUBLIC_SENTRY_DSN / SENTRY_ENVIRONMENT + analytics note.
+- Disclosure: privacy policy (`src/content/legal.ts`, bumped to 2026-07-01) now lists
+  Sentry + Vercel Analytics, states diagnostics carry no PII and are processed
+  outside Canada, no advertising, no child profiling; also fixed 3 em dashes in the
+  legal copy. Processor register + PIA updated with both processors.
+
+Under-18 gate: analytics is cookieless and aggregate with NO user identifier and
+Sentry sends no user context, so children are never profiled. Engagement events carry
+only non-personal enums (e.g. a pass flag). IP handling: the csp-report sink already
+stores no IP; Sentry `scrubEvent` removes IP; Vercel Analytics does not expose IP to us.
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 335/335 pass (46 files, +7) |
+| `node scripts/audit-ci.mjs` | ✅ 0 un-allowlisted high/critical after adding the 3 deps |
+| No em/en dashes in new files | ✅ verified; also removed 3 from existing legal copy |
+| Production build | Verified on Vercel deploy (manual Sentry instrumentation, no next.config change, so build risk is low) |
+
+Residual / operator: Sentry DSN + EU project + DPA, enable Vercel Analytics in the
+dashboard, sync the PolicyVersions global to the new privacy version. Full runtime
+proof (real events, PII-free captures) is confirmable only on a deploy with the DSN set.
