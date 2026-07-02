@@ -207,8 +207,11 @@ export default buildConfig({
         /(\.pooler\.supabase\.com):5432\b/,
         '$1:6543',
       ),
-      // Keep per-instance connections minimal on serverless.
-      max: process.env.DATABASE_POOL_MAX ? Number(process.env.DATABASE_POOL_MAX) : 1,
+      // Use a normal pool. max:1 starved Payload: login and CMS pages open a
+      // transaction and fire several concurrent queries, so a single connection
+      // deadlocked and every path timed out acquiring one. The transaction pooler
+      // removes the session-pooler cap, so a normal pool (10) is safe here.
+      max: process.env.DATABASE_POOL_MAX ? Number(process.env.DATABASE_POOL_MAX) : 10,
       idleTimeoutMillis: 10_000,
       connectionTimeoutMillis: 10_000,
       allowExitOnIdle: true,
