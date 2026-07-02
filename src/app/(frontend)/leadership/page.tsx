@@ -29,17 +29,17 @@ const executive = [
 ]
 
 const board = [
-  { club: 'Calgary Northwest Basketball', president: 'Kevin Johnson' },
-  { club: 'NCBC Thunder Basketball', president: 'Stephen Kerr' },
-  { club: 'East Pro Basketball', president: 'Nardine Cain' },
-  { club: 'Calwest Basketball', president: 'Mark Rideout' },
-  { club: 'South Calgary Basketball', president: 'Tyler Davidson' },
-  { club: 'Bow River Basketball', president: 'Sherry Cramer' },
-  { club: 'Cochrane Basketball', president: 'Colin Gustafson' },
-  { club: 'Airdrie Basketball', president: 'Scott Mitchell' },
-  { club: 'CLS (Chestermere, Langdon, Strathmore)', president: 'Jeff Harris' },
-  { club: 'Okotoks Basketball', president: 'Blake Husky' },
-  { club: 'South Stoney Basketball Association', president: 'Todd Mohorich' },
+  { community: 'Calgary Northwest Basketball', president: 'Kevin Johnson' },
+  { community: 'NCBC Thunder Basketball', president: 'Stephen Kerr' },
+  { community: 'East Pro Basketball', president: 'Nardine Cain' },
+  { community: 'Calwest Basketball', president: 'Mark Rideout' },
+  { community: 'South Calgary Basketball', president: 'Tyler Davidson' },
+  { community: 'Bow River Basketball', president: 'Sherry Cramer' },
+  { community: 'Cochrane Basketball', president: 'Colin Gustafson' },
+  { community: 'Airdrie Basketball', president: 'Scott Mitchell' },
+  { community: 'CLS (Chestermere, Langdon, Strathmore)', president: 'Jeff Harris' },
+  { community: 'Okotoks Basketball', president: 'Blake Husky' },
+  { community: 'South Stoney Basketball Association', president: 'Todd Mohorich' },
 ]
 
 const committees = [
@@ -61,7 +61,7 @@ export default function LeadershipPage() {
         eyebrow="Governance · Calgary Minor Basketball"
         title="Leadership"
         accent="& Board"
-        subtitle="The people who run Calgary Minor Basketball — the executive, member-club board of directors, and committee chairs."
+        subtitle="The people who run Calgary Minor Basketball: the executive, member community board of directors, and committee chairs."
       >
         <div className="flex flex-wrap gap-3">
           <a href={CMBA.emailHref}
@@ -103,12 +103,12 @@ export default function LeadershipPage() {
           <div className="reveal flex items-center gap-2 mb-6">
             <Users size={18} className="text-cmba-red" />
             <h2 className="font-display font-black text-2xl text-white uppercase tracking-tight">Board of Directors</h2>
-            <span className="font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider ml-2">Member-club presidents</span>
+            <span className="font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider ml-2">Community presidents · 11 Communities</span>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {board.map((b, i) => (
-              <div key={b.club} style={{ transitionDelay: `${i * 40}ms` }} className="reveal rv-left bg-cmba-black-card border border-white/12 p-4 card-hover">
-                <div className="font-display font-bold text-white uppercase tracking-wide text-sm leading-tight">{b.club}</div>
+              <div key={b.community} style={{ transitionDelay: `${i * 40}ms` }} className="reveal rv-left bg-cmba-black-card border border-white/12 p-4 card-hover">
+                <div className="font-display font-bold text-white uppercase tracking-wide text-sm leading-tight">{b.community}</div>
                 <div className="text-xs text-cmba-grey mt-1">{b.president} · President</div>
               </div>
             ))}
@@ -122,9 +122,9 @@ export default function LeadershipPage() {
           image="aerial"
           side="right"
           eyebrow="One association"
-          title="Eleven clubs, one game"
+          title="11 Communities, one game"
         >
-          <p>From the northwest to Okotoks, member-club presidents sit on the board so every community across greater Calgary has a voice in how the game is run.</p>
+          <p>From the northwest to Okotoks, Community presidents sit on the board so every community across greater Calgary has a voice in how the game is run.</p>
         </PhotoBand>
       </section>
 
