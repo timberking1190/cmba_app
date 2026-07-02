@@ -62,6 +62,18 @@ import { Challenges } from './collections/Challenges'
 import { ChallengeSubmissions } from './collections/ChallengeSubmissions'
 import { QuizAttempts } from './collections/QuizAttempts'
 import { ArcadeScores } from './collections/ArcadeScores'
+// Member Cards — digital wallet ID cards + coach-verify scanner.
+import { Passes } from './collections/Passes'
+import { VerificationTokens } from './collections/VerificationTokens'
+import { Scans } from './collections/Scans'
+import { ScannerDevices } from './collections/ScannerDevices'
+import { AppleRegistrations } from './collections/AppleRegistrations'
+import { WalletLogs } from './collections/WalletLogs'
+import { PassClaims } from './collections/PassClaims'
+import { ClientEvents } from './collections/ClientEvents'
+import { ImportFieldMappings } from './collections/ImportFieldMappings'
+import { ImportExceptions } from './collections/ImportExceptions'
+import { MemberCardConfig } from './globals/MemberCardConfig'
 import { FooterNav } from './globals/FooterNav'
 import { HeaderNav } from './globals/HeaderNav'
 import { PolicyVersions } from './globals/PolicyVersions'
@@ -193,8 +205,20 @@ export default buildConfig({
     ChallengeSubmissions,
     QuizAttempts,
     ArcadeScores,
+    // Member Cards: passes, verification tokens, scan audit, scanner devices,
+    // wallet plumbing, claim links, telemetry, and credential-import config.
+    Passes,
+    VerificationTokens,
+    Scans,
+    ScannerDevices,
+    AppleRegistrations,
+    WalletLogs,
+    PassClaims,
+    ClientEvents,
+    ImportFieldMappings,
+    ImportExceptions,
   ],
-  globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav],
+  globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav, MemberCardConfig],
   editor: lexicalEditor(),
   db: postgresAdapter({
     pool: {

@@ -80,6 +80,29 @@ export const Users: CollectionConfig = {
     { name: 'profilePhoto', type: 'upload', relationTo: 'media' },
     { name: 'bio', type: 'textarea' },
     {
+      // Member Cards D18: display-safe id printed on the card and spoken at gyms
+      // (e.g. CMBA-04182). System-assigned at card issuance from a Postgres sequence;
+      // never the governing-body id, never the pass serial.
+      name: 'memberNumber',
+      type: 'text',
+      unique: true,
+      index: true,
+      access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Display-safe member id on the card. System-assigned at issuance.',
+      },
+    },
+    {
+      // Member Cards: governing-body / registrar id. NEVER exposed on cards or /verify.
+      name: 'externalId',
+      type: 'text',
+      unique: true,
+      access: { read: superAdminFieldOnly, create: superAdminFieldOnly, update: superAdminFieldOnly },
+      admin: { position: 'sidebar', hidden: true, description: 'Governing-body id. Never exposed.' },
+    },
+    {
       name: 'club',
       type: 'relationship',
       relationTo: 'clubs',
