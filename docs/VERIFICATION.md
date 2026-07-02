@@ -1234,3 +1234,50 @@ operator step in the runbook.
 
 Residual / operator: import a real season, verify the source note reads "from CMBA
 Connect", then flip the flag. Browser-level own-data proof lands with Playwright (LR6).
+
+## Phase LR6 — P1.7 End-to-end, accessibility, performance harness
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+Added a browser-level test harness. It targets a base URL rather than booting the app
+(the app needs a database and env to run), so it runs against a Vercel preview or a
+locally started server, never against a machine with production env loaded.
+
+New:
+- `playwright.config.ts` (desktop Chromium + Pixel 5 mobile projects, base URL from
+  `PLAYWRIGHT_BASE_URL`).
+- `e2e/public.spec.ts`: loads home, schedule, standings, rules, login and runs an axe
+  WCAG 2 A/AA scan on each (no serious/critical), plus the branded 404. Runs anywhere.
+- `e2e/security.spec.ts`: adversarial matrix for an anonymous caller (protected pages
+  redirect to login; `/api/users` 403 and admin APIs 401/403; enforcing strict-nonce
+  CSP + security headers present; invalid login rejected). Runs anywhere.
+- `e2e/journeys.spec.ts`: authenticated journeys (sign in and MFA challenge, account
+  and certifications, challenges, quizzes), guarded to skip unless `E2E_EMAIL` /
+  `E2E_PASSWORD` are set for a seeded account.
+- `lighthouserc.cjs`: mobile Lighthouse budget over `/`, `/schedule`, `/standings`
+  (the 3D home is held to the budget): accessibility >= 0.9 (error), LCP <= 4.5s, TBT
+  <= 800ms, CLS <= 0.1 (errors), FCP/interactive/performance as warnings.
+- `.github/workflows/e2e.yml`: runs Playwright + Lighthouse against `E2E_BASE_URL`
+  (repo variable) or a manual dispatch URL; no-op (non-blocking) until a target is
+  set, so it never blocks unrelated PRs and becomes a gate once a preview URL exists.
+- `vitest.config.ts`: scopes Vitest to `src/**/*.test.ts` and excludes `e2e/`, so the
+  two runners do not collide. `e2e/` excluded from the root tsconfig.
+- Scripts: `test:e2e`, `test:e2e:ui`, `lhci`. `.gitignore` updated for report dirs.
+- `e2e/README.md`: how to run locally, against a preview, and in CI.
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean (e2e excluded, run by Playwright) |
+| `npm run lint` | ✅ clean |
+| `npm test` (vitest) | ✅ 341/341 pass (unchanged; e2e excluded from vitest) |
+| `npx playwright test --list` | ✅ 28 specs compile across 3 files, 2 projects |
+| `node scripts/audit-ci.mjs` | ✅ still 0 un-allowlisted (new deps are devDependencies) |
+| No em/en dashes in new files | ✅ verified |
+
+Honest limitation: I authored and compiled the specs and Lighthouse config but did
+NOT execute the browser run here (no target deploy and no browser binaries in this
+environment). The e2e/a11y/perf gate activates when Vercel preview deploys are enabled
+and `E2E_BASE_URL` is set (operator step); the first CI run may need minor selector or
+budget tuning against the real deploy. The authenticated journeys additionally need a
+seeded test account (`E2E_EMAIL`/`E2E_PASSWORD`).

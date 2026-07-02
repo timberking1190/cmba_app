@@ -9,6 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "lhci": "lhci autorun --config=lighthouserc.cjs",
     "payload": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts payload",
     "generate:types": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts payload generate:types",
     "generate:importmap": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts payload generate:importmap",
@@ -56,6 +59,9 @@
     "three": "^0.180.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.61.1",
     "@swc-node/register": "^1.11.1",
     "@swc/core": "^1.15.41",
     "@types/node": "^20",
