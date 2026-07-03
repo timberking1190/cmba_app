@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import {
   ShieldCheck, ShieldAlert, ShieldX, Download, ExternalLink, Trophy, Clock, AlertTriangle, CheckCircle2, Award,
+  IdCard, ArrowRight,
 } from 'lucide-react'
 
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
@@ -12,6 +13,7 @@ import { getComplianceForUser, getPathwayProgress } from '@/lib/compliance'
 import { getUnifiedProgress } from '@/lib/gamification/progress'
 import { pathwayAudienceFor } from '@/lib/audience'
 import { AccountActions } from '@/components/account/AccountActions'
+import { ProfilePhotoUpload } from '@/components/account/ProfilePhotoUpload'
 import { CalgarySkyline } from '@/components/graphics/CalgarySkyline'
 import type { Certification, CertificationType, Course, Recognition } from '@/payload-types'
 
@@ -72,6 +74,17 @@ export default async function AccountPage() {
 
   const pending = user.status === 'pending'
 
+  const pp = user.profilePhoto as unknown
+  let photoUrl: string | null = null
+  if (pp && typeof pp === 'object' && 'url' in pp) {
+    photoUrl = (pp as { url?: string }).url ?? null
+  } else if (typeof pp === 'number' || typeof pp === 'string') {
+    const m = (await payload.findByID({ collection: 'media', id: pp, depth: 0 }).catch(() => null)) as
+      | { url?: string; sizes?: { thumbnail?: { url?: string } } }
+      | null
+    photoUrl = m?.sizes?.thumbnail?.url ?? m?.url ?? null
+  }
+
   return (
     <div>
       {/* Hero */}
@@ -95,8 +108,26 @@ export default async function AccountPage() {
         </div>
       </section>
 
+      {/* Prominent Member Card CTA */}
+      <div className="relative z-10 mx-auto -mt-5 max-w-6xl px-4 lg:px-6">
+        <Link href="/account/card"
+          className="group flex items-center gap-4 rounded-xl border border-cmba-red/40 bg-gradient-to-r from-cmba-red/20 to-cmba-black-card p-4 shadow-xl transition-colors hover:border-cmba-red lg:p-5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-cmba-red/20 text-cmba-red">
+            <IdCard size={26} />
+          </div>
+          <div className="min-w-0">
+            <div className="font-display font-black uppercase tracking-wide text-white">My CMBA ID Card</div>
+            <div className="text-sm text-cmba-grey-light">
+              {user.profilePhoto ? 'View your digital member card and verification QR.' : 'Add your photo, then view your digital member card.'}
+            </div>
+          </div>
+          <ArrowRight size={20} className="ml-auto shrink-0 text-cmba-grey transition-colors group-hover:text-cmba-red" />
+        </Link>
+      </div>
+
       <div className="max-w-6xl mx-auto px-4 lg:px-6 py-8 grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          <ProfilePhotoUpload userId={user.id} currentPhotoUrl={photoUrl} name={user.fullName} />
           {pending && (
             <div className="reveal bg-orange-500/10 border border-orange-500/40 p-4 flex items-start gap-3">
               <Clock size={18} className="text-orange-400 shrink-0 mt-0.5" />
