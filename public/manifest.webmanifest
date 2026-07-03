@@ -1,0 +1,15 @@
+{
+  "name": "CMBA+ | Calgary Minor Basketball",
+  "short_name": "CMBA+",
+  "description": "Calgary Minor Basketball: schedules, standings, rules, member ID cards, and the coach-verification scanner.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#08080A",
+  "theme_color": "#08080A",
+  "icons": [
+    { "src": "/favicon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" }
+  ]
+}

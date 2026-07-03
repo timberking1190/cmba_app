@@ -3,6 +3,8 @@ import { withPayload } from '@payloadcms/next/withPayload'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // Serve modern formats first (AVIF then WebP) for faster mobile loads / Core Web Vitals.
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       // Supabase Storage (public bucket: profile photos, page images), ca-central-1.
       { protocol: 'https', hostname: '**.supabase.co' },
