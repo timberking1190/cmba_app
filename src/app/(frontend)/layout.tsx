@@ -45,6 +45,8 @@ export const metadata: Metadata = {
   description:
     "The official platform for Calgary Minor Basketball Association: rules, education, certification tracking, and game reports for coaches, referees, parents, and admins.",
   keywords: ["CMBA", "Calgary", "basketball", "minor basketball", "coaches", "referees"],
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "CMBA+" },
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",
