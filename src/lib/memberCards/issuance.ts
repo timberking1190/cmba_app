@@ -130,12 +130,16 @@ export async function issueCardForUser(
     req,
   })
   let passId: number
-  let tokenMinted = false
+  let serialNumber: string
+  let hasJti: boolean
 
   if (existing.docs.length > 0) {
-    passId = (existing.docs[0] as { id: number }).id
+    const p = existing.docs[0] as { id: number; serialNumber: string; currentJti?: string | null }
+    passId = p.id
+    serialNumber = p.serialNumber
+    hasJti = Boolean(p.currentJti)
   } else {
-    const serialNumber = randomUUID()
+    serialNumber = randomUUID()
     const created = await payload.create({
       collection: 'passes',
       data: {
@@ -150,10 +154,15 @@ export async function issueCardForUser(
       req,
     })
     passId = (created as { id: number }).id
+    hasJti = false
+  }
 
-    // 3. Mint a verification token only for scannable roles (D20), if signing is set up.
+  // 3. Mint a verification token for scannable roles (D20) that don't yet have one — at
+  // issuance OR when a member later becomes scannable (e.g. toggles on Coach/Official).
+  let tokenMinted = false
+  if (plan.scannable && !hasJti) {
     const signingKey = getActiveSigningKey()
-    if (plan.scannable && signingKey) {
+    if (signingKey) {
       const jti = randomUUID()
       const iat = Math.floor(now.getTime() / 1000)
       const exp = tokenExpirySeconds(now, 'print')

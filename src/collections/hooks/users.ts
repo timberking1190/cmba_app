@@ -12,10 +12,25 @@ import crypto from 'crypto'
 import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook, CollectionAfterChangeHook } from 'payload'
 import { APIError } from 'payload'
 
-import { isSuperAdmin } from '../../access/index'
+import { isSuperAdmin, sanitizeSelfServiceRoles } from '../../access/index'
 import { isUnder18 } from '../../lib/age'
 
 export { isUnder18 }
+
+/**
+ * Roles are self-serviceable member types (participant/coach/official/parent) chosen at
+ * signup or on the account page. This guard runs server-side on every non-super-admin
+ * write: it keeps only self-service roles the user chose and preserves any admin-assigned
+ * roles they already hold — so a user can never escalate to league_official / club_admin /
+ * super_admin. Seed/bootstrap and super admins set roles directly.
+ */
+export const sanitizeSelfRoles: CollectionBeforeValidateHook = ({ data, req, originalDoc }) => {
+  if (!data || data.roles == null) return data
+  if (req.context?.skipConsentEnforcement) return data
+  if (isSuperAdmin(req.user)) return data
+  data.roles = sanitizeSelfServiceRoles(data.roles as string[], (originalDoc?.roles ?? []) as string[])
+  return data
+}
 
 /** Derive isMinor from dateOfBirth on every write so it can never drift. */
 export const deriveIsMinor: CollectionBeforeValidateHook = ({ data }) => {

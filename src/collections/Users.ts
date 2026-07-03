@@ -7,6 +7,7 @@ import {
   enforceConsent,
   guardianFlow,
   logConsentRecord,
+  sanitizeSelfRoles,
   sendGuardianConfirmation,
 } from './hooks/users'
 import { validatePassword } from './hooks/passwordPolicy'
@@ -49,7 +50,7 @@ export const Users: CollectionConfig = {
   hooks: {
     // registrationGate runs first (mode + bot defense on public sign-up), then
     // validatePassword rejects a weak/breached password before any other processing.
-    beforeValidate: [registrationGate, validatePassword, deriveIsMinor, enforceConsent],
+    beforeValidate: [registrationGate, validatePassword, deriveIsMinor, sanitizeSelfRoles, enforceConsent],
     beforeChange: [guardianFlow, enforceMfaRequired, flagPasswordChange],
     afterChange: [
       sendGuardianConfirmation,
@@ -121,8 +122,14 @@ export const Users: CollectionConfig = {
       required: true,
       defaultValue: ['participant'],
       options: ROLES,
-      access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
-      admin: { position: 'sidebar', description: 'Role assignment is restricted to super admins.' },
+      // Self-serviceable member types (participant/coach/official/parent). The
+      // sanitizeSelfRoles beforeValidate hook enforces that a non-super-admin can only
+      // ever set the self-service subset + keep admin roles they were already granted —
+      // so opening the field here can never cause privilege escalation.
+      admin: {
+        position: 'sidebar',
+        description: 'Member types are self-serviceable; admin roles (league_official/club_admin/super_admin) are super-admin-only, enforced server-side.',
+      },
     },
     {
       name: 'status',

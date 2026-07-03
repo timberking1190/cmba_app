@@ -15,8 +15,13 @@ function resolveSeason(configSeason?: string | null): string {
   return configSeason || process.env.MEMBERCARD_SEASON || '2026-27'
 }
 
-export const issueMemberCardOnCreate: CollectionAfterChangeHook = async ({ doc, req, operation }) => {
-  if (operation !== 'create') return doc
+export const issueMemberCardOnCreate: CollectionAfterChangeHook = async ({ doc, previousDoc, req, operation }) => {
+  const rolesChanged =
+    operation === 'update' &&
+    JSON.stringify((previousDoc?.roles ?? []) as unknown) !== JSON.stringify((doc?.roles ?? []) as unknown)
+  // Issue at signup; also re-issue when roles change so becoming scannable (Coach/Official)
+  // mints a token on the existing pass. issueCardForUser is idempotent otherwise.
+  if (operation !== 'create' && !rolesChanged) return doc
   const payload = req.payload
   const user = doc as { id: number; roles?: string[] | null; memberNumber?: string | null }
 

@@ -14,6 +14,7 @@ export type Role =
   | 'participant'
   | 'coach'
   | 'official'
+  | 'parent'
   | 'league_official'
   | 'club_admin'
   | 'super_admin'
@@ -22,6 +23,7 @@ export const ROLES: { label: string; value: Role }[] = [
   { label: 'Participant', value: 'participant' },
   { label: 'Coach', value: 'coach' },
   { label: 'Official', value: 'official' },
+  { label: 'Parent / Spectator', value: 'parent' },
   // League Official (Member Cards D23): the scanner login tier. Scans coach passes at
   // venues and reads Scan Analytics; not a data admin. Added to the DB enum by a
   // deliberately-generated Payload migration (ALTER TYPE ... ADD VALUE) — see
@@ -30,6 +32,26 @@ export const ROLES: { label: string; value: Role }[] = [
   { label: 'Club Admin', value: 'club_admin' },
   { label: 'Super Admin', value: 'super_admin' },
 ]
+
+/**
+ * Member types a user may set on THEMSELVES (at signup or on their account page).
+ * Everything else (league_official, club_admin, super_admin) stays admin-assigned.
+ */
+export const SELF_SERVICE_ROLES: Role[] = ['participant', 'coach', 'official', 'parent']
+const ADMIN_ASSIGNED_ROLES: Role[] = ['league_official', 'club_admin', 'super_admin']
+
+/**
+ * Sanitize a self-service role update: keep only member-type roles the user chose, and
+ * PRESERVE any admin-assigned roles they already hold (they can neither grant nor drop
+ * those themselves). Never returns empty (defaults to participant). This is the guard
+ * that makes self-serviceable roles safe — a user can never escalate to an admin role.
+ */
+export function sanitizeSelfServiceRoles(requested: string[], existing: string[]): Role[] {
+  const chosen = requested.filter((r): r is Role => (SELF_SERVICE_ROLES as string[]).includes(r))
+  const keptAdmin = existing.filter((r): r is Role => (ADMIN_ASSIGNED_ROLES as string[]).includes(r))
+  const result = Array.from(new Set<Role>([...chosen, ...keptAdmin]))
+  return result.length > 0 ? result : ['participant']
+}
 
 type UserLike = {
   id?: string | number
@@ -53,12 +75,16 @@ export const isAnyAdmin = (user: UserLike): boolean =>
 export const isLeagueOfficial = (user: UserLike): boolean => hasRole(user, 'league_official')
 
 /**
- * Member Cards D23 — may operate the scanner (`/scan`, `/verify`, `/verify-serial`).
- * Spec vocabulary referee/league_official/admin/commissioner maps here to
- * official/league_official + any staff admin.
+ * May operate the scanner (`/scan`, `/verify`, `/verify-serial`).
+ *
+ * SECURITY (roles are now self-serviceable): scanner operation is deliberately NOT
+ * granted by the self-declared `official` role — otherwise anyone could self-grant
+ * scanning powers. It requires the ADMIN-ASSIGNED `league_official` role (or a staff
+ * admin). Designate scanner operators via that role. (This narrows the original D23,
+ * which assumed officials were admin-vetted.)
  */
 export const canScan = (user: UserLike): boolean =>
-  hasRole(user, 'official') || isLeagueOfficial(user) || isAnyAdmin(user)
+  isLeagueOfficial(user) || isAnyAdmin(user)
 
 /**
  * Member Cards D24 — verification-domain admin: reads ALL scans (Scan Analytics) and

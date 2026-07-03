@@ -77,10 +77,17 @@ export default function LoginPage() {
   const [req3, setReq3] = useState(false);
   const [optMarketing, setOptMarketing] = useState(false);
   const [optPhoto, setOptPhoto] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [regRoles, setRegRoles] = useState<string[]>(["participant"]);
+  const toggleRegRole = (v: string) =>
+    setRegRoles((prev) => (prev.includes(v) ? prev.filter((r) => r !== v) : [...prev, v]));
 
   const [pendingMsg, setPendingMsg] = useState<string | null>(null);
 
   const minor = isUnder18(dob);
+  // A photo is required for the ID card. Adults choose it at signup; a minor's guardian
+  // adds it after confirming the account.
+  const photoOk = minor || Boolean(photoFile);
 
   useEffect(() => {
     fetch("/api/globals/policy-versions")
@@ -141,6 +148,9 @@ export default function LoginPage() {
         fullName,
         dateOfBirth: dob,
         consents,
+        // Self-service member types (server-side sanitizeSelfRoles blocks any escalation).
+        // Minors are participants; their guardian can adjust later.
+        roles: minor ? ["participant"] : regRoles.length ? regRoles : ["participant"],
       };
       if (minor) {
         consents.guardianConsentVersion = policy.guardianConsentVersion;
@@ -179,6 +189,27 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+      // Attach the ID-card photo now that we're authenticated. Best-effort: if it fails,
+      // the account still exists and the account page prompts for the photo.
+      if (!minor && photoFile && data?.doc?.id) {
+        try {
+          const fd = new FormData();
+          fd.append("file", photoFile);
+          fd.append("alt", `${fullName} — CMBA member photo`);
+          const up = await fetch("/api/media", { method: "POST", credentials: "include", body: fd });
+          const upData = await up.json();
+          if (up.ok && upData?.doc?.id) {
+            await fetch(`/api/users/${data.doc.id}`, {
+              method: "PATCH",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ profilePhoto: upData.doc.id }),
+            });
+          }
+        } catch {
+          /* photo can be added on the account page */
+        }
+      }
       router.push("/account");
       router.refresh();
     } catch {
@@ -325,6 +356,28 @@ export default function LoginPage() {
                     <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className={inputCls} />
                     <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" className={inputCls} />
 
+                    <div className="pt-1">
+                      <p className="text-xs text-cmba-grey-light mb-2">I am a&hellip; (choose all that apply)</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { v: "participant", l: "Player" },
+                          { v: "coach", l: "Coach" },
+                          { v: "official", l: "Official / Referee" },
+                          { v: "parent", l: "Parent / Spectator" },
+                        ].map((o) => (
+                          <button type="button" key={o.v} onClick={() => toggleRegRole(o.v)}
+                            className={`px-3 py-2 text-xs font-medium border transition-colors ${regRoles.includes(o.v) ? "border-cmba-red bg-cmba-red/10 text-white" : "border-white/12 text-cmba-grey-light hover:border-white/25"}`}>
+                            {o.l}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-cmba-grey-light mb-1">ID card photo <span className="text-cmba-red">*</span></label>
+                      <input type="file" accept="image/*" onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)} className="text-xs text-cmba-grey-light" />
+                      <p className="text-[11px] text-cmba-grey-mid mt-1">A clear head-and-shoulders photo for your member ID card.</p>
+                    </div>
+
                     <div className="space-y-2.5 pt-2">
                       <Checkbox checked={req1} onChange={setReq1}>
                         I have read and agree to the{" "}
@@ -345,7 +398,10 @@ export default function LoginPage() {
                 {/* Bot challenge (renders only when NEXT_PUBLIC_TURNSTILE_SITE_KEY is set) */}
                 <TurnstileWidget />
 
-                <button type="submit" disabled={busy || !requiredOk}
+                {!minor && !photoOk && (
+                  <p className="text-[11px] text-cmba-red">An ID card photo is required to create your account.</p>
+                )}
+                <button type="submit" disabled={busy || !requiredOk || !photoOk}
                   className="w-full bg-cmba-red hover:bg-cmba-hot disabled:opacity-40 disabled:cursor-not-allowed text-white font-display font-bold text-sm uppercase tracking-wider py-3 transition-colors flex items-center justify-center gap-2">
                   {busy ? "Creating…" : minor ? "Create my child's account" : "Create my account"}
                 </button>

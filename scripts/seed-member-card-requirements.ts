@@ -67,7 +67,10 @@ async function main() {
     }
   }
 
-  await payload.updateGlobal({ slug: 'member-card-config', data: { currentSeason: CURRENT_SEASON, serialLookupEnabled: true, anomalyAlertsEnabled: true, scannableRoles: ['coach'] } as never, overrideAccess: true })
+  // Coach + Official get verified (scannable) cards gated on their credentials; parent /
+  // participant are ID-only. Official inherits the shared gating types (Police Information
+  // Check + Safe CMBA Interactions, which list `official` in requiredForRoles).
+  await payload.updateGlobal({ slug: 'member-card-config', data: { currentSeason: CURRENT_SEASON, serialLookupEnabled: true, anomalyAlertsEnabled: true, scannableRoles: ['coach', 'official'] } as never, overrideAccess: true })
   log(`member-card-config season=${CURRENT_SEASON}; done`)
 }
 
