@@ -23,8 +23,10 @@ const config: Config = {
           "black-surface": "#1B1B20",
           grey: "#9A9AA2",
           "grey-light": "#F1F1ED",
-          "grey-mid": "#7A7A82",
-          "grey-dark": "#3A3A42",
+          // WCAG AA on #08080A: grey-mid lifted to ~5.4:1 (secondary text); grey-dark
+          // lifted for legible placeholders + more visible borders (decorative token).
+          "grey-mid": "#8E8E96",
+          "grey-dark": "#55555E",
           white: "#FFFFFF",
           bone: "#F7F6F2",
         },
