@@ -7,11 +7,13 @@ import { useRouter } from "next/navigation";
 import {
   Menu, X, ChevronDown, Search, User, BookOpen, Flag,
   Calendar, HelpCircle, Phone, Shield, BarChart3, Trophy, Users, ClipboardList,
-  LogOut, UserCircle,
+  LogOut, UserCircle, IdCard, ScanLine,
 } from "lucide-react";
 import { Wordmark } from "@/components/Wordmark";
 
-type AuthUser = { id: number | string; email: string; fullName?: string } | null;
+type AuthUser = { id: number | string; email: string; fullName?: string; roles?: string[] } | null;
+
+const SCAN_ROLES = ["official", "league_official", "club_admin", "super_admin"];
 
 const navLinks = [
   { label: "RULES", href: "/rules", icon: BookOpen },
@@ -57,6 +59,7 @@ export function Header() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser>(null);
   const router = useRouter();
+  const canScan = Boolean(user?.roles?.some((r) => SCAN_ROLES.includes(r)));
 
   // Reflect auth state (training-account auth lives on our Payload backend).
   useEffect(() => {
@@ -99,6 +102,16 @@ export function Header() {
             </Link>
             {user ? (
               <>
+                <Link href="/account/card"
+                  className="flex items-center gap-1.5 font-mono text-[11px] text-cmba-grey hover:text-cmba-red transition-colors uppercase tracking-[0.18em]">
+                  <IdCard size={12} /> Card
+                </Link>
+                {canScan && (
+                  <Link href="/scan"
+                    className="flex items-center gap-1.5 font-mono text-[11px] text-cmba-grey hover:text-cmba-red transition-colors uppercase tracking-[0.18em]">
+                    <ScanLine size={12} /> Scanner
+                  </Link>
+                )}
                 <Link href="/account"
                   className="flex items-center gap-1.5 font-mono text-[11px] text-cmba-grey hover:text-cmba-red transition-colors uppercase tracking-[0.18em]">
                   <UserCircle size={12} /> Account
@@ -221,6 +234,16 @@ export function Header() {
                 </Link>
                 {user ? (
                   <>
+                    <Link href="/account/card" onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-3 text-sm text-cmba-red font-display font-black uppercase tracking-[0.06em]">
+                      <IdCard size={18} /> My Member Card
+                    </Link>
+                    {canScan && (
+                      <Link href="/scan" onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-3 px-3 py-3 text-sm text-cmba-red font-display font-black uppercase tracking-[0.06em]">
+                        <ScanLine size={18} /> Scanner
+                      </Link>
+                    )}
                     <Link href="/account" onClick={() => setMobileOpen(false)}
                       className="flex items-center gap-3 px-3 py-3 text-sm text-cmba-red font-display font-black uppercase tracking-[0.06em]">
                       <UserCircle size={18} /> Account
