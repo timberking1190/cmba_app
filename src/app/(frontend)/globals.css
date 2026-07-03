@@ -15,7 +15,7 @@
   --red-dark: #CC0000;
   --hot: #FF2438;
   --line: rgba(255,255,255,0.12);
-  --text-subtle: #6C6C74;
+  --text-subtle: #8E8E96; /* WCAG AA (~5.4:1 on #08080A) */
   --disp: var(--font-archivo), "Archivo", sans-serif;
   --body: var(--font-inter), "Inter", sans-serif;
   --mono: var(--font-jetbrains), "JetBrains Mono", monospace;
@@ -32,8 +32,28 @@ body {
   color: var(--foreground);
   background: transparent;       /* lets the fluid canvas (z:-1) show through */
   font-family: var(--body);
+  font-size: 16px;               /* readable base body type (mobile best practice) */
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Keyboard accessibility: a visible focus ring on interactive elements (only for
+   keyboard/AT users, not on mouse click). */
+:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Respect reduced-motion: cut animations/transitions for users who ask for it. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 ::selection { background: var(--red); color: #fff; }
