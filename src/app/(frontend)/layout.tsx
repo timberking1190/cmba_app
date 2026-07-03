@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { MobileNav } from "@/components/MobileNav";
 import { FluidBackground } from "@/components/FluidBackground";
 import { GlobalFX } from "@/components/GlobalFX";
+import { AssistantWidget } from "@/components/AssistantWidget";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -85,6 +86,7 @@ export default async function RootLayout({
         <main className="relative z-10 min-h-screen pb-16 lg:pb-0 overflow-x-clip lg:overflow-x-visible">{children}</main>
         <Footer />
         <MobileNav />
+        <AssistantWidget />
       </body>
     </html>
   );
