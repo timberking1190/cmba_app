@@ -14,6 +14,7 @@ import { getUnifiedProgress } from '@/lib/gamification/progress'
 import { pathwayAudienceFor } from '@/lib/audience'
 import { AccountActions } from '@/components/account/AccountActions'
 import { ProfilePhotoUpload } from '@/components/account/ProfilePhotoUpload'
+import { MemberTypeToggles } from '@/components/account/MemberTypeToggles'
 import { CalgarySkyline } from '@/components/graphics/CalgarySkyline'
 import type { Certification, CertificationType, Course, Recognition } from '@/payload-types'
 
@@ -128,6 +129,7 @@ export default async function AccountPage() {
       <div className="max-w-6xl mx-auto px-4 lg:px-6 py-8 grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <ProfilePhotoUpload userId={user.id} currentPhotoUrl={photoUrl} name={user.fullName} />
+          <MemberTypeToggles userId={user.id} currentRoles={roles} />
           {pending && (
             <div className="reveal bg-orange-500/10 border border-orange-500/40 p-4 flex items-start gap-3">
               <Clock size={18} className="text-orange-400 shrink-0 mt-0.5" />

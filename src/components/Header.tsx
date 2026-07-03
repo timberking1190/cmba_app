@@ -13,7 +13,9 @@ import { Wordmark } from "@/components/Wordmark";
 
 type AuthUser = { id: number | string; email: string; fullName?: string; roles?: string[] } | null;
 
-const SCAN_ROLES = ["official", "league_official", "club_admin", "super_admin"];
+// Scanner operation requires the admin-assigned league_official (or staff admin) role —
+// NOT the self-serviceable `official`. Keep in sync with access/index.ts canScan.
+const SCAN_ROLES = ["league_official", "club_admin", "super_admin"];
 
 const navLinks = [
   { label: "RULES", href: "/rules", icon: BookOpen },
