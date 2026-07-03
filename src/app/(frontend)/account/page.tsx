@@ -110,9 +110,9 @@ export default async function AccountPage() {
       </section>
 
       {/* Prominent Member Card CTA */}
-      <div className="relative z-10 mx-auto -mt-5 max-w-6xl px-4 lg:px-6">
+      <div className="mx-auto mt-5 max-w-6xl px-4 lg:px-6">
         <Link href="/account/card"
-          className="group flex items-center gap-4 rounded-xl border border-cmba-red/40 bg-gradient-to-r from-cmba-red/20 to-cmba-black-card p-4 shadow-xl transition-colors hover:border-cmba-red lg:p-5">
+          className="group flex min-h-[64px] items-center gap-4 rounded-xl border border-cmba-red/40 bg-gradient-to-r from-cmba-red/20 to-cmba-black-card p-4 shadow-xl transition-colors hover:border-cmba-red active:scale-[0.99] lg:p-5">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-cmba-red/20 text-cmba-red">
             <IdCard size={26} />
           </div>

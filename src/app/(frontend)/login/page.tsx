@@ -195,7 +195,7 @@ export default function LoginPage() {
         try {
           const fd = new FormData();
           fd.append("file", photoFile);
-          fd.append("alt", `${fullName} — CMBA member photo`);
+          fd.append("_payload", JSON.stringify({ alt: `${fullName} — CMBA member photo` }));
           const up = await fetch("/api/media", { method: "POST", credentials: "include", body: fd });
           const upData = await up.json();
           if (up.ok && upData?.doc?.id) {

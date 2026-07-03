@@ -41,7 +41,8 @@ export function ProfilePhotoUpload({
     try {
       const fd = new FormData()
       fd.append('file', file)
-      fd.append('alt', `${name} — CMBA member photo`)
+      // Payload REST upload: document fields (alt is required on media) go in `_payload`.
+      fd.append('_payload', JSON.stringify({ alt: `${name} — CMBA member photo` }))
       const up = await fetch('/api/media', { method: 'POST', credentials: 'include', body: fd })
       const upData = await up.json()
       if (!up.ok || !upData?.doc?.id) {
@@ -89,7 +90,7 @@ export function ProfilePhotoUpload({
           <button
             onClick={() => inputRef.current?.click()}
             disabled={busy}
-            className="inline-flex items-center gap-1.5 bg-cmba-red px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-cmba-hot disabled:opacity-50"
+            className="inline-flex min-h-[44px] items-center gap-1.5 bg-cmba-red px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-cmba-hot active:scale-[0.98] disabled:opacity-50"
           >
             {busy ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
             {busy ? 'Uploading…' : photoUrl ? 'Change photo' : 'Upload photo'}

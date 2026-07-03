@@ -96,7 +96,7 @@ export function MemberTypeToggles({ userId, currentRoles }: { userId: number | s
       <button
         onClick={save}
         disabled={busy}
-        className="mt-4 inline-flex items-center gap-1.5 bg-cmba-red px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-cmba-hot disabled:opacity-50"
+        className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 bg-cmba-red px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-cmba-hot active:scale-[0.98] disabled:opacity-50"
       >
         {busy ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} {busy ? 'Saving…' : 'Save member types'}
       </button>
