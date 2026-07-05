@@ -112,6 +112,13 @@ const s3ClientConfig = {
 const publicBucket = process.env.S3_BUCKET_PUBLIC || process.env.S3_BUCKET || ''
 const privateBucket = process.env.S3_BUCKET_PRIVATE || ''
 
+// Supabase serves PUBLIC objects at /storage/v1/object/public/<bucket>/<key>. The S3
+// adapter otherwise derives URLs from S3_ENDPOINT (/storage/v1/s3/...), which is the
+// authenticated S3 API path and is NOT browser-loadable — so public images (profile
+// photos) wouldn't display. Build the public URL base from the S3 endpoint origin.
+const supabasePublicUrlBase =
+  (process.env.S3_ENDPOINT || '').replace(/\/storage\/v1\/s3\/?$/i, '') + '/storage/v1/object/public'
+
 // Stage C / S0 — CORS + CSRF allowlist. Only the known web origin(s) may make
 // credentialed browser requests; native apps authenticate with bearer tokens and
 // are not subject to browser CORS. No wildcard with credentials.
@@ -276,6 +283,9 @@ export default buildConfig({
       collections: {
         [Media.slug]: {
           disablePayloadAccessControl: true,
+          // Browser-loadable public URL for the main file + every generated size.
+          generateFileURL: ({ filename, prefix }: { filename: string; prefix?: string }) =>
+            `${supabasePublicUrlBase}/${publicBucket}/${prefix ? `${prefix}/` : ''}${filename}`,
         },
       },
       bucket: publicBucket,
