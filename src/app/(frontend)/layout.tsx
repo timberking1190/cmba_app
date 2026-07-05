@@ -72,7 +72,7 @@ export default async function RootLayout({
   // that a nonce + strict-dynamic policy would block. (Stage C / S0->S1.)
   await headers();
   return (
-    <html lang="en" className="dark">
+    <html lang="en" data-theme="dark">
       <body
         className={`${archivo.variable} ${inter.variable} ${jetbrains.variable} ${pressStart.variable} font-body antialiased text-cmba-grey-light`}
       >

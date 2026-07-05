@@ -11,24 +11,28 @@ const config: Config = {
       screens: {
         xs: "480px",
       },
+      // Colors resolve through CSS variables so the app can theme (light/dark). The
+      // dark values (globals.css :root) are byte-identical to the previous hex, so the
+      // default dark experience is unchanged. Tailwind's white/black are flipped too so
+      // pervasive text-white / bg-white/X / border-white/X overlays theme correctly.
       colors: {
+        white: "rgb(var(--c-white) / <alpha-value>)",
+        black: "rgb(var(--c-black) / <alpha-value>)",
         cmba: {
-          red: "#EB1C24",
-          "red-dark": "#CC0000",
-          "red-deep": "#660000",
-          hot: "#FF2438",
-          black: "#08080A",
-          "black-light": "#0E0E12",
-          "black-card": "#141418",
-          "black-surface": "#1B1B20",
-          grey: "#9A9AA2",
-          "grey-light": "#F1F1ED",
-          // WCAG AA on #08080A: grey-mid lifted to ~5.4:1 (secondary text); grey-dark
-          // lifted for legible placeholders + more visible borders (decorative token).
-          "grey-mid": "#8E8E96",
-          "grey-dark": "#55555E",
-          white: "#FFFFFF",
-          bone: "#F7F6F2",
+          red: "rgb(var(--cmba-red) / <alpha-value>)",
+          "red-dark": "rgb(var(--cmba-red-dark) / <alpha-value>)",
+          "red-deep": "rgb(var(--cmba-red-deep) / <alpha-value>)",
+          hot: "rgb(var(--cmba-hot) / <alpha-value>)",
+          black: "rgb(var(--cmba-black) / <alpha-value>)",
+          "black-light": "rgb(var(--cmba-black-light) / <alpha-value>)",
+          "black-card": "rgb(var(--cmba-black-card) / <alpha-value>)",
+          "black-surface": "rgb(var(--cmba-black-surface) / <alpha-value>)",
+          grey: "rgb(var(--cmba-grey) / <alpha-value>)",
+          "grey-light": "rgb(var(--cmba-grey-light) / <alpha-value>)",
+          "grey-mid": "rgb(var(--cmba-grey-mid) / <alpha-value>)",
+          "grey-dark": "rgb(var(--cmba-grey-dark) / <alpha-value>)",
+          white: "rgb(var(--cmba-white) / <alpha-value>)",
+          bone: "rgb(var(--cmba-bone) / <alpha-value>)",
         },
       },
       fontFamily: {
@@ -42,11 +46,11 @@ const config: Config = {
       },
       backgroundImage: {
         "hero-gradient":
-          "linear-gradient(135deg, rgba(8,8,10,0.2) 0%, rgba(14,14,18,0.35) 40%, rgba(8,8,10,0.2) 100%)",
+          "linear-gradient(135deg, rgb(var(--cmba-black) / 0.2) 0%, rgb(var(--cmba-black-light) / 0.35) 40%, rgb(var(--cmba-black) / 0.2) 100%)",
         "red-gradient":
-          "linear-gradient(135deg, #EB1C24 0%, #CC0000 100%)",
+          "linear-gradient(135deg, rgb(var(--cmba-red)) 0%, rgb(var(--cmba-red-dark)) 100%)",
         "card-gradient":
-          "linear-gradient(180deg, rgba(235,28,36,0.08) 0%, rgba(8,8,10,0) 100%)",
+          "linear-gradient(180deg, rgb(var(--cmba-red) / 0.08) 0%, rgb(var(--cmba-black) / 0) 100%)",
       },
       animation: {
         "slide-up": "slideUp 0.3s ease-out",
