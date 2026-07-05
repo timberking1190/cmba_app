@@ -98,6 +98,28 @@ export default function LoginPage() {
       .catch(() => {});
   }, []);
 
+  // Auto-save the signup draft (never the password) so an interrupted signup resumes.
+  const DRAFT_KEY = "cmba-signup-draft";
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw) as Record<string, unknown>;
+      if (typeof d.fullName === "string") setFullName(d.fullName);
+      if (typeof d.email === "string") setEmail(d.email);
+      if (typeof d.dob === "string") setDob(d.dob);
+      if (typeof d.gName === "string") setGName(d.gName);
+      if (typeof d.gEmail === "string") setGEmail(d.gEmail);
+      if (typeof d.gPhone === "string") setGPhone(d.gPhone);
+      if (Array.isArray(d.regRoles)) setRegRoles(d.regRoles as string[]);
+    } catch { /* ignore bad draft */ }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ fullName, email, dob, gName, gEmail, gPhone, regRoles }));
+    } catch { /* storage may be unavailable */ }
+  }, [fullName, email, dob, gName, gEmail, gPhone, regRoles]);
+
   function redirectTarget(): string {
     if (typeof window === "undefined") return "/account";
     const p = new URLSearchParams(window.location.search).get("redirect");
@@ -178,6 +200,7 @@ export default function LoginPage() {
         return;
       }
 
+      try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       if (minor) {
         setPendingMsg(
           `We sent a confirmation link to ${gEmail}. The account stays pending until you confirm it from that email.`,
