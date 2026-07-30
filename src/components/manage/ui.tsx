@@ -18,6 +18,7 @@
  */
 
 import { AlertTriangle, CheckCircle2, Info, Loader2, XCircle } from "lucide-react";
+import Link from "next/link";
 import { useId, type ReactNode } from "react";
 
 import type { GameStatus } from "@/lib/scheduleUtils";
@@ -128,6 +129,18 @@ export function ActionButton({
         </span>
       )}
     </span>
+  );
+}
+
+/** A link that looks and behaves like a button. Uses next/link for client routing. */
+export function LinkButton({ href, children, variant = "primary" }: { href: string; children: ReactNode; variant?: Variant }) {
+  return (
+    <Link
+      href={href}
+      className={`inline-flex items-center gap-1.5 font-display font-bold text-xs uppercase tracking-wider px-3 py-2 min-h-[44px] sm:min-h-0 sm:py-1.5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cmba-red ${VARIANT[variant]}`}
+    >
+      {children}
+    </Link>
   );
 }
 
