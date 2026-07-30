@@ -8,6 +8,7 @@ import { MobileNav } from "@/components/MobileNav";
 import { FluidBackground } from "@/components/FluidBackground";
 import { GlobalFX } from "@/components/GlobalFX";
 import { AssistantWidget } from "@/components/AssistantWidget";
+import { getCurrentUser } from "@/lib/auth";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -71,6 +72,24 @@ export default async function RootLayout({
   // emits. Without this, statically rendered pages would ship un-nonced scripts
   // that a nonce + strict-dynamic policy would block. (Stage C / S0->S1.)
   await headers();
+
+  /*
+   * Resolve the session HERE, on the server, and pass it down. The header used to
+   * fetch /api/users/me from the browser while the page it sits above read the
+   * session cookie on the server. When those two disagreed the header showed Sign
+   * In to someone who was signed in, and every load flashed the signed out state
+   * first. One source of truth removes both.
+   */
+  const sessionUser = await getCurrentUser();
+  const headerUser = sessionUser
+    ? {
+        id: sessionUser.id,
+        email: sessionUser.email,
+        fullName: (sessionUser as { fullName?: string }).fullName,
+        roles: (sessionUser.roles ?? []) as string[],
+      }
+    : null;
+
   return (
     <html lang="en" data-theme="dark">
       <body
@@ -80,7 +99,7 @@ export default async function RootLayout({
         <FluidBackground />
         <GlobalFX />
 
-        <Header />
+        <Header user={headerUser} />
         {/* overflow-x-clip on mobile guards against any stray horizontal scroll;
             visible on lg so desktop sticky sidebars are unaffected. */}
         <main className="relative z-10 min-h-screen pb-16 lg:pb-0 overflow-x-clip lg:overflow-x-visible">{children}</main>
