@@ -7,6 +7,8 @@
  * already-published games. Output is deterministically ordered.
  */
 
+import { leagueDayKey } from '../leagueTime'
+
 export type ConflictGame = {
   id: string | number
   startAt: string // ISO
@@ -116,7 +118,9 @@ export function detectOfficialWarnings(assignments: OfficialAssignment[]): Offic
   // Over max games per day, grouped by official and calendar day.
   const perOfficialDay = new Map<string, { count: number; max: number | null }>()
   for (const a of assignments) {
-    const day = a.startAt.slice(0, 10)
+    // The LEAGUE day, not the UTC day: an evening Calgary game is the next day
+    // in UTC, and grouping on that split a Saturday slate across two days.
+    const day = leagueDayKey(a.startAt)
     const k = `${key(a.officialId)}|${day}`
     const cur = perOfficialDay.get(k) ?? { count: 0, max: a.maxGamesPerDay ?? null }
     cur.count += 1

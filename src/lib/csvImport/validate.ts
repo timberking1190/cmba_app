@@ -5,12 +5,19 @@
  * acknowledgement in the preview. Matching is case-insensitive and trimmed but the
  * original text is preserved for display. See docs/CSV_IMPORT_SPEC.md.
  */
+import { parseFlexibleDate, parseFlexibleTime, to12Hour } from './datetime'
 import type { ImportKind } from './parse'
 
 export type Severity = 'error' | 'warning'
 export type RowIssue = { severity: Severity; message: string; value?: string }
 export type RowStatus = 'ready' | 'warning' | 'error'
-export type ValidatedRow = { row: number; data: Record<string, string>; status: RowStatus; issues: RowIssue[] }
+/*
+ * `normalized` is what the importer actually understood from the row after the
+ * forgiving date and time parsing. The preview shows it back to the scheduler so
+ * a spreadsheet-mangled cell can never be silently misread.
+ */
+export type RowReading = { date?: string; time?: string; timeDisplay?: string }
+export type ValidatedRow = { row: number; data: Record<string, string>; status: RowStatus; issues: RowIssue[]; normalized?: RowReading }
 export type ValidationSummary = { ready: number; warnings: number; errors: number }
 export type ValidationResult = { kind: ImportKind; rows: ValidatedRow[]; summary: ValidationSummary }
 
@@ -27,16 +34,7 @@ export type Lookups = {
 
 const norm = (s: string | undefined) => (s ?? '').trim().toLowerCase()
 const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)
-const isTime = (s: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(s)
 const RAMP_LEVELS = new Set(['level 1', 'level 2', 'level 3'])
-
-function isRealDate(s: string): boolean {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s)
-  if (!m) return false
-  const [, y, mo, d] = m
-  const dt = new Date(Date.UTC(+y, +mo - 1, +d))
-  return dt.getUTCFullYear() === +y && dt.getUTCMonth() === +mo - 1 && dt.getUTCDate() === +d
-}
 
 function classify(issues: RowIssue[]): RowStatus {
   if (issues.some((i) => i.severity === 'error')) return 'error'
@@ -128,7 +126,7 @@ function validateOfficial(seen: Set<string>) {
 
 function validateGame(r: { row: number; data: Record<string, string> }, lk: Lookups, today: string): ValidatedRow {
   const issues: RowIssue[] = []
-  const d = r.data
+  const raw = r.data
   const req: Array<[string, string]> = [
     ['date', 'Date'],
     ['time', 'Time'],
@@ -138,11 +136,36 @@ function validateGame(r: { row: number; data: Record<string, string> }, lk: Look
     ['venue', 'Venue'],
   ]
   for (const [field, label] of req) {
-    if (!d[field]) issues.push({ severity: 'error', message: `${label} is required.` })
+    if (!raw[field]) issues.push({ severity: 'error', message: `${label} is required.` })
   }
 
-  if (d.date && !isRealDate(d.date)) issues.push({ severity: 'error', message: 'Date is not a real calendar date.', value: d.date })
-  if (d.time && !isTime(d.time)) issues.push({ severity: 'error', message: 'Time is not valid 24 hour time.', value: d.time })
+  /*
+   * Read the date and time the forgiving way, then work from the normalized value
+   * for the rest of the row so the duplicate key, the past-date warning, and the
+   * commit all agree on one interpretation. What we read goes back to the preview.
+   */
+  const normalized: RowReading = {}
+  const d: Record<string, string> = { ...raw }
+
+  if (raw.date) {
+    const parsed = parseFlexibleDate(raw.date)
+    if (!parsed.ok) issues.push({ severity: 'error', message: parsed.reason, value: raw.date })
+    else {
+      d.date = parsed.value
+      normalized.date = parsed.value
+      if (parsed.note) issues.push({ severity: 'warning', message: parsed.note, value: raw.date })
+    }
+  }
+  if (raw.time) {
+    const parsed = parseFlexibleTime(raw.time)
+    if (!parsed.ok) issues.push({ severity: 'error', message: parsed.reason, value: raw.time })
+    else {
+      d.time = parsed.value
+      normalized.time = parsed.value
+      normalized.timeDisplay = to12Hour(parsed.value)
+      if (parsed.note) issues.push({ severity: 'warning', message: parsed.note, value: raw.time })
+    }
+  }
 
   const divRef = d.division ? lk.divisionsByPath.get(norm(d.division)) : undefined
   if (d.division && !divRef) issues.push({ severity: 'error', message: 'Division not found.', value: d.division })
@@ -170,15 +193,15 @@ function validateGame(r: { row: number; data: Record<string, string> }, lk: Look
   }
 
   // Warnings
-  if (d.date && isRealDate(d.date) && d.date < today) {
-    issues.push({ severity: 'warning', message: 'This game is in the past.', value: d.date })
+  if (normalized.date && normalized.date < today) {
+    issues.push({ severity: 'warning', message: 'This game is in the past.', value: normalized.date })
   }
   const gameKey = `${norm(d.division)}|${norm(d.home_team)}|${norm(d.away_team)}|${d.date}|${d.time}`
   if (lk.existingGameKeys?.has(gameKey)) {
-    issues.push({ severity: 'warning', message: 'An identical game already exists.', value: `${d.date} ${d.time}` })
+    issues.push({ severity: 'warning', message: 'An identical game already exists.', value: `${d.date} ${normalized.timeDisplay ?? d.time}` })
   }
 
-  return { row: r.row, data: d, status: classify(issues), issues }
+  return { row: r.row, data: d, status: classify(issues), issues, normalized }
 }
 
 // Re-validate teams with in-file duplicate detection across the whole batch.

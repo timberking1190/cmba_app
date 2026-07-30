@@ -34,6 +34,13 @@ const config: Config = {
           white: "rgb(var(--cmba-white) / <alpha-value>)",
           bone: "rgb(var(--cmba-bone) / <alpha-value>)",
         },
+        // Theme-aware status colours. Use these, not the fixed Tailwind palette,
+        // for anything that means ok / warning / danger.
+        status: {
+          ok: "rgb(var(--st-ok) / <alpha-value>)",
+          warn: "rgb(var(--st-warn) / <alpha-value>)",
+          danger: "rgb(var(--st-danger) / <alpha-value>)",
+        },
       },
       fontFamily: {
         display: ["var(--font-archivo)", "sans-serif"],

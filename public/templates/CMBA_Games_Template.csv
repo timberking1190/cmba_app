@@ -1,4 +1,4 @@
 date,time,division,home_team,away_team,venue,court,referee_1,referee_2,external_id,notes
-2026-01-10,18:00,Weekend Rec League / U13 Boys / A,Excel U13 Boys Orange,CoMBA BU13-1,Glenmore Christian Academy,East Gym Court 1,Casey Morgan,Riley Chen,GM-5001,Season opener
-2026-01-11,10:00,Weekend Rec League / U13 Girls / B,Okotoks GU13-2,DMS U13,Trico Centre,Court 1,Jamie Patel,,GM-5002,
-2026-01-17,19:30,Weekend Rec League / U13 Boys / A,CoMBA BU13-1,Excel U13 Boys Orange,Mount Royal University,Kenyon Court 1,Casey Morgan,,GM-5003,Return game
+2026-01-10,18:00,Weekend Rec League / U13 Boys / A,Excel U13 Boys Orange,CoMBA BU13-1,Glenmore Christian Academy,East Gym Court 1,Casey Morgan,Riley Chen,GM-5001,Season opener. Time written the 24 hour way
+2026-01-11,10:00 AM,Weekend Rec League / U13 Girls / B,Okotoks GU13-2,DMS U13,Trico Centre,Court 1,Jamie Patel,,GM-5002,Time written the 12 hour way. Both import the same
+2026-01-17,7:30 PM,Weekend Rec League / U13 Boys / A,CoMBA BU13-1,Excel U13 Boys Orange,Mount Royal University,Kenyon Court 1,Casey Morgan,,GM-5003,Return game. Dates always use the year first
