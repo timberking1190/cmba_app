@@ -51,10 +51,15 @@ export function SchedulingConsole({
   games: initialGames,
   options = EMPTY_OPTIONS,
   emptyMessage = "No games to show.",
+  selectedIds,
+  onToggleSelect,
 }: {
   games: AdminGame[];
   options?: EditOptions;
   emptyMessage?: string;
+  /* When present, each row gets a tick box for the bulk actions. */
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string | number) => void;
 }) {
   const [games, setGames] = useState<AdminGame[]>(initialGames);
   const [openId, setOpenId] = useState<number | string | null>(null);
@@ -75,6 +80,8 @@ export function SchedulingConsole({
           open={String(openId) === String(g.id)}
           onToggle={() => setOpenId(String(openId) === String(g.id) ? null : g.id)}
           onUpdated={replaceGame}
+          selected={selectedIds?.has(String(g.id))}
+          onToggleSelect={onToggleSelect}
         />
       ))}
     </div>
@@ -87,12 +94,16 @@ function GameRow({
   open,
   onToggle,
   onUpdated,
+  selected,
+  onToggleSelect,
 }: {
   game: AdminGame;
   options: EditOptions;
   open: boolean;
   onToggle: () => void;
   onUpdated: (g: AdminGame) => void;
+  selected?: boolean;
+  onToggleSelect?: (id: string | number) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [rowMsg, setRowMsg] = useState<string | null>(null);
@@ -127,6 +138,17 @@ function GameRow({
   return (
     <div className="bg-cmba-black-card border border-white/12">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 p-3">
+        {onToggleSelect && (
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={Boolean(selected)}
+              onChange={() => onToggleSelect(g.id)}
+              className="h-4 w-4 accent-cmba-red"
+              aria-label={`Select ${g.homeTeam} versus ${g.awayTeam} on ${g.date}`}
+            />
+          </label>
+        )}
         <span className="font-mono text-[11px] text-cmba-grey-mid tabular-nums">{g.date}</span>
         <span className="font-display font-bold text-sm text-white">
           {g.homeTeam || "Home team"} <span className="text-cmba-grey-mid font-normal">vs</span> {g.awayTeam || "Away team"}

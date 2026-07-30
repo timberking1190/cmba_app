@@ -7,6 +7,7 @@ import { useState } from "react";
 import type { ScheduleFilter, ScheduleFilterOptions } from "@/lib/manage/scheduleFilters";
 import type { AdminGame } from "@/lib/manageGames";
 
+import { BulkBar } from "./BulkBar";
 import { SchedulingConsole, type EditOptions } from "./SchedulingConsole";
 import { ActionButton, EmptyState, LinkButton, Panel, inputCls } from "./ui";
 
@@ -49,6 +50,21 @@ export function ScheduleWorkspace({
   const router = useRouter();
   const params = useSearchParams();
   const [draft, setDraft] = useState<ScheduleFilter>(filter);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  function toggleSelect(id: string | number) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      const key = String(id);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  function selectAllOnPage() {
+    setSelected(new Set(games.map((g) => String(g.id))));
+  }
 
   function apply(next: Partial<ScheduleFilter>, toPage = 1) {
     const merged = { ...draft, ...next };
@@ -218,7 +234,24 @@ export function ScheduleWorkspace({
             : "Import your teams, venues, and games from a spreadsheet to get started. Nothing is saved until you review and approve it."}
         </EmptyState>
       ) : (
-        <SchedulingConsole games={games} options={options} />
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <ActionButton variant="quiet" onClick={selectAllOnPage} disabledReason={selected.size === games.length ? "Every game on this page is already selected." : null}>
+              Select all {games.length} on this page
+            </ActionButton>
+            {selected.size > 0 && (
+              <ActionButton variant="quiet" onClick={() => setSelected(new Set())}>
+                Clear the selection
+              </ActionButton>
+            )}
+          </div>
+
+          {selected.size > 0 && (
+            <BulkBar selectedIds={Array.from(selected)} venues={filters.venues} onDone={() => setSelected(new Set())} />
+          )}
+
+          <SchedulingConsole games={games} options={options} selectedIds={selected} onToggleSelect={toggleSelect} />
+        </>
       )}
     </div>
   );

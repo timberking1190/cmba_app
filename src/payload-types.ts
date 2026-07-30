@@ -661,6 +661,22 @@ export interface ImportBatch {
     | number
     | boolean
     | null;
+  /**
+   * Set when this batch was a bulk edit rather than a file import.
+   */
+  bulkAction?: string | null;
+  /**
+   * Undo manifest for a bulk edit: each game and the values it had before.
+   */
+  bulkUndo?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   committedBy?: (number | null) | User;
   committedAt?: string | null;
   undoneBy?: (number | null) | User;
@@ -3488,6 +3504,8 @@ export interface ImportBatchesSelect<T extends boolean = true> {
   publishMode?: T;
   status?: T;
   createdRecords?: T;
+  bulkAction?: T;
+  bulkUndo?: T;
   committedBy?: T;
   committedAt?: T;
   undoneBy?: T;
