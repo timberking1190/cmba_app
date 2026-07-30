@@ -1410,6 +1410,10 @@ export interface BracketSery {
   feedsIntoSlot?: ('home' | 'away') | null;
   isLosersBracket?: boolean | null;
   winner?: (number | null) | Team;
+  /**
+   * Whether the result advanced this team or an administrator did.
+   */
+  winnerSetBy?: ('auto' | 'manual') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3455,6 +3459,7 @@ export interface BracketSeriesSelect<T extends boolean = true> {
   feedsIntoSlot?: T;
   isLosersBracket?: T;
   winner?: T;
+  winnerSetBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }

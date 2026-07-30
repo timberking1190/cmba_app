@@ -35,5 +35,20 @@ export const BracketSeries: CollectionConfig = {
     { name: 'feedsIntoSlot', type: 'select', options: [{ label: 'Home', value: 'home' }, { label: 'Away', value: 'away' }] },
     { name: 'isLosersBracket', type: 'checkbox', defaultValue: false },
     { name: 'winner', type: 'relationship', relationTo: 'teams', access: { update: superAdminFieldOnly }, admin: { readOnly: true } },
+    {
+      /*
+       * How the winner got here. The bracket advances itself when a game finals
+       * or forfeits; a person can override that for a correction, and the screen
+       * has to be able to say which of the two happened.
+       */
+      name: 'winnerSetBy',
+      type: 'select',
+      options: [
+        { label: 'Advanced automatically from the result', value: 'auto' },
+        { label: 'Set by an administrator', value: 'manual' },
+      ],
+      access: { update: superAdminFieldOnly },
+      admin: { readOnly: true, description: 'Whether the result advanced this team or an administrator did.' },
+    },
   ],
 }

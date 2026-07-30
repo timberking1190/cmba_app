@@ -23,6 +23,7 @@ import * as migration_20260702_195156_member_cards_core from './20260702_195156_
 import * as migration_20260702_205536_add_gates_member_card from './20260702_205536_add_gates_member_card';
 import * as migration_20260702_214557_member_card_scannable_roles from './20260702_214557_member_card_scannable_roles';
 import * as migration_20260703_184818_add_parent_role from './20260703_184818_add_parent_role';
+import * as migration_20260730_162639_bracket_winner_set_by from './20260730_162639_bracket_winner_set_by';
 
 export const migrations = [
   {
@@ -148,6 +149,11 @@ export const migrations = [
   {
     up: migration_20260703_184818_add_parent_role.up,
     down: migration_20260703_184818_add_parent_role.down,
-    name: '20260703_184818_add_parent_role'
+    name: '20260703_184818_add_parent_role',
+  },
+  {
+    up: migration_20260730_162639_bracket_winner_set_by.up,
+    down: migration_20260730_162639_bracket_winner_set_by.down,
+    name: '20260730_162639_bracket_winner_set_by'
   },
 ];

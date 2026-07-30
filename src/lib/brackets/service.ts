@@ -1,13 +1,24 @@
 import type { Payload, PayloadRequest } from 'payload'
 
+import { decideSeriesWinner } from './advance'
 import { generateSingleElim } from './generate'
 
 /*
- * Bracket seeding and advancement. seedBracket reads a division's computed standings,
- * seeds a single-elimination bracket from the ranked teams, and freezes the order in
- * seedSnapshot. advanceBracketOnFinal is called when a game finals: it finds the
- * bracket series for that game, records the winner, and wires the winner into the
- * next round.
+ * Bracket seeding and advancement.
+ *
+ * seedBracket reads a division's computed standings, seeds a single-elimination
+ * bracket from the ranked teams, and freezes the order in seedSnapshot.
+ *
+ * syncBracketFromGame is called whenever a game changes. It asks the pure rules in
+ * advance.ts what should happen and then makes it so:
+ *   advance  - record the winner and wire them into the next round
+ *   retract  - remove a winner that is no longer correct (a contested result, a
+ *              double forfeit, a cancellation) and pull them back out of the next
+ *              round, so a correction cannot leave a ghost team standing
+ *   hold     - change nothing
+ *
+ * A winner an administrator set by hand is never overwritten by this. Automatic
+ * advancement is a convenience; a person's decision outranks it.
  */
 const relId = (r: unknown): string | number | undefined =>
   r == null ? undefined : typeof r === 'object' ? (r as { id: string | number }).id : (r as string | number)
@@ -53,29 +64,52 @@ export async function seedBracket(
   return { ok: true, bracketId: bracket.id }
 }
 
-export async function advanceBracketOnFinal(payload: Payload, gameId: string | number, req?: PayloadRequest): Promise<void> {
+export async function syncBracketFromGame(payload: Payload, gameId: string | number, req?: PayloadRequest): Promise<void> {
   const found = await payload.find({ collection: 'bracket-series', where: { game: { equals: gameId } }, depth: 0, limit: 1, overrideAccess: true, req })
-  const series = found.docs[0] as { id?: string | number; homeTeam?: unknown; awayTeam?: unknown; feedsInto?: unknown; feedsIntoSlot?: string } | undefined
+  const series = found.docs[0] as
+    | { id?: string | number; homeTeam?: unknown; awayTeam?: unknown; winner?: unknown; winnerSetBy?: string; feedsInto?: unknown; feedsIntoSlot?: string }
+    | undefined
   if (!series) return
 
+  // A person's decision outranks the automatic one.
+  if (series.winnerSetBy === 'manual') return
+
   const game = (await payload.findByID({ collection: 'games', id: gameId, depth: 0, overrideAccess: true, req }).catch(() => null)) as
-    | { status?: string; homeScore?: number; awayScore?: number; homeTeam?: unknown; awayTeam?: unknown; forfeit?: { forfeitingTeam?: unknown; outcome?: string } }
+    | { status?: string; homeScore?: number | null; awayScore?: number | null; homeTeam?: unknown; awayTeam?: unknown; forfeit?: { forfeitingTeam?: unknown; outcome?: string } }
     | null
   if (!game) return
 
-  let winner: string | number | undefined
-  if (game.status === 'final' && game.homeScore != null && game.awayScore != null) {
-    winner = game.homeScore > game.awayScore ? relId(game.homeTeam) : game.awayScore > game.homeScore ? relId(game.awayTeam) : undefined
-  } else if (game.status === 'forfeit' && game.forfeit?.forfeitingTeam != null) {
-    const ff = relId(game.forfeit.forfeitingTeam)
-    winner = String(ff) === String(relId(game.homeTeam)) ? relId(game.awayTeam) : relId(game.homeTeam)
-  }
-  if (winner == null) return
+  const decision = decideSeriesWinner({
+    status: String(game.status ?? 'scheduled'),
+    homeScore: game.homeScore ?? null,
+    awayScore: game.awayScore ?? null,
+    homeTeamId: (relId(game.homeTeam) ?? null) as string | number | null,
+    awayTeamId: (relId(game.awayTeam) ?? null) as string | number | null,
+    forfeit: game.forfeit ? { outcome: game.forfeit.outcome ?? null, forfeitingTeam: (relId(game.forfeit.forfeitingTeam) ?? null) as string | number | null } : null,
+  })
 
-  await payload.update({ collection: 'bracket-series', id: series.id!, data: { winner } as never, overrideAccess: true, req })
+  if (decision.kind === 'hold') return
+
+  const currentWinner = relId(series.winner)
+  const nextWinner = decision.kind === 'advance' ? decision.winnerTeamId : null
+
+  // Nothing to do when the bracket already says this.
+  if (String(currentWinner ?? '') === String(nextWinner ?? '')) return
+
+  await payload.update({
+    collection: 'bracket-series',
+    id: series.id!,
+    data: { winner: nextWinner, winnerSetBy: nextWinner == null ? null : 'auto' } as never,
+    overrideAccess: true,
+    req,
+  })
+
   const feedsInto = relId(series.feedsInto)
   if (feedsInto != null) {
     const slotField = series.feedsIntoSlot === 'away' ? 'awayTeam' : 'homeTeam'
-    await payload.update({ collection: 'bracket-series', id: feedsInto, data: { [slotField]: winner } as never, overrideAccess: true, req })
+    await payload.update({ collection: 'bracket-series', id: feedsInto, data: { [slotField]: nextWinner } as never, overrideAccess: true, req })
   }
 }
+
+/** Kept for callers that predate the retraction behaviour. */
+export const advanceBracketOnFinal = syncBracketFromGame
