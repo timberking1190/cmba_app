@@ -1209,9 +1209,42 @@ make, not mine.
 | Ambiguous slash dates in CSV imports | Deliberately a hard error, not a guess. `04/11/2026` is April 11 to one scheduler and November 4 to another, and guessing would move a real game. |
 | Editing a finalized game | Stays super admin only, even for a scheduler, because it rewrites the standings. |
 
-## Operator actions outstanding
+## Operator actions
 
-1. Apply the three migrations on the next deploy (`npm run migrate`).
-2. Assign the **Scheduler** role to the lead scheduler's user record.
-3. Run the end to end and scale checks against a non production database, per
-   Gate 3 above.
+### 1. Migrations, DONE 2026-07-31
+
+Applied to production ca-central-1 via `npm run migrate:env`:
+
+```
+Migrated:  20260730_162639_bracket_winner_set_by (121ms)
+Migrated:  20260730_164115_bulk_edit_undo        (111ms)
+Migrated:  20260731_032821_add_scheduler_role    (109ms)
+```
+
+No errors. All three are additive, so the schema being ahead of the deployed code
+is the correct order.
+
+### 2. Scheduler role, BLOCKED on accounts existing
+
+Neither requested address has a user record, so the grant script refused, which is
+the behaviour it was built for:
+
+```
+basketball_operations@cmba.ab.ca      NO ACCOUNT WITH THIS ADDRESS. Nothing was changed.
+k.king@cmba.ab.ca                     NO ACCOUNT WITH THIS ADDRESS. Nothing was changed.
+```
+
+`npm run grant:scheduler -- --list` shows the current picture: `admin@cmba.ab.ca`
+and `scheduling@cmba.ab.ca` are the only accounts that can reach the console, both
+super admins. The nearest match to the second address is `kenking90@gmail.com`
+(Ken King), which today holds only the `coach` role.
+
+Resolution needs a person: either those two addresses sign up, or the role goes to
+an account that already exists.
+
+### 3. End to end and scale, in progress
+
+A Supabase preview branch (`scheduler-e2e`, ref `qmxjgddsqzeksuctihgr`) was created
+for this. `scripts/run-e2e-on-branch.sh` runs the whole sequence and refuses to run
+against the production ref. It is waiting on the branch connection string being
+placed in `.env.e2e.local`.

@@ -27,6 +27,8 @@
  *   npm run grant:scheduler -- a@cmba.ab.ca b@cmba.ab.ca            # dry run
  *   npm run grant:scheduler -- a@cmba.ab.ca b@cmba.ab.ca --apply    # do it
  *   npm run grant:scheduler -- a@cmba.ab.ca --remove --apply        # take it away
+ *   npm run grant:scheduler -- --list                               # who can already do this
+ *   npm run grant:scheduler -- --list king                          # find an account by email
  */
 import 'dotenv/config'
 import { getPayload } from 'payload'
@@ -58,8 +60,11 @@ async function main() {
   const remove = args.includes('--remove')
   const emails = args.filter((a) => !a.startsWith('--')).map((e) => e.trim().toLowerCase()).filter(Boolean)
 
-  if (!emails.length) {
+  const list = args.includes('--list')
+
+  if (!emails.length && !list) {
     console.error('Give at least one email address. For example:\n  npm run grant:scheduler -- someone@cmba.ab.ca --apply')
+    console.error('Or see who already has scheduling access:\n  npm run grant:scheduler -- --list')
     process.exit(1)
   }
 
@@ -67,6 +72,39 @@ async function main() {
   const target = (process.env.DATABASE_URL || '').replace(/:[^:@/]+@/, ':***@')
   console.log(`[scheduler-role] database ${target}`)
   console.log(`[scheduler-role] mode ${apply ? 'APPLY' : 'dry run, nothing will be written'}${remove ? ', REMOVING the role' : ''}\n`)
+
+  if (list) {
+    /*
+     * Who can already reach the scheduling console, plus anything matching a
+     * search term. This exists because granting the role to an address that has
+     * no account is the most likely mistake, and the fix is usually that the
+     * person signed up under a different address.
+     */
+    const staff = await payload.find({
+      collection: 'users',
+      where: { roles: { in: ['scheduler', 'club_admin', 'super_admin'] } },
+      limit: 200,
+      depth: 0,
+      sort: ['email'],
+      overrideAccess: true,
+    })
+    console.log('Accounts that can already reach the scheduling console:')
+    if (!staff.docs.length) console.log('  (none)')
+    for (const d of staff.docs as Array<{ email?: string; fullName?: string; roles?: string[] }>) {
+      console.log(`  ${(d.email ?? '').padEnd(40)}${(d.fullName ?? '').padEnd(26)}${(d.roles ?? []).join(', ')}`)
+    }
+
+    for (const term of emails) {
+      const hits = await payload.find({ collection: 'users', where: { email: { like: term } }, limit: 25, depth: 0, overrideAccess: true })
+      console.log(`\nAccounts whose email contains "${term}":`)
+      if (!hits.docs.length) console.log('  (none)')
+      for (const d of hits.docs as Array<{ email?: string; fullName?: string; roles?: string[] }>) {
+        console.log(`  ${(d.email ?? '').padEnd(40)}${(d.fullName ?? '').padEnd(26)}${(d.roles ?? []).join(', ')}`)
+      }
+    }
+    console.log('')
+    process.exit(0)
+  }
 
   if (!(await enumHasScheduler(payload))) {
     console.error(
@@ -146,7 +184,11 @@ async function main() {
   if (!apply) {
     console.log(`Dry run. ${changed.length} account${changed.length === 1 ? '' : 's'} would change. Re-run with --apply to make the change.`)
   } else {
-    console.log(`Done. ${changed.length} account${changed.length === 1 ? '' : 's'} changed, each recorded in the audit log.`)
+    console.log(
+      changed.length
+        ? `Done. ${changed.length} account${changed.length === 1 ? '' : 's'} changed, each recorded in the audit log.`
+        : 'Done. Nothing needed changing, so nothing was written.',
+    )
   }
 
   process.exit(missing.length ? 2 : 0)

@@ -203,12 +203,32 @@ the source-level union change is inert until a row actually uses the value, so
 the code can deploy before or after the migration is applied.
 
 Generated offline (`payload migrate:create` diffs the config against the in-repo
-snapshot and needs no database). **Not applied anywhere.** It reaches production
-through the normal deploy `migrate` step, operator-driven, per the standing rule
-never to run `migrate` against production ad hoc.
+snapshot and needs no database).
+
+**APPLIED to production ca-central-1 on 2026-07-31**, operator driven, via
+`npm run migrate:env` (Payload's own migrator, so the `payload_migrations`
+bookkeeping and the per-migration transaction are handled exactly as a deploy
+would). Applied alongside `20260730_162639_bracket_winner_set_by` and
+`20260730_164115_bulk_edit_undo`; all three took 341ms in total. The schema is now
+ahead of the deployed code, which is the correct order for additive changes: the
+running code ignores the new nullable columns and the unused enum value.
 
 ### Operator action
 
-Once the migration is applied, assign `Scheduler` to the lead scheduler's user
-record in the Payload admin panel. No other change is needed; the manage area
-opens to them immediately and nothing else does.
+Assign the role with the reviewable script rather than by hand:
+
+```bash
+npm run grant:scheduler -- --list                       # who can already do this
+npm run grant:scheduler -- someone@cmba.ab.ca           # dry run
+npm run grant:scheduler -- someone@cmba.ab.ca --apply
+```
+
+The script refuses to create an account. If an address has no user, that person
+signs up first. Granting scheduling powers to an address nobody has verified
+would be a way to hand a stranger the whole season's schedule, and creating a bare
+user would also skip the signup consent flow that the users collection expects.
+
+**Status 2026-07-31:** not yet granted to anyone. The two addresses requested
+(`basketball_operations@cmba.ab.ca`, `k.king@cmba.ab.ca`) have no accounts yet.
+Existing scheduling-capable accounts are `admin@cmba.ab.ca` and
+`scheduling@cmba.ab.ca`, both super admins.
