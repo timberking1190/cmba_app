@@ -111,3 +111,34 @@ describe('the role vocabulary', () => {
     expect(canManageScheduling(leagueOfficial)).toBe(false)
   })
 })
+
+/*
+ * REGRESSION for a real production incident on 2026-07-31.
+ *
+ * The grant script wrote roles with `overrideAccess: true` and reported success,
+ * but nothing persisted. Cause: overrideAccess bypasses ACCESS CONTROL, not
+ * HOOKS. The sanitizeSelfRoles beforeValidate hook ran, saw a caller that was not
+ * a super admin, and stripped the admin-assigned role straight back out.
+ *
+ * That hook was doing its job. The tests below pin the behaviour it relies on, so
+ * that if sanitizeSelfServiceRoles is ever loosened, the reason it exists is not
+ * quietly lost.
+ */
+describe('regression: an admin-assigned role cannot survive a self-service write', () => {
+  it('strips scheduler from a plain member write, which is what silently reverted the grant', () => {
+    // requested = what the script tried to write, existing = what was on the row.
+    expect(sanitizeSelfServiceRoles(['coach', 'scheduler'], ['coach'])).toEqual(['coach'])
+  })
+
+  it('strips scheduler even when the account is already a super admin', () => {
+    // The super admin bypass lives in the hook (isSuperAdmin(req.user)), not here,
+    // so this pure function still strips it. Both accounts in the incident
+    // reverted for this reason.
+    expect(sanitizeSelfServiceRoles(['super_admin', 'scheduler'], ['super_admin'])).toEqual(['super_admin'])
+  })
+
+  it('keeps scheduler once it is genuinely on the record', () => {
+    // After a trusted write, a later self-service edit must not drop it.
+    expect(sanitizeSelfServiceRoles(['coach'], ['coach', 'scheduler'])).toEqual(['coach', 'scheduler'])
+  })
+})

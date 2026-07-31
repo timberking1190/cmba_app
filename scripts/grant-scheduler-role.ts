@@ -37,7 +37,7 @@ import config from '@payload-config'
 
 const ROLE = 'scheduler'
 
-type Target = { email: string; id?: number; fullName?: string; before: string[]; after: string[]; action: 'add' | 'remove' | 'no change' | 'missing' }
+type Target = { email: string; id?: number; fullName?: string; before: string[]; after: string[]; action: 'add' | 'remove' | 'no change' | 'missing' | 'failed' }
 
 async function enumHasScheduler(payload: Payload): Promise<boolean> {
   try {
@@ -140,7 +140,42 @@ async function main() {
     results.push({ email, id: user.id, fullName: user.fullName, before, after, action })
 
     if (apply && action !== 'no change') {
-      await payload.update({ collection: 'users', id: user.id, data: { roles: after } as never, overrideAccess: true })
+      /*
+       * context.skipConsentEnforcement is this codebase's marker for a trusted
+       * server-side write, and it is what sanitizeSelfRoles checks before it
+       * decides whether to strip admin-assigned roles.
+       *
+       * Without it, that hook silently removes `scheduler` again the moment it is
+       * added, because it correctly refuses to let a caller who is not a super
+       * admin grant an admin-assigned role. overrideAccess bypasses ACCESS
+       * CONTROL but NOT HOOKS, which is precisely the trap the first run of this
+       * script fell into: it reported success and wrote nothing.
+       * scripts/create-admin.ts sets super_admin the same way.
+       */
+      await payload.update({
+        collection: 'users',
+        id: user.id,
+        data: { roles: after } as never,
+        overrideAccess: true,
+        context: { skipConsentEnforcement: true },
+      })
+
+      /*
+       * Never trust the write. Read it back and confirm the role is really there
+       * before telling anyone this worked. A tool that hands out the ability to
+       * move a league's schedule has no business assuming.
+       */
+      const check = await payload.findByID({ collection: 'users', id: user.id, depth: 0, overrideAccess: true }).catch(() => null)
+      const nowRoles = ((check as { roles?: string[] } | null)?.roles ?? []) as string[]
+      const landed = remove ? !nowRoles.includes(ROLE) : nowRoles.includes(ROLE)
+
+      if (!landed) {
+        const entry = results[results.length - 1]
+        entry.action = 'failed'
+        entry.after = nowRoles
+        continue
+      }
+
       await payload.create({
         collection: 'audit-log',
         overrideAccess: true,
@@ -165,10 +200,15 @@ async function main() {
       console.log(`${r.email.padEnd(38)}NO ACCOUNT WITH THIS ADDRESS. Nothing was changed.`)
       continue
     }
+    if (r.action === 'failed') {
+      console.log(`${r.email.padEnd(38)}${r.before.join(', ').padEnd(34)}${r.after.join(', ')}   DID NOT SAVE`)
+      continue
+    }
     console.log(`${r.email.padEnd(38)}${r.before.join(', ').padEnd(34)}${r.after.join(', ')}${r.action === 'no change' ? '   (already correct)' : ''}`)
   }
 
   const missing = results.filter((r) => r.action === 'missing')
+  const failed = results.filter((r) => r.action === 'failed')
   const changed = results.filter((r) => r.action === 'add' || r.action === 'remove')
 
   console.log('')
@@ -177,6 +217,17 @@ async function main() {
       [
         `${missing.length} address${missing.length === 1 ? ' has' : 'es have'} no account: ${missing.map((m) => m.email).join(', ')}.`,
         'This script never creates accounts. Ask the person to sign up first, then run it again.',
+        '',
+      ].join('\n'),
+    )
+  }
+  if (failed.length) {
+    console.log(
+      [
+        `${failed.length} change${failed.length === 1 ? '' : 's'} DID NOT SAVE. The role was written and then read back missing.`,
+        'The usual cause is a beforeValidate hook stripping the role, which is what',
+        'sanitizeSelfRoles does to any admin-assigned role when the write is not marked',
+        'as a trusted server-side operation. Nothing partial was left behind.',
         '',
       ].join('\n'),
     )
@@ -191,7 +242,7 @@ async function main() {
     )
   }
 
-  process.exit(missing.length ? 2 : 0)
+  process.exit(failed.length ? 3 : missing.length ? 2 : 0)
 }
 
 main().catch((err) => {

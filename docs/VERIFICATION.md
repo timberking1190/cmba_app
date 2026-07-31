@@ -1224,23 +1224,42 @@ Migrated:  20260731_032821_add_scheduler_role    (109ms)
 No errors. All three are additive, so the schema being ahead of the deployed code
 is the correct order.
 
-### 2. Scheduler role, BLOCKED on accounts existing
+### 2. Scheduler role, DONE 2026-07-31
 
-Neither requested address has a user record, so the grant script refused, which is
-the behaviour it was built for:
+Neither address originally requested had a user record, so the grant script
+refused rather than creating them, which is the behaviour it was built for. The
+operator chose to use the two existing accounts instead. Final state:
 
 ```
-basketball_operations@cmba.ab.ca      NO ACCOUNT WITH THIS ADDRESS. Nothing was changed.
-k.king@cmba.ab.ca                     NO ACCOUNT WITH THIS ADDRESS. Nothing was changed.
+admin@cmba.ab.ca         CMBA Super Admin     super_admin
+kenking90@gmail.com      Ken King             coach, scheduler
+scheduling@cmba.ab.ca    Scheduling Admin     super_admin, scheduler
 ```
 
-`npm run grant:scheduler -- --list` shows the current picture: `admin@cmba.ab.ca`
-and `scheduling@cmba.ab.ca` are the only accounts that can reach the console, both
-super admins. The nearest match to the second address is `kenking90@gmail.com`
-(Ken King), which today holds only the `coach` role.
+#### Incident: the first grant reported success and wrote nothing
 
-Resolution needs a person: either those two addresses sign up, or the role goes to
-an account that already exists.
+Worth recording, because it is a trap anyone touching this collection will hit.
+
+`payload.update(..., { overrideAccess: true })` bypasses ACCESS CONTROL but NOT
+HOOKS. The `sanitizeSelfRoles` beforeValidate hook on `users` therefore still ran,
+saw a caller that was not a super admin, and stripped `scheduler` straight back
+out. The script reported "2 accounts changed" and the database was unchanged.
+
+The hook was doing its job: it is the guard that stops a member granting
+themselves an admin role, and it is why `scheduler` cannot be self-granted.
+
+Two fixes, both in `scripts/grant-scheduler-role.ts`:
+
+1. The write now carries `context: { skipConsentEnforcement: true }`, this
+   codebase's established marker for a trusted server-side write and the flag
+   `sanitizeSelfRoles` checks. `scripts/create-admin.ts` sets `super_admin` the
+   same way.
+2. The script now READS THE ROLE BACK after writing and reports `DID NOT SAVE`
+   with a non-zero exit if it is not there. A tool that hands out the ability to
+   move a league's schedule has no business assuming its write landed.
+
+Regression tests pinning the hook behaviour are in
+`src/access/__tests__/schedulerRole.test.ts`.
 
 ### 3. End to end and scale, in progress
 
