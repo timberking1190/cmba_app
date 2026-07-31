@@ -77,14 +77,14 @@ export const isLeagueOfficial = (user: UserLike): boolean => hasRole(user, 'leag
 /**
  * May operate the scanner (`/scan`, `/verify`, `/verify-serial`).
  *
- * SECURITY (roles are now self-serviceable): scanner operation is deliberately NOT
- * granted by the self-declared `official` role — otherwise anyone could self-grant
- * scanning powers. It requires the ADMIN-ASSIGNED `league_official` role (or a staff
- * admin). Designate scanner operators via that role. (This narrows the original D23,
- * which assumed officials were admin-vetted.)
+ * All officials scan (operator decision): game officials (`official`) AND league
+ * officials (`league_official`), plus staff admins. Note `official` is self-serviceable,
+ * so scanner access is effectively self-grantable — accepted because scanning only
+ * reveals a coach's clearance verdict + photo (no data mutation) and every scan is
+ * attributed + audited (D24).
  */
 export const canScan = (user: UserLike): boolean =>
-  isLeagueOfficial(user) || isAnyAdmin(user)
+  hasRole(user, 'official') || isLeagueOfficial(user) || isAnyAdmin(user)
 
 /**
  * Member Cards D24 — verification-domain admin: reads ALL scans (Scan Analytics) and
