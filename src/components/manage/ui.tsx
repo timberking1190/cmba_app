@@ -21,44 +21,10 @@ import { AlertTriangle, CheckCircle2, Info, Loader2, XCircle } from "lucide-reac
 import Link from "next/link";
 import { useId, type ReactNode } from "react";
 
-import type { GameStatus } from "@/lib/scheduleUtils";
-
-/* ------------------------------------------------------------------ status */
-
-const chipBase =
-  "inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 whitespace-nowrap";
-
-// Deliberately readable on both themes: a tinted background plus a text colour
-// that is a theme token or a shade that clears AA on either surface.
-const STATUS_CHIP: Record<GameStatus, { label: string; cls: string }> = {
-  scheduled: { label: "Scheduled", cls: "bg-cmba-red/15 text-cmba-red" },
-  reported: { label: "Reported", cls: "bg-status-warn/15 text-status-warn" },
-  contested: { label: "Contested", cls: "bg-status-warn/20 text-status-warn font-bold" },
-  final: { label: "Final", cls: "bg-status-ok/15 text-status-ok" },
-  forfeit: { label: "Forfeit", cls: "bg-status-danger/20 text-status-danger font-bold" },
-  postponed: { label: "Postponed", cls: "bg-cmba-grey/25 text-cmba-grey-light" },
-  cancelled: { label: "Cancelled", cls: "bg-status-danger/15 text-status-danger line-through" },
-};
-
-/** One status vocabulary for every screen. Exhaustive over GameStatus. */
-export function StatusChip({ status }: { status: GameStatus }) {
-  const chip = STATUS_CHIP[status];
-  if (!chip) return <span className={`${chipBase} bg-cmba-grey/20 text-cmba-grey-light`}>{String(status)}</span>;
-  return <span className={`${chipBase} ${chip.cls}`}>{chip.label}</span>;
-}
-
-/** Draft versus published is a separate axis from the game status. */
-export function PublishChip({ state }: { state: string }) {
-  const published = state === "published";
-  return (
-    <span
-      className={`${chipBase} ${published ? "bg-cmba-red/10 text-cmba-red" : "bg-cmba-grey/20 text-cmba-grey-light"}`}
-      title={published ? "Families can see this game." : "Not shown on the public site yet."}
-    >
-      {published ? "Published" : "Draft"}
-    </span>
-  );
-}
+// Status chips live in one shared place so the console and the public site
+// cannot drift apart. Re-exported here because every manage screen imports
+// its building blocks from this module.
+export { PublishChip, StatusChip } from "../StatusChip";
 
 /* ----------------------------------------------------------------- buttons */
 

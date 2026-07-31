@@ -1086,3 +1086,132 @@ keyboard) still wants a manual pass on a phone and a laptop before public launch
   not an anti-cheat system. It is guarded by a believable score ceiling, Turnstile, rate
   limits, public reporting, and admin moderation, not by trusting the client.
 - Not deployed. The code is on feat/arcade-shooter for review; the prod table is ready.
+
+---
+
+# Scheduler overhaul (branch `feat/scheduler-overhaul`, 2026-07-30)
+
+Reported by the lead scheduler; rebuilt across Phase 0 (the seven reported
+failures), Phase 1 (playoff brackets), Phase 2 (season operations), and Phase 3
+(the visual and interaction pass).
+
+## Gate 1: build, typecheck, lint, tests, types, migrations
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | clean, 0 errors |
+| `npm run lint` | clean, 0 warnings |
+| `npm run build` | exit 0. All new routes present: `/manage`, `/manage/schedule`, `/manage/officials`, `/manage/brackets`, `/manage/brackets/new`, `/manage/brackets/[id]`, `/manage/contested`, `/manage/import` |
+| `npm test` | **606 of 606 pass, 65 files** (baseline before this work was 454 of 454) |
+| Existing security tests | still green, unchanged (access control, MFA, redirect, headers, HIBP, bot challenge, audit integrity) |
+| Existing score reporting and contested tests | still green, unchanged (`gameStateMachine`, `computeStandings`, `scheduleStatus`) |
+| `npm run generate:types` | run after every collection change; `payload-types.ts` current |
+| Migrations included | 3, all generated offline, all additive and backward compatible |
+
+### Migrations added (generated, NOT applied)
+
+| File | What it does |
+|---|---|
+| `20260730_162639_bracket_winner_set_by.ts` | `bracket_series.winner_set_by` enum column, so a screen can say whether a result advanced a team or a person did |
+| `20260730_164115_bulk_edit_undo.ts` | `import_batches.bulk_action` + `bulk_undo`, extending the import undo window to bulk game edits |
+| `20260731_032821_add_scheduler_role.ts` | adds `scheduler` to `enum_users_roles` and the four role enums Payload derives from the same options list |
+
+All three are additive, so the code deploys safely on either side of them. **None
+is applied anywhere.** They reach production through the normal deploy `migrate`
+step, operator driven, per the standing rule never to run `migrate` against
+production ad hoc.
+
+## Gate 2: reproduce first
+
+Every Phase 0 item has a test that was **observed to fail against the reported
+behaviour before the fix**, and passes after. They are kept as regressions.
+
+| # | Reported | Repro test | Failed before |
+|---|---|---|---|
+| 1 | Forfeit does not submit and shows no label | `src/components/manage/__tests__/SchedulingConsole.test.tsx` (6 tests) | yes, 6 of 6 |
+| 2 | No way to edit games after import | same file (5 tests) + `src/lib/games/__tests__/editPlan.test.ts` (16) | yes, 5 of 5 |
+| 3 | Sign in takes multiple attempts | `src/lib/auth/__tests__/signIn.test.ts` (6) | n/a, new module; behaviour pinned, root cause below |
+| 4 | CSV times only accept 24 hour | `src/lib/csvImport/__tests__/repro-phase0.test.ts` (27) | yes, 22 of 27 |
+| 5 | Must refresh before revalidating | `src/components/manage/__tests__/ImportConsole.test.tsx` (6) | yes, 5 of 6 |
+| 6 | "Blocked official 7: Could not assign." | `src/lib/officials/__tests__/assignmentCheck.test.ts` (10) + `OfficialsBoard.test.tsx` (3) | yes |
+| 7 | Only one game can be assigned at a time | `OfficialsBoard.test.tsx` (6) | yes, all |
+
+Two notes on honesty of the repros:
+
+- The first version of the item 5 repro asserted `input.value === ''`, which
+  **passes vacuously in jsdom** because its file input value getter does not
+  reflect a stubbed file list. That was a false repro and was replaced with a
+  property setter spy that records what the component actually writes, which does
+  fail against the old code.
+- Item 3's root cause is browser cache behaviour that jsdom cannot reproduce. The
+  unit tests pin the new contract (confirm the session resolves before
+  navigating); the cache behaviour itself is covered by the Playwright spec, which
+  has not been run here. See Gate 3.
+
+### Defects found while fixing the reported ones
+
+| Defect | Where | Fix |
+|---|---|---|
+| "Same day" was computed from the **UTC** date, so a 6:00 PM Calgary game counted as the next day and the officials max games per day check silently missed evening games | `conflicts/detect.ts`, and the new assignment checker | `src/lib/leagueTime.ts` `leagueDayKey`, with tests for the evening and the daylight saving cases |
+| Bracket advancement only ran when a game became **final**, so un-finalizing a game left the advanced team standing in the next round | `games/service.ts` | Runs on every status change; a contested, cancelled, or postponed game now retracts its advancement |
+| Status colours used fixed Tailwind palette shades, which do not follow the app's `[data-theme]` theming and sit at roughly 1.7:1 on a white card | console and public schedule | Theme aware `--st-ok` / `--st-warn` / `--st-danger` tokens; both themes clear WCAG AA |
+| A forfeit or a postponement was indistinguishable from a normal game in a subscribed calendar | `lib/ics/feed.ts` | Title carries the word, postponements are `TENTATIVE`, description says who forfeited |
+
+## Gate 3: end to end, scale, and usability — NOT RUN HERE
+
+**This is the honest limit of what this environment could verify, and it is
+stated plainly rather than glossed.**
+
+The only `DATABASE_URL` available in this working copy is the **production**
+ca-central-1 project (`pdwautioosstdgbbblxl`). There is no local Postgres and no
+Docker. That makes four gate items impossible to execute here without writing
+synthetic data into production, which the repo's own guardrails forbid:
+
+| Gate item | Status | Why |
+|---|---|---|
+| Playwright end to end, six flows | **Written, not run** | `e2e/scheduler.spec.ts`, 9 tests. Needs a running app on a non production database. Skips loudly (not silently) when `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` are unset, so it cannot pass by doing nothing. |
+| Seeded season of 1,500 games and 150 officials | **Written, refuses to run here** | `scripts/seed-scale-season.ts`, `npm run seed:scale`. Hard guarded against the production ref, the same pattern as the existing member card synthetic seed. Verified the guard fires: it refused with "Refusing to seed 1500 synthetic games into the PRODUCTION project". |
+| Scale responsiveness check | **Not run** | Depends on the seed above. The design constraint it protects (never load the whole season into the browser) is implemented and visible in the code: the schedule console filters and pages on the server, the officials board loads one slate, the dashboard counts rather than fetches. |
+| Usability role play by a team member | **Not done** | Needs a person and a running app. The screens were reviewed against the bar in `docs/SCHEDULER_UX_SPEC.md` and every hesitation found in that review was fixed. |
+| Accessibility on real assistive technology | **Not done** | Markup rules implemented and reviewed by reading; component tests query by role and accessible name throughout, which catches missing names. A VoiceOver and keyboard pass against the running app is outstanding. |
+| Resilience rule (force a failure on each console screen) | **Partly** | Every console path has an explicit `catch` that reports a plain failure and states that nothing was changed, and the component tests exercise the failure branch by stubbing a non-ok response and a thrown fetch. Forcing failures against a live server is outstanding. |
+
+### To close Gate 3
+
+```bash
+# 1. Point at a NON production database (a Supabase preview branch, or local)
+export DATABASE_URL=...
+
+# 2. Apply the migrations, including the three new ones
+npm run migrate
+
+# 3. Seed a large season
+SCALE_SEED_ALLOW=1 npm run seed:scale        # ~1,500 games, 180 teams, 150 officials
+
+# 4. Run the end to end suite
+E2E_ADMIN_EMAIL=... E2E_ADMIN_PASSWORD=... npm run test:e2e -- scheduler.spec.ts
+
+# 5. Tear the test data down again
+SCALE_SEED_ALLOW=1 npm run seed:scale -- --clean
+```
+
+Creating a Supabase preview branch was **deliberately not done** from here: it
+changes the operator's infrastructure and carries cost, which is their call to
+make, not mine.
+
+## Gate 4: decisions taken
+
+| Decision | Outcome |
+|---|---|
+| Scheduler capability | **Confirmed with the operator before implementing.** A new `scheduler` role, admin assigned only, never self-grantable. Full rationale, the options considered, the negative capability table, and the operator action are in `docs/BACKEND_NOTES.md`. |
+| Ken King Design Pro agent | **Not available in this environment.** Said plainly, and both the spec pass and the review pass were performed directly instead. Recorded in `docs/SCHEDULER_UX_SPEC.md`. |
+| Drag and drop official assignment | Not built. Multi select across the whole slate solves the reported problem and is far easier to make keyboard accessible. Recorded in the UX spec. |
+| Ambiguous slash dates in CSV imports | Deliberately a hard error, not a guess. `04/11/2026` is April 11 to one scheduler and November 4 to another, and guessing would move a real game. |
+| Editing a finalized game | Stays super admin only, even for a scheduler, because it rewrites the standings. |
+
+## Operator actions outstanding
+
+1. Apply the three migrations on the next deploy (`npm run migrate`).
+2. Assign the **Scheduler** role to the lead scheduler's user record.
+3. Run the end to end and scale checks against a non production database, per
+   Gate 3 above.

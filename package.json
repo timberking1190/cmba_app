@@ -29,7 +29,8 @@
     "smoke:b5": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/smoke-b5.ts",
     "smoke:engagement": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/smoke-engagement.ts",
     "set-scheduling-admin": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/set-scheduling-admin.ts",
-    "verify-audit-log": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/verify-audit-log.ts"
+    "verify-audit-log": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/verify-audit-log.ts",
+    "seed:scale": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/seed-scale-season.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.85.1",
