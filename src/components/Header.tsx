@@ -10,6 +10,7 @@ import {
   LogOut, UserCircle, IdCard, ScanLine,
 } from "lucide-react";
 import { Wordmark } from "@/components/Wordmark";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type AuthUser = { id: number | string; email: string; fullName?: string; roles?: string[] } | null;
 
@@ -175,6 +176,7 @@ export function Header() {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <button aria-label="Search" className="p-2 text-cmba-grey hover:text-cmba-red transition-colors">
               <Search size={20} />
             </button>

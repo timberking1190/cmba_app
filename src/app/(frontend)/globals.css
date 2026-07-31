@@ -8,14 +8,60 @@
    Fonts are injected as CSS vars by next/font in layout.tsx.
    ═══════════════════════════════════════════════════════════════════════ */
 
+/* Theme tokens as RGB channels (space-separated) so Tailwind `rgb(var(--x) / <alpha>)`
+   colors can flip between themes. DARK values equal the previous hex exactly, so the
+   default dark look is unchanged. */
+:root,
+[data-theme="dark"] {
+  --c-white: 255 255 255;
+  --c-black: 0 0 0;
+  --cmba-red: 235 28 36;
+  --cmba-red-dark: 204 0 0;
+  --cmba-red-deep: 102 0 0;
+  --cmba-hot: 255 36 56;
+  --cmba-black: 8 8 10;
+  --cmba-black-light: 14 14 18;
+  --cmba-black-card: 20 20 24;
+  --cmba-black-surface: 27 27 32;
+  --cmba-grey: 154 154 162;
+  --cmba-grey-light: 241 241 237;
+  --cmba-grey-mid: 142 142 150;
+  --cmba-grey-dark: 85 85 94;
+  --cmba-white: 255 255 255;
+  --cmba-bone: 247 246 242;
+  color-scheme: dark;
+}
+
+/* Light theme: flip the surfaces/text; keep CMBA red as the accent. Tailwind white/black
+   flip too, so pervasive text-white / bg-white/X / border-white/X overlays read correctly. */
+[data-theme="light"] {
+  --c-white: 24 24 27;       /* "white" emphasis text -> near-black */
+  --c-black: 255 255 255;    /* "black" surfaces/overlays base -> white */
+  --cmba-red: 206 16 26;
+  --cmba-red-dark: 168 0 0;
+  --cmba-red-deep: 120 0 0;
+  --cmba-hot: 224 26 42;
+  --cmba-black: 248 248 246;      /* page background -> off-white */
+  --cmba-black-light: 242 242 239;
+  --cmba-black-card: 255 255 255; /* cards -> white */
+  --cmba-black-surface: 237 237 233;
+  --cmba-grey: 88 88 96;          /* secondary text */
+  --cmba-grey-light: 24 24 27;    /* primary text -> near-black */
+  --cmba-grey-mid: 104 104 112;
+  --cmba-grey-dark: 178 178 184;  /* borders / subtle */
+  --cmba-white: 24 24 27;
+  --cmba-bone: 34 34 38;
+  color-scheme: light;
+}
+
 :root {
-  --background: #08080A;
-  --foreground: #F1F1ED;
-  --red: #EB1C24;
-  --red-dark: #CC0000;
-  --hot: #FF2438;
-  --line: rgba(255,255,255,0.12);
-  --text-subtle: #8E8E96; /* WCAG AA (~5.4:1 on #08080A) */
+  --background: rgb(var(--cmba-black));
+  --foreground: rgb(var(--cmba-grey-light));
+  --red: rgb(var(--cmba-red));
+  --red-dark: rgb(var(--cmba-red-dark));
+  --hot: rgb(var(--cmba-hot));
+  --line: rgb(var(--c-white) / 0.12);
+  --text-subtle: rgb(var(--cmba-grey-mid));
   --disp: var(--font-archivo), "Archivo", sans-serif;
   --body: var(--font-inter), "Inter", sans-serif;
   --mono: var(--font-jetbrains), "JetBrains Mono", monospace;
@@ -23,10 +69,14 @@
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #3A3A42 #08080A;
+  scrollbar-color: rgb(var(--cmba-grey-dark)) rgb(var(--cmba-black));
 }
 
 html { background: var(--background); }
+/* The WebGL fluid background + its veil are designed for dark; hide them in light mode
+   so the off-white page background shows through. */
+[data-theme="light"] .fx-canvas,
+[data-theme="light"] .fx-veil { display: none; }
 
 body {
   color: var(--foreground);
@@ -68,8 +118,8 @@ body {
 /* Outlined display text. A near-black translucent FILL (not transparent) keeps the
    bright stroke outline but stops the animated background from showing through the
    letters, which looked like lines striking through the lettering. */
-.text-stroke      { color: rgba(8,8,10,.55); -webkit-text-stroke: 2px #F7F6F2; }
-.text-stroke-red  { color: rgba(8,8,10,.55); -webkit-text-stroke: 2px var(--red); }
+.text-stroke      { color: rgb(var(--cmba-black) / .55); -webkit-text-stroke: 2px rgb(var(--cmba-bone)); }
+.text-stroke-red  { color: rgb(var(--cmba-black) / .55); -webkit-text-stroke: 2px var(--red); }
 
 /* ── Existing utilities (preserved) ───────────────────────────────────── */
 .scroll-snap-x { scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
