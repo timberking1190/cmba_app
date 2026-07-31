@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { BracketCreator } from '@/components/manage/BracketCreator'
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { buildScheduleFilters } from '@/lib/manage/scheduleFilters'
@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: 'Create a bracket | CMBA Connect' }
 export default async function NewBracketPage() {
   const user = await getCurrentUser()
   if (!user) redirect('/login?redirect=/manage/brackets/new')
-  if (!isAnyAdmin(user)) redirect('/account')
+  if (!canManageScheduling(user)) redirect('/account')
 
   const payload = await getPayloadClient()
   const { divisions } = await buildScheduleFilters(payload)

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { authenticateRequest } from '@/lib/api/auth'
 import { numericId } from '@/lib/api/handler'
 import { getPayloadClient } from '@/lib/auth'
@@ -29,7 +29,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const payload = await getPayloadClient()
   const user = await authenticateRequest(payload, req)
   if (!user) return NextResponse.json({ error: 'You are signed out. Sign in again to assign officials.' }, { status: 401 })
-  if (!isAnyAdmin(user)) {
+  if (!canManageScheduling(user)) {
     return NextResponse.json({ error: 'Your account cannot assign officials. Ask a league administrator for scheduling access.' }, { status: 403 })
   }
 

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { AlertTriangle, Calendar, CheckCircle2, Trophy, Upload, Users } from 'lucide-react'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { Callout, Panel } from '@/components/manage/ui'
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { loadSeasonSnapshot } from '@/lib/manage/dashboard'
@@ -33,7 +33,7 @@ const TONE_CLS: Record<string, string> = {
 export default async function ManageHub() {
   const user = await getCurrentUser()
   if (!user) redirect('/login?redirect=/manage')
-  if (!isAnyAdmin(user)) redirect('/account')
+  if (!canManageScheduling(user)) redirect('/account')
   await enforceMfa('/manage')
 
   const payload = await getPayloadClient()

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { authenticateRequest } from '@/lib/api/auth'
 import { getPayloadClient } from '@/lib/auth'
 import { adminOverride, setPublishState, writeAudit } from '@/lib/games/service'
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const payload = await getPayloadClient()
   const user = await authenticateRequest(payload, req)
   if (!user) return NextResponse.json({ error: 'You are signed out. Sign in again to undo this.' }, { status: 401 })
-  if (!isAnyAdmin(user)) return NextResponse.json({ error: 'Your account cannot change games. Ask a league administrator for scheduling access.' }, { status: 403 })
+  if (!canManageScheduling(user)) return NextResponse.json({ error: 'Your account cannot change games. Ask a league administrator for scheduling access.' }, { status: 403 })
 
   let body: { batchId?: string | number }
   try {

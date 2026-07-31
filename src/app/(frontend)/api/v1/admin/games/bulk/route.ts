@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { isAnyAdmin, isSuperAdmin } from '@/access/index'
+import { canManageScheduling, isLeagueWideScheduler } from '@/access/index'
 import { authenticateRequest } from '@/lib/api/auth'
 import { getPayloadClient } from '@/lib/auth'
 import { adminOverride, setPublishState, writeAudit } from '@/lib/games/service'
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
   const payload = await getPayloadClient()
   const user = await authenticateRequest(payload, req)
   if (!user) return NextResponse.json({ error: 'You are signed out. Sign in again to make this change.' }, { status: 401 })
-  if (!isAnyAdmin(user)) return NextResponse.json({ error: 'Your account cannot change games. Ask a league administrator for scheduling access.' }, { status: 403 })
+  if (!canManageScheduling(user)) return NextResponse.json({ error: 'Your account cannot change games. Ask a league administrator for scheduling access.' }, { status: 403 })
 
   let body: { action?: BulkAction; gameIds?: Array<string | number>; reason?: string; newDate?: string; newVenueId?: string | number; dryRun?: boolean }
   try {
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
   // touch anything. Anything else is dropped from the plan with a reason.
   const outOfScope: Array<{ gameId: string | number; summary: string; skipped: string }> = []
   let scoped = targets
-  if (!isSuperAdmin(user)) {
+  if (!isLeagueWideScheduler(user)) {
     const clubOf = (t: Record<string, unknown> | undefined) => relId((t as { club?: unknown } | undefined)?.club)
     const myClub = (user as { club?: unknown }).club
     const myClubId = relId(myClub)

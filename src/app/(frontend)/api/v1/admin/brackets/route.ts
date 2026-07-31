@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { authenticateRequest } from '@/lib/api/auth'
 import { getPayloadClient } from '@/lib/auth'
 import { createBracket, previewBracket, seedsFromStandings } from '@/lib/brackets/manage'
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   const payload = await getPayloadClient()
   const user = await authenticateRequest(payload, req)
   if (!user) return NextResponse.json({ error: 'You are signed out. Sign in again to manage brackets.' }, { status: 401 })
-  if (!isAnyAdmin(user)) return NextResponse.json({ error: 'Your account cannot manage brackets. Ask a league administrator for scheduling access.' }, { status: 403 })
+  if (!canManageScheduling(user)) return NextResponse.json({ error: 'Your account cannot manage brackets. Ask a league administrator for scheduling access.' }, { status: 403 })
 
   let body: { divisionId?: string | number; name?: string; source?: string; seedTeamIds?: Array<string | number>; reason?: string; dryRun?: boolean }
   try {

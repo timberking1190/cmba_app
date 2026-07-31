@@ -16,6 +16,7 @@ export type Role =
   | 'official'
   | 'parent'
   | 'league_official'
+  | 'scheduler'
   | 'club_admin'
   | 'super_admin'
 
@@ -29,6 +30,11 @@ export const ROLES: { label: string; value: Role }[] = [
   // deliberately-generated Payload migration (ALTER TYPE ... ADD VALUE) — see
   // docs/member-cards/PHASE1_DATA_MODEL.md.
   { label: 'League Official', value: 'league_official' },
+  // Scheduler: runs the season schedule, the officials board, the imports, and
+  // the playoff brackets. Deliberately NOT a data admin: no user management, no
+  // site settings, no Payload admin panel. Admin-assigned only, never
+  // self-service, so nobody can grant themselves the ability to move games.
+  { label: 'Scheduler', value: 'scheduler' },
   { label: 'Club Admin', value: 'club_admin' },
   { label: 'Super Admin', value: 'super_admin' },
 ]
@@ -38,7 +44,7 @@ export const ROLES: { label: string; value: Role }[] = [
  * Everything else (league_official, club_admin, super_admin) stays admin-assigned.
  */
 export const SELF_SERVICE_ROLES: Role[] = ['participant', 'coach', 'official', 'parent']
-const ADMIN_ASSIGNED_ROLES: Role[] = ['league_official', 'club_admin', 'super_admin']
+const ADMIN_ASSIGNED_ROLES: Role[] = ['league_official', 'scheduler', 'club_admin', 'super_admin']
 
 /**
  * Sanitize a self-service role update: keep only member-type roles the user chose, and
@@ -73,6 +79,32 @@ export const isAnyAdmin = (user: UserLike): boolean =>
 
 /** League official — the Member-Cards scanner login tier (D23). */
 export const isLeagueOfficial = (user: UserLike): boolean => hasRole(user, 'league_official')
+
+/** Scheduler — runs the season, but is not a data admin. */
+export const isScheduler = (user: UserLike): boolean => hasRole(user, 'scheduler')
+
+/**
+ * May use the scheduling console: /manage and everything under it, plus the admin
+ * scheduling routes (games, officials, brackets, imports).
+ *
+ * SECURITY: this is deliberately NARROWER than isAnyAdmin in what it unlocks, not
+ * wider in who holds it. A scheduler can move games and staff officials; they
+ * cannot manage users, change roles, edit site settings, or reach the Payload
+ * admin panel, all of which stay isAnyAdmin or isSuperAdmin. `scheduler` is in
+ * ADMIN_ASSIGNED_ROLES, so it can never be self-granted at signup or from the
+ * account page.
+ */
+export const canManageScheduling = (user: UserLike): boolean => isAnyAdmin(user) || isScheduler(user)
+
+/**
+ * Works across the WHOLE league rather than one club. A club admin is scoped to
+ * games involving their own club; a super admin and a scheduler are not, because
+ * running the season means touching every division.
+ *
+ * A scheduler still cannot edit a game that already has a final result. That
+ * stays super admin only, because it rewrites the standings.
+ */
+export const isLeagueWideScheduler = (user: UserLike): boolean => isSuperAdmin(user) || isScheduler(user)
 
 /**
  * May operate the scanner (`/scan`, `/verify`, `/verify-serial`).

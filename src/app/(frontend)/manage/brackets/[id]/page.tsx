@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { BracketManager } from '@/components/manage/BracketManager'
 import { LinkButton } from '@/components/manage/ui'
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: 'Manage a bracket | CMBA Connect' }
 export default async function BracketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
   if (!user) redirect('/login?redirect=/manage/brackets')
-  if (!isAnyAdmin(user)) redirect('/account')
+  if (!canManageScheduling(user)) redirect('/account')
 
   const { id } = await params
   const payload = await getPayloadClient()

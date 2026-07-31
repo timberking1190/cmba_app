@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Trophy } from 'lucide-react'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { EmptyState, LinkButton, PublishChip } from '@/components/manage/ui'
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 
@@ -16,7 +16,7 @@ const relName = (r: unknown, ...keys: string[]): string =>
 export default async function BracketsPage() {
   const user = await getCurrentUser()
   if (!user) redirect('/login?redirect=/manage/brackets')
-  if (!isAnyAdmin(user)) redirect('/account')
+  if (!canManageScheduling(user)) redirect('/account')
 
   const payload = await getPayloadClient()
   const res = await payload.find({ collection: 'playoff-brackets', sort: ['-seededAt'], depth: 1, limit: 200, overrideAccess: true })

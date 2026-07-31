@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { OfficialsBoard, type BoardGame, type BoardOfficial } from '@/components/manage/OfficialsBoard'
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { leagueDate, leagueDayKey, leagueTime, leagueWallTimeToUtcISO } from '@/lib/leagueTime'
@@ -25,7 +25,7 @@ const relName = (r: unknown, ...keys: string[]): string =>
 export default async function ManageOfficialsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const user = await getCurrentUser()
   if (!user) redirect('/login?redirect=/manage/officials')
-  if (!isAnyAdmin(user)) redirect('/account')
+  if (!canManageScheduling(user)) redirect('/account')
 
   const sp = await searchParams
   const filter = {

@@ -138,3 +138,77 @@ the bottom. The source-of-truth specs live in `cmba-backend-build/docs/`.
   announcements strip is client-fetched so the homepage isn't forced dynamic.
 - **Migrations** are the single source of truth (4 committed): initial, phase1,
   phase2, phase3. Run `npm run migrate` after pulling.
+
+---
+
+## Access control decision: the `scheduler` role (2026-07-30)
+
+**Decided with the operator during the scheduler overhaul.** Confirmed before any
+role structure changed, per the module brief.
+
+### The problem
+
+The whole manage area required `club_admin` or `super_admin`. A lead scheduler is
+a volunteer who runs the season: the schedule, the officials board, the imports,
+and the playoff brackets. Making them a club admin to do that also handed them
+user management, role assignment, and site settings, which is far more authority
+than the job needs. Making them a super admin is worse.
+
+### The decision
+
+Add a seventh role, `scheduler`, plus a capability helper. Three options were put
+to the operator (reuse `league_official`; a per-user `schedulingAccess` flag; a
+new role) and the new role was chosen.
+
+- `ROLES` gains `{ label: 'Scheduler', value: 'scheduler' }` in
+  `src/access/index.ts`.
+- `scheduler` is in `ADMIN_ASSIGNED_ROLES`, so `sanitizeSelfServiceRoles` strips
+  it from any self-service update. **It can never be self-granted** at signup or
+  from the account page. Only an admin can assign it.
+- `canManageScheduling(user) = isAnyAdmin(user) || isScheduler(user)` gates
+  `/manage` and everything under it, and the admin scheduling routes: game
+  override, game officials, bulk games, bulk officials, brackets, and the CSV
+  import validate/commit endpoints.
+- `isLeagueWideScheduler(user) = isSuperAdmin(user) || isScheduler(user)`
+  expresses "works across the whole league". A club admin stays scoped to games
+  involving their own club; a scheduler is not scoped, because running a season
+  means touching every division.
+
+### What a scheduler deliberately CANNOT do
+
+These stay on `isAnyAdmin` / `isSuperAdmin` and were verified by negative tests in
+`src/access/__tests__/schedulerRole.test.ts`:
+
+| Capability | Gate | Scheduler |
+|---|---|---|
+| Edit a game that already has a final result | `isSuperAdmin` | no |
+| User management, role assignment | `isAnyAdmin` / `superAdminFieldOnly` | no |
+| Site settings, Payload admin panel | `isAnyAdmin` | no |
+| Member card scanner (`/scan`, `/verify`) | `canScan` | no |
+| Scan analytics, pass and device revocation | `isVerificationAdmin` | no |
+| Credential review, certification requirement matrix | `isAnyAdmin` | no |
+
+Editing a finalized game stays super-admin-only on purpose: it rewrites the
+standings. A scheduler resolves a disputed result by marking it contested and
+escalating, which is the existing flow.
+
+### Migration
+
+`src/migrations/20260731_032821_add_scheduler_role.ts` adds `scheduler` to
+`enum_users_roles` and to the four other role enums Payload derives from the same
+options list (`certification_types_applies_to_roles`,
+`certification_types_required_for_roles`, `courses_required_for_roles`,
+`member_card_config_scannable_roles`). It is additive and backward compatible:
+the source-level union change is inert until a row actually uses the value, so
+the code can deploy before or after the migration is applied.
+
+Generated offline (`payload migrate:create` diffs the config against the in-repo
+snapshot and needs no database). **Not applied anywhere.** It reaches production
+through the normal deploy `migrate` step, operator-driven, per the standing rule
+never to run `migrate` against production ad hoc.
+
+### Operator action
+
+Once the migration is applied, assign `Scheduler` to the lead scheduler's user
+record in the Payload admin panel. No other change is needed; the manage area
+opens to them immediately and nothing else does.

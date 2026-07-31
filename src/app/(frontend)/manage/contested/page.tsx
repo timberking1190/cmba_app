@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { SchedulingConsole } from '@/components/manage/SchedulingConsole'
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { loadAdminGames, loadEditOptions } from '@/lib/manageGames.server'
@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: 'Contested queue | CMBA Connect' }
 export default async function ContestedPage() {
   const user = await getCurrentUser()
   if (!user) redirect('/login?redirect=/manage/contested')
-  if (!isAnyAdmin(user)) redirect('/account')
+  if (!canManageScheduling(user)) redirect('/account')
 
   const payload = await getPayloadClient()
   const [contested, awaiting, options] = await Promise.all([

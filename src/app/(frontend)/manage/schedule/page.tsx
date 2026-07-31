@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { ScheduleWorkspace } from '@/components/manage/ScheduleWorkspace'
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { loadAdminGames, loadEditOptions } from '@/lib/manageGames.server'
@@ -20,7 +20,7 @@ const PAGE_SIZE = 50
 export default async function ManageSchedulePage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const user = await getCurrentUser()
   if (!user) redirect('/login?redirect=/manage/schedule')
-  if (!isAnyAdmin(user)) redirect('/account')
+  if (!canManageScheduling(user)) redirect('/account')
 
   const sp = await searchParams
   const filter: ScheduleFilter = {

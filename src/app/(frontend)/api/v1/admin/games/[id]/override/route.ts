@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { clubIdOf, isAnyAdmin, isSuperAdmin } from '@/access/index'
+import { canManageScheduling, clubIdOf, isLeagueWideScheduler, isSuperAdmin } from '@/access/index'
 import { authenticateRequest } from '@/lib/api/auth'
 import { numericId } from '@/lib/api/handler'
 import { getPayloadClient } from '@/lib/auth'
@@ -56,7 +56,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const payload = await getPayloadClient()
   const user = await authenticateRequest(payload, req)
   if (!user) return NextResponse.json({ error: 'You are signed out. Sign in again to make this change.' }, { status: 401 })
-  if (!isAnyAdmin(user)) return NextResponse.json({ error: 'Your account cannot change games. Ask a league administrator for scheduling access.' }, { status: 403 })
+  if (!canManageScheduling(user)) return NextResponse.json({ error: 'Your account cannot change games. Ask a league administrator for scheduling access.' }, { status: 403 })
 
   let body: Body
   try {
@@ -81,7 +81,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (finalized && !isSuperAdmin(user)) {
     return NextResponse.json({ error: 'This game already has a final result, so only a super admin can change it. Ask a league administrator.' }, { status: 403 })
   }
-  if (!isSuperAdmin(user)) {
+  // A club admin is scoped to their own club's games. A super admin and a
+  // scheduler run the whole league, so they are not.
+  if (!isLeagueWideScheduler(user)) {
     const club = clubIdOf(user)
     const homeClub = relId(game.homeTeam?.club)
     const awayClub = relId(game.awayTeam?.club)

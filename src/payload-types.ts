@@ -283,7 +283,16 @@ export interface User {
   /**
    * Member types are self-serviceable; admin roles (league_official/club_admin/super_admin) are super-admin-only, enforced server-side.
    */
-  roles: ('participant' | 'coach' | 'official' | 'parent' | 'league_official' | 'club_admin' | 'super_admin')[];
+  roles: (
+    | 'participant'
+    | 'coach'
+    | 'official'
+    | 'parent'
+    | 'league_official'
+    | 'scheduler'
+    | 'club_admin'
+    | 'super_admin'
+  )[];
   /**
    * Pending = awaiting guardian confirmation (minors). System/admin set.
    */
@@ -479,7 +488,16 @@ export interface CertificationType {
    * Roles this certification is relevant to.
    */
   appliesToRoles?:
-    | ('participant' | 'coach' | 'official' | 'parent' | 'league_official' | 'club_admin' | 'super_admin')[]
+    | (
+        | 'participant'
+        | 'coach'
+        | 'official'
+        | 'parent'
+        | 'league_official'
+        | 'scheduler'
+        | 'club_admin'
+        | 'super_admin'
+      )[]
     | null;
   /**
    * Months a certification of this type stays valid. Blank = does not expire. Used to auto-compute expiry.
@@ -497,7 +515,16 @@ export interface CertificationType {
    * Roles for which this certification is mandatory.
    */
   requiredForRoles?:
-    | ('participant' | 'coach' | 'official' | 'parent' | 'league_official' | 'club_admin' | 'super_admin')[]
+    | (
+        | 'participant'
+        | 'coach'
+        | 'official'
+        | 'parent'
+        | 'league_official'
+        | 'scheduler'
+        | 'club_admin'
+        | 'super_admin'
+      )[]
     | null;
   /**
    * Deep-link to renew / take the course.
@@ -534,7 +561,16 @@ export interface Course {
   registerUrl?: string | null;
   mandatory?: boolean | null;
   requiredForRoles?:
-    | ('participant' | 'coach' | 'official' | 'parent' | 'league_official' | 'club_admin' | 'super_admin')[]
+    | (
+        | 'participant'
+        | 'coach'
+        | 'official'
+        | 'parent'
+        | 'league_official'
+        | 'scheduler'
+        | 'club_admin'
+        | 'super_admin'
+      )[]
     | null;
   relatedCertificationType?: (number | null) | CertificationType;
   /**
@@ -4183,7 +4219,16 @@ export interface MemberCardConfig {
    * Roles whose card is scannable (carries a QR, gated by credentials). Default: coach only (D20).
    */
   scannableRoles?:
-    | ('participant' | 'coach' | 'official' | 'parent' | 'league_official' | 'club_admin' | 'super_admin')[]
+    | (
+        | 'participant'
+        | 'coach'
+        | 'official'
+        | 'parent'
+        | 'league_official'
+        | 'scheduler'
+        | 'club_admin'
+        | 'super_admin'
+      )[]
     | null;
   updatedAt?: string | null;
   createdAt?: string | null;
