@@ -117,7 +117,13 @@ async function main() {
   const season = await payload.create({
     collection: 'seasons',
     overrideAccess: true,
-    data: { name: SEASON_NAME, startDate: `${FIRST_SATURDAY}T00:00:00.000Z`, endDate: `${saturdayOffset(30)}T00:00:00.000Z`, defaultGameLengthMinutes: 60 } as never,
+    data: {
+      name: SEASON_NAME,
+      status: 'active',
+      startDate: `${FIRST_SATURDAY}T00:00:00.000Z`,
+      endDate: `${saturdayOffset(30)}T00:00:00.000Z`,
+      defaultGameLengthMinutes: 60,
+    } as never,
   })
 
   const clubs: Array<{ id: number }> = []
@@ -126,13 +132,28 @@ async function main() {
   }
 
   const divisions: Array<{ id: number }> = []
+  const LEAGUE_NAME = 'Scale Test League'
   for (let i = 0; i < DIVISIONS; i++) {
-    const label = `${pick(AGES, i)} ${pick(GENDERS, Math.floor(i / AGES.length))} ${pick(TIERS, Math.floor(i / (AGES.length * GENDERS.length)))} ${i}`
+    const age = pick(AGES, i)
+    const genderLabel = pick(GENDERS, Math.floor(i / AGES.length))
+    const tier = pick(TIERS, Math.floor(i / (AGES.length * GENDERS.length)))
+    const label = `${age} ${genderLabel} ${tier} ${i}`
     divisions.push(
       (await payload.create({
         collection: 'divisions',
         overrideAccess: true,
-        data: { name: label, fullPath: `${SEASON_NAME} / ${label}`, displayLabel: label, season: season.id, requiredRampLevel: pick(['none', 'level1', 'level2'], i) } as never,
+        data: {
+          name: label,
+          fullPath: `${LEAGUE_NAME} / ${label}`,
+          displayLabel: label,
+          // leagueName and ageGroup are required on this collection.
+          leagueName: LEAGUE_NAME,
+          ageGroup: age,
+          gender: genderLabel.toLowerCase(), // the enum is boys | girls | coed
+          tier,
+          season: season.id,
+          requiredRampLevel: pick(['none', 'level1', 'level2'], i),
+        } as never,
       })) as never,
     )
   }
