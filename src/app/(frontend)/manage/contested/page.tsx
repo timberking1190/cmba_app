@@ -15,11 +15,14 @@ export default async function ContestedPage() {
   if (!canManageScheduling(user)) redirect('/account')
 
   const payload = await getPayloadClient()
-  const [contested, awaiting, options] = await Promise.all([
+  const [contested, awaiting] = await Promise.all([
     loadAdminGames(payload, { where: { status: { equals: 'contested' } }, sort: ['startAt', 'id'], limit: 100 }),
     loadAdminGames(payload, { where: { status: { equals: 'reported' } }, sort: ['startAt', 'id'], limit: 100 }),
-    loadEditOptions(payload),
   ])
+  const divisionIds = Array.from(
+    new Set([...contested.games, ...awaiting.games].map((g) => g.divisionId).filter((d): d is string | number => d != null)),
+  )
+  const options = await loadEditOptions(payload, divisionIds)
 
   // Attach the latest open dispute reason per game, so the admin sees why it is here.
   const ids = contested.games.map((g) => g.id)

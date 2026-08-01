@@ -59,14 +59,27 @@ export async function readAdminGame(payload: Payload, gameId: string | number): 
 }
 
 /** The option lists the edit panel needs: venues with their courts, and teams by division. */
-export async function loadEditOptions(payload: Payload): Promise<{
+/*
+ * The option lists the edit panel needs. `divisionIds` scopes the team list to the
+ * divisions actually on screen: loading every team in the league on every render
+ * is wasted work, and the edit panel only ever offers teams from the game's own
+ * division anyway.
+ */
+export async function loadEditOptions(payload: Payload, divisionIds?: Array<string | number>): Promise<{
   venues: Array<{ id: string | number; name: string; courts: Array<{ id: string | number; name: string }> }>
   teamsByDivision: Record<string, Array<{ id: string | number; name: string }>>
 }> {
   const [venuesRes, courtsRes, teamsRes] = await Promise.all([
     payload.find({ collection: 'venues', sort: ['name'], depth: 0, limit: 500, overrideAccess: true }),
     payload.find({ collection: 'courts', sort: ['name'], depth: 0, limit: 2000, overrideAccess: true }),
-    payload.find({ collection: 'teams', sort: ['name'], depth: 0, limit: 2000, overrideAccess: true }),
+    payload.find({
+      collection: 'teams',
+      where: (divisionIds?.length ? { division: { in: divisionIds } } : {}) as never,
+      sort: ['name'],
+      depth: 0,
+      limit: 2000,
+      overrideAccess: true,
+    }),
   ])
 
   const relId = (r: unknown): string | number | null =>

@@ -35,11 +35,17 @@ export default async function ManageSchedulePage({ searchParams }: { searchParam
   const page = Math.max(1, Number(sp.page ?? '1') || 1)
 
   const payload = await getPayloadClient()
-  const [{ games, totalDocs, totalPages }, options, filters] = await Promise.all([
-    loadAdminGames(payload, { where: await scheduleWhere(payload, filter), sort: ['startAt', 'id'], limit: PAGE_SIZE, page }),
-    loadEditOptions(payload),
-    buildScheduleFilters(payload),
-  ])
+
+  // Load the page of games first, so the edit options can be scoped to just the
+  // divisions on screen rather than every team in the league.
+  const { games, totalDocs, totalPages } = await loadAdminGames(payload, {
+    where: await scheduleWhere(payload, filter),
+    sort: ['startAt', 'id'],
+    limit: PAGE_SIZE,
+    page,
+  })
+  const divisionIds = Array.from(new Set(games.map((g) => g.divisionId).filter((d): d is string | number => d != null)))
+  const [options, filters] = await Promise.all([loadEditOptions(payload, divisionIds), buildScheduleFilters(payload)])
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 lg:px-6 py-8 lg:py-12">

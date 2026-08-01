@@ -68,6 +68,9 @@ export function OfficialsBoard({
   divisions,
   venues,
   filter,
+  page = 1,
+  totalPages = 1,
+  totalGames,
 }: {
   games: BoardGame[];
   officials: BoardOfficial[];
@@ -75,6 +78,9 @@ export function OfficialsBoard({
   divisions: Array<{ id: string | number; name: string }>;
   venues: Array<{ id: string | number; name: string }>;
   filter: { day: string; division: string; venue: string; unstaffedOnly: boolean };
+  page?: number;
+  totalPages?: number;
+  totalGames?: number;
 }) {
   const [games, setGames] = useState(initialGames);
   const [picks, setPicks] = useState<Picks>({});
@@ -225,8 +231,13 @@ export function OfficialsBoard({
       ) : (
         <>
           <Panel
-            title={`${games.length} game${games.length === 1 ? "" : "s"} on this board`}
+            title={
+              totalGames != null && totalGames > games.length
+                ? `${games.length} of ${totalGames} games, page ${page} of ${totalPages}`
+                : `${games.length} game${games.length === 1 ? "" : "s"} on this board`
+            }
             description="Choose an official for each role, on as many games as you like, then assign them all in one action. The number beside a name is how many games they already have that day."
+            actions={totalPages > 1 ? <BoardPager page={page} totalPages={totalPages} /> : undefined}
           >
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[900px]">
@@ -386,6 +397,39 @@ export function OfficialsBoard({
         </Panel>
       )}
     </div>
+  );
+}
+
+/* Paging keeps the number of rendered option elements sane: every game shows a
+   picker per role, and every picker lists every official. */
+function BoardPager({ page, totalPages }: { page: number; totalPages: number }) {
+  const go = (to: number) => {
+    if (typeof window === "undefined") return "#";
+    const q = new URLSearchParams(window.location.search);
+    q.set("page", String(to));
+    return `/manage/officials?${q.toString()}`;
+  };
+  return (
+    <span className="flex items-center gap-2">
+      {page > 1 ? (
+        <LinkButton href={go(page - 1)} variant="secondary">
+          Previous
+        </LinkButton>
+      ) : (
+        <ActionButton variant="secondary" disabledReason="You are on the first page.">
+          Previous
+        </ActionButton>
+      )}
+      {page < totalPages ? (
+        <LinkButton href={go(page + 1)} variant="secondary">
+          Next
+        </LinkButton>
+      ) : (
+        <ActionButton variant="secondary" disabledReason="You are on the last page.">
+          Next
+        </ActionButton>
+      )}
+    </span>
   );
 }
 

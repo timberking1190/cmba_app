@@ -201,6 +201,11 @@ body {
 .scroll-progress {
   position: fixed; right: 18px; top: 50%; transform: translateY(-50%);
   z-index: 40; text-align: right; mix-blend-mode: difference;
+  /* Decorative and aria-hidden, so it must never eat a click. Without this it
+     sits directly over the right hand edge of the viewport at mid height, which
+     on the scheduling console is exactly where the Edit and Publish buttons are,
+     and it silently swallowed presses on them. */
+  pointer-events: none;
 }
 .scroll-progress .num {
   font-family: var(--disp); font-weight: 900; font-size: 38px; line-height: .9;
