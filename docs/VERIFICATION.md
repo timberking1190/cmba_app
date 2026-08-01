@@ -1277,11 +1277,28 @@ kept in `.env.e2e.local`, which the existing `.env*.local` gitignore rule covers
 |---|---|
 | All 35 Payload migrations, from scratch on an empty Postgres 17.6 | **PASS.** Independent confirmation the three new migrations are sound on a clean database, not only as an increment on prod |
 | Scale seed | **PASS.** 1,500 games, 24 divisions, 192 teams, 24 venues, 72 courts, 150 officials, 480 assignments, in 1,894s |
+| Production build against the branch | **PASS** |
 
 Note on the seeded shape: the 1,500 games packed into 3 weekends, roughly 500 per
 weekend, because the slot capacity is 24 venues times 3 courts times 9 slots. That
 is denser than the 100 to 200 per weekend the league actually runs, so it is a
 harder test than reality, not an easier one.
+
+| End to end suite, 9 tests | **PASS, 9 of 9** on 2026-07-31, against the seeded branch |
+
+All six flows the gate names are covered and green:
+
+```
+an admin signs in ONCE and lands on the manage console            49.8s
+the manage console loads immediately after signing in             17.9s
+import a bad time, fix it, and revalidate WITHOUT a refresh       34.7s
+a 12 hour time and a 24 hour time both import                     29.1s
+edit a game date and venue, clash surfaced, then resolved         38.6s
+a forfeit submits, shows who forfeited, reaches the public site   52.6s
+staff a weekend of officials in bulk, in one sitting              1.3m
+run a bracket from creation through to a champion                 21.7s
+the console stays responsive against the seeded season            17.9s
+```
 
 #### Defects this run found
 
@@ -1302,3 +1319,35 @@ for having run it at all.
 the `users.club` foreign key. Harmless on a scratch database, but it is not what
 someone would expect from a command aimed at games and teams.
 
+
+### What the end to end run cost, and what it was worth
+
+Thirteen runs. The cause is worth recording so it is not repeated: the nine specs
+were written without ever being executed, so every selector and timing assumption
+surfaced one at a time rather than together. Writing them against a running app
+would have collapsed most of that into a single pass.
+
+Seven of the failures were defects in the test code itself. Eight were real, and
+none of them were reachable from unit tests or a small development database:
+
+| Defect | Why only this run could find it |
+|---|---|
+| `.scroll-progress`, an aria-hidden decorative overlay, swallowed clicks on the console's own Edit and Publish buttons | Needs a real browser doing real hit testing |
+| Officials board read every assignment in the league at depth 2 | Needs a season large enough to be slow |
+| Officials board loaded every day at once | Needs a season with more than one day of games |
+| Officials board rendered a picker per role per game, each listing every official | Needs enough games for the option count to explode |
+| Bulk assign ran a heavy conflict query per official per game | Needs a bulk submit of realistic size |
+| `loadEditOptions` fetched every team in the league on every render | Needs enough teams to matter |
+| The grant script reported success and wrote nothing | Needs a real Payload hook chain |
+| jsdom could not start on the Node version CI pins | Needs CI, not a developer laptop |
+
+Two near misses are worth recording as well, because both would have made things
+worse rather than better:
+
+- The public schedule appeared not to show a forfeit. The first conclusion, that
+  it reads TeamLinkt rather than Payload, was WRONG. It reads Payload; a forfeit
+  is a result, so it sits under the Results tab while the view opens on Upcoming.
+  Acting on the first reading would have "fixed" something that was correct.
+- A conflict check appeared not to fire when a game was moved to 08:00. The game
+  already started at 08:00, so there was no change and correctly nothing to
+  report. Changing the app to report a clash there would have broken it.

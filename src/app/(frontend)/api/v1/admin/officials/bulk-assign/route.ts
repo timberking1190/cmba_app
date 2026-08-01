@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { canManageScheduling } from '@/access/index'
 import { authenticateRequest } from '@/lib/api/auth'
 import { getPayloadClient } from '@/lib/auth'
-import { applyOfficialChanges, type ChangeResult } from '@/lib/officials/assignService'
+import { applyOfficialChanges, buildExistingIndex, type ChangeResult } from '@/lib/officials/assignService'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -50,10 +50,20 @@ export async function POST(req: Request) {
     )
   }
 
+  /*
+   * One index of everything these officials already hold, built once and reused
+   * for every game in the batch. Without it a forty game submit fired forty heavy
+   * queries and did not finish inside a minute on a real season.
+   */
+  const officialIds = changes.flatMap((c) => [...(c.assignments ?? []).map((a) => a.officialId), ...(c.remove ?? [])])
+  const existingIndex = await buildExistingIndex(payload, officialIds)
+
   const results: ChangeResult[] = []
   for (const c of changes) {
     if (c?.gameId == null) continue
-    results.push(await applyOfficialChanges(payload, user as never, c.gameId, { assignments: c.assignments, remove: c.remove, force: body.force, dryRun: body.dryRun }))
+    results.push(
+      await applyOfficialChanges(payload, user as never, c.gameId, { assignments: c.assignments, remove: c.remove, force: body.force, dryRun: body.dryRun }, existingIndex),
+    )
   }
 
   const totals = results.reduce(

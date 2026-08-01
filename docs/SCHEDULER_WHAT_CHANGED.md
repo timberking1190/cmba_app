@@ -22,9 +22,11 @@ the forfeit**.
 - The row updates immediately to a red **FORFEIT** chip, with no refresh.
 - Underneath it says who forfeited and who takes the win, in words.
 - The standings recalculate.
-- The same FORFEIT label now appears on the public schedule, and a family
-  subscribed to the calendar sees "Forfeit:" in the event title and who forfeited
-  in the notes.
+- The same FORFEIT label appears on the public schedule once the game is
+  published, under the **Results** tab. A forfeit is a finished result, not an
+  upcoming game, so it moves out of Upcoming and into Results the moment you
+  record it. A family subscribed to the calendar sees "Forfeit:" in the event
+  title and who forfeited in the notes.
 
 ---
 
@@ -156,8 +158,10 @@ weekend meant repeating the whole cycle for every game.
 
 **What to try now.** Officials is now a board.
 
-- Filter to the day, division, or venue you are staffing. There is a **Needs
-  officials only** tick box.
+- It opens on the next day that still has games, because staffing is a per
+  weekend job and a whole season on one screen is unusable. Filter to any other
+  day, division, or venue you are staffing. There is a **Needs officials only**
+  tick box, and long days are paged.
 - Every game on that slate is on one screen, with a picker for Referee 1,
   Referee 2, and Scorekeeper on each row.
 - Every name shows how many games that person already has that day, for example

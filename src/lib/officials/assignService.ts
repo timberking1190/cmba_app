@@ -49,25 +49,58 @@ const emptyResult = (gameId: string | number, label: string): ChangeResult => ({
   removed: [],
 })
 
-/** Every game this official already holds, labelled so a clash can name it. */
-async function existingFor(payload: Payload, officialId: string | number, thisGameId: string | number, thisLabel: string): Promise<OtherGame[]> {
+/**
+ * Every game each official already holds, labelled so a clash can name it.
+ *
+ * Built ONCE for a whole batch. Doing this per official per game meant a bulk
+ * submit of forty games fired forty depth-2 queries over five hundred rows each,
+ * which did not finish inside a minute against a real season. Two queries now
+ * serve the whole batch: the assignments, then the games they point at.
+ */
+export type ExistingIndex = Map<string, OtherGame[]>
+
+export async function buildExistingIndex(payload: Payload, officialIds: Array<string | number>): Promise<ExistingIndex> {
+  const index: ExistingIndex = new Map()
+  const ids = Array.from(new Set(officialIds.map(String))).filter(Boolean)
+  if (!ids.length) return index
+
   const rows = await payload.find({
     collection: 'game-officials',
-    where: { official: { equals: officialId } },
-    depth: 2,
-    limit: 500,
+    where: { official: { in: ids } },
+    depth: 0,
+    limit: 5000,
     overrideAccess: true,
   })
-  const out: OtherGame[] = []
-  for (const row of rows.docs as unknown as Array<Record<string, unknown>>) {
-    const g = row.game
-    if (!g || typeof g !== 'object') continue
-    const other = g as Record<string, unknown>
-    if (!other.startAt) continue
-    const same = String(other.id) === String(thisGameId)
-    out.push({ gameId: (other.id as string | number) ?? '', label: same ? thisLabel : gameLabel(other), startAt: String(other.startAt), isSameGame: same })
+  const pairs = (rows.docs as unknown as Array<Record<string, unknown>>).map((r) => ({
+    officialId: String(relId(r.official) ?? ''),
+    gameId: String(relId(r.game) ?? ''),
+  }))
+  const gameIds = Array.from(new Set(pairs.map((x) => x.gameId).filter(Boolean)))
+  if (!gameIds.length) return index
+
+  const games = await payload.find({ collection: 'games', where: { id: { in: gameIds } }, depth: 1, limit: 5000, overrideAccess: true })
+  const byId = new Map<string, Record<string, unknown>>()
+  for (const g of games.docs as unknown as Array<Record<string, unknown>>) byId.set(String(g.id), g)
+
+  for (const { officialId, gameId } of pairs) {
+    const g = byId.get(gameId)
+    if (!officialId || !g?.startAt) continue
+    const list = index.get(officialId) ?? []
+    list.push({ gameId, label: gameLabel(g), startAt: String(g.startAt), isSameGame: false })
+    index.set(officialId, list)
   }
-  return out
+  return index
+}
+
+const relId = (r: unknown): string | number | undefined =>
+  r == null ? undefined : typeof r === 'object' ? (r as { id: string | number }).id : (r as string | number)
+
+/** This official's other games, marking the one being staffed. */
+function existingFrom(index: ExistingIndex, officialId: string | number, thisGameId: string | number, thisLabel: string): OtherGame[] {
+  return (index.get(String(officialId)) ?? []).map((e) => {
+    const same = String(e.gameId) === String(thisGameId)
+    return same ? { ...e, isSameGame: true, label: thisLabel } : e
+  })
 }
 
 export async function applyOfficialChanges(
@@ -75,6 +108,7 @@ export async function applyOfficialChanges(
   user: { id: string | number } & Record<string, unknown>,
   gameId: string | number,
   req: ChangeRequest,
+  existingIndex?: ExistingIndex,
 ): Promise<ChangeResult> {
   const game = (await payload.findByID({ collection: 'games', id: gameId, depth: 1, overrideAccess: true }).catch(() => null)) as Record<string, unknown> | null
   if (!game || !game.startAt) {
@@ -139,7 +173,7 @@ export async function applyOfficialChanges(
       rampLevel: official.rampLevel,
       maxGamesPerDay: official.maxGamesPerDay,
       game: { id: gameId, label, startAt: String(game.startAt), requiredRampLevel: requiredRamp },
-      existing: await existingFor(payload, officialId, gameId, label),
+      existing: existingFrom(existingIndex ?? (await buildExistingIndex(payload, [officialId])), officialId, gameId, label),
       windowMinutes: WINDOW_MINUTES,
       force: req.force,
     })
