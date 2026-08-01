@@ -1261,9 +1261,44 @@ Two fixes, both in `scripts/grant-scheduler-role.ts`:
 Regression tests pinning the hook behaviour are in
 `src/access/__tests__/schedulerRole.test.ts`.
 
-### 3. End to end and scale, in progress
+### 3. End to end and scale, run on a preview branch 2026-07-31
 
 A Supabase preview branch (`scheduler-e2e`, ref `qmxjgddsqzeksuctihgr`) was created
-for this. `scripts/run-e2e-on-branch.sh` runs the whole sequence and refuses to run
-against the production ref. It is waiting on the branch connection string being
-placed in `.env.e2e.local`.
+for this, because the suite writes heavily and the only other database available
+is production.
+
+Getting a usable connection to it is worth recording: the Supabase dashboard only
+shows a `[YOUR-PASSWORD]` placeholder for a branch, and `postgres` is a privileged
+role on managed Supabase that cannot have its own password altered. A dedicated
+`e2e_app` login role was created on the branch instead, and the connection string
+kept in `.env.e2e.local`, which the existing `.env*.local` gitignore rule covers.
+
+| Stage | Result |
+|---|---|
+| All 35 Payload migrations, from scratch on an empty Postgres 17.6 | **PASS.** Independent confirmation the three new migrations are sound on a clean database, not only as an increment on prod |
+| Scale seed | **PASS.** 1,500 games, 24 divisions, 192 teams, 24 venues, 72 courts, 150 officials, 480 assignments, in 1,894s |
+
+Note on the seeded shape: the 1,500 games packed into 3 weekends, roughly 500 per
+weekend, because the slot capacity is 24 venues times 3 courts times 9 slots. That
+is denser than the 100 to 200 per weekend the league actually runs, so it is a
+harder test than reality, not an easier one.
+
+#### Defects this run found
+
+Both were invisible until the code was actually executed, which is the argument
+for having run it at all.
+
+1. **The scale seed did not match the schema.** `divisions` requires `leagueName`
+   and `ageGroup`, `gender` is a lowercase enum, and `seasons` requires `status`.
+   It failed on the first division. Fixed.
+2. **The end to end import fixtures referenced data the seed never creates.** The
+   importer matches a division on its exact `fullPath`, so those tests would have
+   failed on "Division not found" rather than exercising the time parsing they
+   exist to test. Fixtures are now pinned to verified seeded values.
+
+#### Operational note worth keeping
+
+`TRUNCATE ... CASCADE` over the competition tables also empties `users`, through
+the `users.club` foreign key. Harmless on a scratch database, but it is not what
+someone would expect from a command aimed at games and teams.
+
