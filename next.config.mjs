@@ -2,6 +2,9 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // There is an unrelated package-lock.json in the home directory, which makes
+  // Next 16 infer the wrong workspace root and warn on every build. Pin it.
+  turbopack: { root: import.meta.dirname },
   images: {
     // Serve modern formats first (AVIF then WebP) for faster mobile loads / Core Web Vitals.
     formats: ['image/avif', 'image/webp'],
