@@ -22,6 +22,21 @@ import { test, expect, type Page } from '@playwright/test'
 const EMAIL = process.env.E2E_ADMIN_EMAIL
 const PASSWORD = process.env.E2E_ADMIN_PASSWORD
 
+/*
+ * Fixtures produced by scripts/seed-scale-season.ts. Division index 0 is
+ * "U11 Boys A 0" under the "Scale Test League", and its teams are named
+ * "<club> 0-<n>". The CSV importer matches a division on its exact fullPath, so
+ * these strings have to track the seed.
+ */
+const SEED = {
+  division: 'Scale Test League / U11 Boys A 0',
+  homeTeam: 'Excel 0-0',
+  awayTeam: 'CoMBA 0-1',
+  homeTeam2: 'Okotoks 0-2',
+  awayTeam2: 'DMS 0-3',
+  venue: 'Scale Gym 0',
+}
+
 test.skip(!EMAIL || !PASSWORD, 'Set E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD, against a non production database, to run the scheduler end to end suite.')
 
 /* --------------------------------------------------------------- helpers */
@@ -67,9 +82,12 @@ test('the manage console loads immediately after signing in, with no second atte
 test('import a file with a bad time, fix it, and revalidate WITHOUT a page refresh', async ({ page }) => {
   await signInOnce(page, '/manage/import')
 
+  // These names come from scripts/seed-scale-season.ts. The importer matches a
+  // division on its EXACT fullPath, so this has to be the seeded value.
   const header = 'date,time,division,home_team,away_team,venue\n'
-  const badRow = `${header}2026-12-10,half past six,U13 Boys / A 0,Excel 0-0,Excel 0-1,Scale Gym 0\n`
-  const goodRow = `${header}2026-12-10,6:30 PM,U13 Boys / A 0,Excel 0-0,Excel 0-1,Scale Gym 0\n`
+  const row = (time: string) => `${header}2026-12-10,${time},${SEED.division},${SEED.homeTeam},${SEED.awayTeam},${SEED.venue}\n`
+  const badRow = row('half past six')
+  const goodRow = row('6:30 PM')
 
   const input = page.locator('input[type="file"]')
 
@@ -95,8 +113,8 @@ test('a 12 hour time and a 24 hour time both import', async ({ page }) => {
   await signInOnce(page, '/manage/import')
   const csv =
     'date,time,division,home_team,away_team,venue\n' +
-    '2026-12-10,18:00,U13 Boys / A 0,Excel 0-0,Excel 0-1,Scale Gym 0\n' +
-    '2026-12-11,8:00 AM,U13 Boys / A 0,Excel 0-2,Excel 0-3,Scale Gym 0\n'
+    `2026-12-10,18:00,${SEED.division},${SEED.homeTeam},${SEED.awayTeam},${SEED.venue}\n` +
+    `2026-12-11,8:00 AM,${SEED.division},${SEED.homeTeam2},${SEED.awayTeam2},${SEED.venue}\n`
   await page.locator('input[type="file"]').setInputFiles({ name: 'mixed.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) })
   await page.getByRole('button', { name: /validate file/i }).click()
   await expect(page.getByText(/6:00 PM/).first()).toBeVisible()
