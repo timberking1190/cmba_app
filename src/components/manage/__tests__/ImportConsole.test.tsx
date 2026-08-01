@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 /*
  * REPRO tests for item 5: "Must refresh before revalidating a corrected file."
  *
@@ -30,12 +30,13 @@ function fileInput(): HTMLInputElement {
 }
 
 /*
- * jsdom will happily let us dispatch the same change twice, which a real browser
- * will not. So we assert the real root cause instead: after the component reads a
- * file it must assign '' to the input value, which is what makes the second pick
- * of the same file name fire a change event at all. jsdom's own value getter for
- * a file input does not reflect a stubbed `files` list, so we install our own
- * property and record what the component writes to it.
+ * A test environment will happily let us dispatch the same change twice, which a
+ * real browser will not. So we assert the real root cause instead: after the
+ * component reads a file it must assign '' to the input value, which is what makes
+ * the second pick of the same file name fire a change event at all. The
+ * environment's own value getter for a file input does not reflect a stubbed
+ * `files` list, so we install our own property and record what the component
+ * writes to it.
  */
 function trackValueWrites(input: HTMLInputElement): string[] {
   const writes: string[] = []

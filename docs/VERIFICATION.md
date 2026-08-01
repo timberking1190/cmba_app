@@ -1139,11 +1139,11 @@ behaviour before the fix**, and passes after. They are kept as regressions.
 Two notes on honesty of the repros:
 
 - The first version of the item 5 repro asserted `input.value === ''`, which
-  **passes vacuously in jsdom** because its file input value getter does not
+  **passes vacuously in happy-dom** because its file input value getter does not
   reflect a stubbed file list. That was a false repro and was replaced with a
   property setter spy that records what the component actually writes, which does
   fail against the old code.
-- Item 3's root cause is browser cache behaviour that jsdom cannot reproduce. The
+- Item 3's root cause is browser cache behaviour that happy-dom cannot reproduce. The
   unit tests pin the new contract (confirm the session resolves before
   navigating); the cache behaviour itself is covered by the Playwright spec, which
   has not been run here. See Gate 3.

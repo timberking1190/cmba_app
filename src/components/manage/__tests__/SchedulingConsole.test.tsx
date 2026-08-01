@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 /*
  * REPRO tests for items 1 and 2, written before the fix and observed to fail.
  *

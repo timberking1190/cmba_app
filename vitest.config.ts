@@ -7,8 +7,13 @@ import { defineConfig } from 'vitest/config'
  * `npm run test:e2e`, so they are excluded here to keep `npm test` fast and green.
  *
  * Component tests (*.test.tsx) opt into a browser-like DOM per file with
- * `// @vitest-environment jsdom` on the first line, so the several hundred
+ * `// @vitest-environment happy-dom` on the first line, so the several hundred
  * pure-logic tests keep running in the faster node environment.
+ *
+ * happy-dom rather than jsdom deliberately: jsdom bundles a copy of undici that
+ * needs a newer Node than this project's CI pins (Node 20), and fails there with
+ * "webidl.util.markAsUncloneable is not a function". happy-dom has no such
+ * dependency, and is lighter.
  */
 export default defineConfig({
   oxc: { jsx: { runtime: 'automatic' } },

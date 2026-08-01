@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 /*
  * REPRO tests for items 6 and 7.
  *
