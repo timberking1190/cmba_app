@@ -217,3 +217,93 @@ reviews consume.
   adversarial/pentest matrix as a checklist, known residuals, disclosure contact.
 - `docs/SES_SETUP.md` — SES (ca-central-1) provisioning runbook (sandbox + RAMP DNS
   blockers documented).
+
+---
+
+## Dependency and static-analysis debt cleared (2026-08-01)
+
+Both security gates had been failing on `main` for some time. Cleared to zero.
+
+### Dependency advisories: 11 un-allowlisted high, now 0
+
+The obvious remediation was wrong, which is worth recording. `npm audit fix` wants
+to install **Next 15.5.22**, and every Next advisory here is fixed in `>=15.5.21`.
+But `@payloadcms/next` pins:
+
+```
+next: ">=15.2.9 <15.3.0 || >=15.3.9 <15.4.0 || >=15.4.11 <15.5.0 || >=16.2.6 <17.0.0"
+```
+
+The whole **15.5.x band is excluded**, and the latest Payload (3.87.0) carries the
+identical range. Taking the audit's suggestion would have broken the framework
+peer contract silently. The only supported route to the Next patches is **Next 16**,
+which that same range explicitly allows.
+
+| Package | Was | Now | How |
+|---|---|---|---|
+| next | 15.3.9 | 16.2.12 | direct upgrade, inside Payload's supported range |
+| sharp | 0.33.5 | 0.35.3 | direct dependency |
+| postcss | 8.4.31 | 8.5.25 | override; `next@16.2.12` **pins** 8.4.31 exactly |
+| immutable | 4.3.8 | 4.3.9 | override, via `sass` |
+| js-yaml | 4.1.1 | 4.3.1 | override, via `json-schema-to-typescript` |
+| fast-uri | 3.1.2 | 3.1.5 | override, via `ajv` |
+
+Every override is the MINIMUM fixed version inside the SAME major, so nothing
+changes shape. `sharp` and `postcss` needed overrides because even the newest Next
+ships vulnerable versions of both: it pins `postcss` exactly and declares
+`sharp: ^0.34.5`, which `0.35.3` does not satisfy.
+
+`sharp` was verified to actually work after the bump (resize plus metadata read),
+not merely to install, because it handles user-uploaded images at runtime.
+
+#### Measured exposure, for the record
+
+Before upgrading, the real applicability of the three Next advisories was checked
+rather than assumed:
+
+- **SSRF in rewrites** — `next.config.mjs` declares no `rewrites`. Not applicable.
+- **SSRF in Server Actions on custom servers** — no custom server; runs on Vercel
+  serverless. Not applicable.
+- **DoS in App Router via Server Actions** — the only `'use server'` in the tree is
+  Payload's own admin layout, which is admin-authenticated. Narrow but real.
+
+Exposure was narrower than the raw advisory list implies. The upgrade was done
+anyway, because a supported patched version existed.
+
+### Static analysis: 9 blocking findings, now 0
+
+- **Mutable action tags** in both workflows. `actions/checkout@v4` and
+  `actions/setup-node@v4` are now pinned to full commit SHAs, with the version in a
+  trailing comment. The SHAs were resolved from the GitHub API; a guessed SHA
+  breaks CI outright.
+- **Dependabot had no cooldown.** Both ecosystems now wait 7 days before proposing
+  a newly published version, so a compromised release is not pulled the moment it
+  lands.
+- **`createDecipheriv` with GCM and no `authTagLength`** in `src/lib/mfa/crypto.ts`.
+  Not exploitable as written, because the layout slices exactly 16 bytes and a
+  short tag could never be supplied. Pinned anyway so Node enforces the invariant
+  instead of it resting on slice arithmetic staying correct.
+
+  **The risk here was the fix, not the finding.** Members already have TOTP secrets
+  encrypted in production by the previous code. 16 is the GCM default so the format
+  is unchanged, and `src/lib/mfa/__tests__/crypto.test.ts` now encrypts exactly the
+  way the old implementation did and asserts the current code still decrypts it. If
+  that test ever fails, everyone enrolled in two factor is locked out.
+
+### Breaking changes the Next 16 upgrade surfaced
+
+- **`next lint` was removed.** The `lint` script now runs `eslint` directly, which
+  covers more of the repo than `next lint` did and exposed two pre-existing unused
+  symbols in `scripts/`. Both fixed.
+- **Next rewrote `tsconfig.json`**: `jsx` from `preserve` to `react-jsx`, plus a new
+  `include` entry. Reviewed and committed deliberately.
+- **`turbopack.root` pinned** in `next.config.mjs`. An unrelated `package-lock.json`
+  in the developer home directory made Next infer the wrong workspace root.
+
+### Known and deliberately not done here
+
+- The **`middleware` file convention is deprecated** in Next 16 in favour of
+  `proxy`. It still works and warns. Migrating it inside a security fix would mix
+  unrelated risk; it is a follow-up.
+- **ESLint remains on 8.x.** `eslint-config-next@16` requires ESLint 9, which means
+  a flat-config migration. Also a follow-up, and unrelated to these advisories.

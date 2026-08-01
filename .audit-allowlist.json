@@ -1,42 +1,7 @@
 {
-  "_comment": "Triaged, accepted-pending-upgrade advisories. All are framework-transitive (next / nodemailer / undici, via Payload + Next 15.3.9). Remediation: upgrade Next.js to the latest patched 15.x and Payload accordingly, then re-run scripts/audit-ci.mjs to re-baseline. Tracked in docs/SECURITY.md. Any high/critical advisory NOT listed here fails CI.",
+  "_comment": "Triaged, accepted-pending-upgrade advisories. All are framework-transitive via Payload + Next. As of 2026-08-01 the tree runs Next 16.2.12 with overrides for postcss, sharp, immutable, js-yaml and fast-uri, so the previously un-allowlisted advisories are FIXED rather than accepted; the entries below are the residual ones with no compatible patch. Remediation: re-run scripts/audit-ci.mjs after each Next or Payload upgrade and delete any entry that no longer appears. Tracked in docs/SECURITY.md. Any high/critical advisory NOT listed here fails CI.",
   "_baselined": "2026-06-29",
   "allow": {
-    "GHSA-q4gf-8mx6-v5v3": {
-      "severity": "high",
-      "module": "next",
-      "title": "Next.js has a Denial of Service with Server Components"
-    },
-    "GHSA-8h8q-6873-q5fj": {
-      "severity": "high",
-      "module": "next",
-      "title": "Next.js Vulnerable to Denial of Service with Server Components"
-    },
-    "GHSA-26hh-7cqf-hhc6": {
-      "severity": "high",
-      "module": "next",
-      "title": "Next.js has a Middleware / Proxy bypass in App Router applications via segment-p"
-    },
-    "GHSA-mg66-mrh9-m8jx": {
-      "severity": "high",
-      "module": "next",
-      "title": "Next.js vulnerable to Denial of Service via connection exhaustion in application"
-    },
-    "GHSA-c4j6-fc7j-m34r": {
-      "severity": "high",
-      "module": "next",
-      "title": "Next.js vulnerable to server-side request forgery in applications using WebSocke"
-    },
-    "GHSA-267c-6grr-h53f": {
-      "severity": "high",
-      "module": "next",
-      "title": "Next.js has a Middleware / Proxy bypass in App Router applications via segment-p"
-    },
-    "GHSA-36qx-fr4f-26g5": {
-      "severity": "high",
-      "module": "next",
-      "title": "Next.js has a Middleware / Proxy bypass in Pages Router applications using i18n"
-    },
     "GHSA-p6gq-j5cr-w38f": {
       "severity": "high",
       "module": "nodemailer",
@@ -57,5 +22,6 @@
       "module": "undici",
       "title": "undici vulnerable to cross-origin request routing via SOCKS5 proxy pool reuse"
     }
-  }
+  },
+  "_reviewed": "2026-08-01"
 }

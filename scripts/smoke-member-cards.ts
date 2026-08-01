@@ -10,7 +10,7 @@ import 'dotenv/config'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
-import { issueCardForUser, loadRequirementMatrix } from '../src/lib/memberCards/issuance'
+import { loadRequirementMatrix } from '../src/lib/memberCards/issuance'
 import { buildPublicKeyResolver, getActiveSigningKey, isSigningConfigured } from '../src/lib/memberCards/keys'
 import { mintPassToken } from '../src/lib/memberCards/token'
 import { verifyPassToken } from '../src/lib/memberCards/token'

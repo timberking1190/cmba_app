@@ -4,6 +4,11 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    # Wait before proposing a newly published version. A freshly published package
+    # can be malicious or simply broken, and the compromises that matter are
+    # usually caught within days.
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 10
     groups:
       # Batch low-risk patch/minor bumps so review stays manageable.
@@ -15,3 +20,5 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7

@@ -19,7 +19,6 @@ import type { Payload, Where } from 'payload'
 import config from '@payload-config'
 
 const PROD_REF = 'pdwautioosstdgbbblxl'
-const SEASON = process.env.MEMBERCARD_SEASON || '2026-27'
 const TARGET = Number(process.env.MEMBERCARD_SEED_COUNT || '200')
 const DOMAIN = 'example.invalid' // reserved TLD — never a real inbox
 
