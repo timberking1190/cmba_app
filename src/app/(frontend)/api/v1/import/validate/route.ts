@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { authenticateRequest } from '@/lib/api/auth'
 import { getPayloadClient } from '@/lib/auth'
 import { buildPreview } from '@/lib/csvImport/commit'
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   const payload = await getPayloadClient()
   const user = await authenticateRequest(payload, req)
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-  if (!isAnyAdmin(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!canManageScheduling(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   let body: { csv?: string; kind?: string; seasonId?: string | number }
   try {

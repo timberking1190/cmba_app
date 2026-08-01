@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
-import { isAnyAdmin } from '@/access/index'
+import { canManageScheduling } from '@/access/index'
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { ImportConsole } from '@/components/manage/ImportConsole'
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: 'Import schedule data | CMBA Connect'
 export default async function ImportPage() {
   const user = await getCurrentUser()
   if (!user) redirect('/login?redirect=/manage/import')
-  if (!isAnyAdmin(user)) redirect('/account')
+  if (!canManageScheduling(user)) redirect('/account')
 
   const payload = await getPayloadClient()
   const seasons = await payload.find({ collection: 'seasons', limit: 100, depth: 0, overrideAccess: true })

@@ -29,7 +29,9 @@
     "smoke:b5": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/smoke-b5.ts",
     "smoke:engagement": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/smoke-engagement.ts",
     "set-scheduling-admin": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/set-scheduling-admin.ts",
-    "verify-audit-log": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/verify-audit-log.ts"
+    "verify-audit-log": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/verify-audit-log.ts",
+    "seed:scale": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/seed-scale-season.ts",
+    "grant:scheduler": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts tsx scripts/grant-scheduler-role.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.85.1",
@@ -62,6 +64,9 @@
     "@playwright/test": "^1.61.1",
     "@swc-node/register": "^1.11.1",
     "@swc/core": "^1.15.41",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
@@ -70,6 +75,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^8",
     "eslint-config-next": "15.3.9",
+    "happy-dom": "^20.11.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.22.4",

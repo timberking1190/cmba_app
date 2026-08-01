@@ -29,6 +29,13 @@
   --cmba-grey-dark: 85 85 94;
   --cmba-white: 255 255 255;
   --cmba-bone: 247 246 242;
+  /* Status tokens. One vocabulary for ok / warning / danger across the app, tuned
+     for contrast on the DARK card surface. The light theme overrides them below.
+     Fixed Tailwind palette colours (text-green-400 and friends) are not theme aware
+     and fail contrast on the light surfaces, so status colour comes from here. */
+  --st-ok: 52 211 153;
+  --st-warn: 251 191 36;
+  --st-danger: 248 113 113;
   color-scheme: dark;
 }
 
@@ -51,6 +58,10 @@
   --cmba-grey-dark: 178 178 184;  /* borders / subtle */
   --cmba-white: 24 24 27;
   --cmba-bone: 34 34 38;
+  /* Status tokens tuned for contrast on WHITE cards (all clear WCAG AA). */
+  --st-ok: 4 120 87;
+  --st-warn: 180 83 9;
+  --st-danger: 185 28 28;
   color-scheme: light;
 }
 
@@ -190,6 +201,11 @@ body {
 .scroll-progress {
   position: fixed; right: 18px; top: 50%; transform: translateY(-50%);
   z-index: 40; text-align: right; mix-blend-mode: difference;
+  /* Decorative and aria-hidden, so it must never eat a click. Without this it
+     sits directly over the right hand edge of the viewport at mid height, which
+     on the scheduling console is exactly where the Edit and Publish buttons are,
+     and it silently swallowed presses on them. */
+  pointer-events: none;
 }
 .scroll-progress .num {
   font-family: var(--disp); font-weight: 900; font-size: 38px; line-height: .9;

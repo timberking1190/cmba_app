@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   Menu, X, ChevronDown, Search, User, BookOpen, Flag,
   Calendar, HelpCircle, Phone, Shield, BarChart3, Trophy, Users, ClipboardList,
@@ -57,30 +56,35 @@ const utilLinks = [
   { label: "Contact", href: "/contact", icon: Phone },
 ];
 
-export function Header() {
+/*
+ * The signed in state comes from the SERVER, through the layout, not from a
+ * browser fetch. The old header called /api/users/me while the page above it read
+ * the session cookie on the server; when those disagreed the header showed Sign In
+ * to a signed in member, and every load flashed the signed out state first.
+ *
+ * The only local state is the optimistic clear on sign out, so the header updates
+ * the instant someone signs out rather than waiting for the navigation.
+ */
+export function Header({ user: serverUser = null }: { user?: AuthUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [user, setUser] = useState<AuthUser>(null);
-  const router = useRouter();
+  const [signedOut, setSignedOut] = useState(false);
+  const user = signedOut ? null : serverUser;
   const canScan = Boolean(user?.roles?.some((r) => SCAN_ROLES.includes(r)));
 
-  // Reflect auth state (training-account auth lives on our Payload backend).
+  // A new server render means a fresh session; drop the optimistic override.
   useEffect(() => {
-    let active = true;
-    fetch("/api/users/me", { credentials: "include" })
-      .then((r) => r.json())
-      .then((d) => { if (active) setUser(d?.user ?? null); })
-      .catch(() => { if (active) setUser(null); });
-    return () => { active = false; };
-  }, []);
+    setSignedOut(false);
+  }, [serverUser]);
 
   async function signOut() {
     try {
       await fetch("/api/users/logout", { method: "POST", credentials: "include" });
-    } catch { /* ignore */ }
-    setUser(null);
-    router.push("/");
-    router.refresh();
+    } catch { /* the cookie is cleared server side either way */ }
+    setSignedOut(true);
+    // A full document load, for the same reason sign in uses one: the client
+    // router may hold a cached render made while the member was still signed in.
+    window.location.assign("/");
   }
 
   return (

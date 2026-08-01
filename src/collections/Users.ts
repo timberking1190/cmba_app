@@ -29,7 +29,14 @@ export const Users: CollectionConfig = {
   auth: {
     maxLoginAttempts: 5,
     lockTime: 10 * 60 * 1000,
-    tokenExpiration: 2 * 60 * 60,
+    /*
+     * Seven days. Two hours signed a volunteer out partway through a scheduling
+     * session and was read as "it logged me out again". The session invalidation
+     * on password change still cuts every session immediately, MFA enforcement is
+     * unchanged, and the cookie stays httpOnly, sameSite Lax, and secure in
+     * production, so lengthening this does not widen anything else.
+     */
+    tokenExpiration: 7 * 24 * 60 * 60,
     cookies: {
       sameSite: 'Lax',
       secure: process.env.NODE_ENV === 'production',

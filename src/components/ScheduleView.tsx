@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { MapPin, ExternalLink } from "lucide-react";
+import { StatusChip } from "@/components/StatusChip";
 import {
   deserializeGame,
   divisionsFrom,
@@ -11,7 +12,6 @@ import {
   mapsUrl,
   type SerialGame,
   type Game,
-  type GameStatus,
 } from "@/lib/scheduleUtils";
 
 type Tab = "upcoming" | "results";
@@ -158,32 +158,4 @@ function GameRow({ g }: { g: Game }) {
       )}
     </div>
   );
-}
-
-const chipBase = "font-mono text-[10px] uppercase tracking-wider px-2 py-0.5";
-
-// Exhaustive over every GameStatus literal. The default branch assigns to a
-// `never`, so adding a new status without a chip here is a compile error rather
-// than silently rendering as "Scheduled".
-function StatusChip({ status }: { status: GameStatus }) {
-  switch (status) {
-    case "scheduled":
-      return <span className={`${chipBase} bg-cmba-red/15 text-cmba-red`}>Scheduled</span>;
-    case "reported":
-      return <span className={`${chipBase} bg-orange-500/15 text-orange-400`}>Reported</span>;
-    case "contested":
-      return <span className={`${chipBase} bg-orange-500/15 text-orange-400`}>Contested</span>;
-    case "final":
-      return <span className={`${chipBase} bg-green-500/15 text-green-400`}>Final</span>;
-    case "forfeit":
-      return <span className={`${chipBase} bg-red-500/15 text-red-400`}>Forfeit</span>;
-    case "postponed":
-      return <span className={`${chipBase} bg-white/10 text-cmba-grey-light`}>Postponed</span>;
-    case "cancelled":
-      return <span className={`${chipBase} bg-red-500/15 text-red-400 line-through`}>Cancelled</span>;
-    default: {
-      const _exhaustive: never = status;
-      return _exhaustive;
-    }
-  }
 }

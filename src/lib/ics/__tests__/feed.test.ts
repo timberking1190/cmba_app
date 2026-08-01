@@ -26,3 +26,47 @@ describe('ICS feed', () => {
     expect(verifyIcsToken('league', token, secret)).toBe(null) // wrong scope
   })
 })
+
+/*
+ * Phase 2: what a parent subscribed to the calendar sees. A forfeit or a
+ * postponement used to look exactly like a normal game, so a family could drive
+ * to a gym for a game that was not happening.
+ */
+describe('a parent reading the calendar can tell what happened', () => {
+  const game = (status: string, note?: string) => ({
+    id: 1,
+    startAt: '2026-01-11T01:00:00.000Z',
+    homeTeam: 'Excel U13 Boys Orange',
+    awayTeam: 'CoMBA BU13-1',
+    venue: 'Trico Centre',
+    status,
+    note,
+  })
+
+  it('says Cancelled in the title, not only in a field no app shows', () => {
+    const ics = buildIcs([game('cancelled')], { name: 'Feed', now: new Date('2026-01-01T00:00:00Z') })
+    expect(ics).toContain('SUMMARY:Cancelled: Excel U13 Boys Orange vs CoMBA BU13-1')
+    expect(ics).toContain('STATUS:CANCELLED')
+  })
+
+  it('says Postponed in the title and marks the entry tentative', () => {
+    const ics = buildIcs([game('postponed')], { name: 'Feed', now: new Date('2026-01-01T00:00:00Z') })
+    expect(ics).toContain('SUMMARY:Postponed: Excel U13 Boys Orange vs CoMBA BU13-1')
+    expect(ics).toContain('STATUS:TENTATIVE')
+  })
+
+  it('says Forfeit in the title and carries who forfeited in the description', () => {
+    const ics = buildIcs([game('forfeit', 'CoMBA BU13-1 forfeited, so Excel U13 Boys Orange takes the win.')], {
+      name: 'Feed',
+      now: new Date('2026-01-01T00:00:00Z'),
+    })
+    expect(ics).toContain('SUMMARY:Forfeit: Excel U13 Boys Orange vs CoMBA BU13-1')
+    expect(ics).toContain('DESCRIPTION:CoMBA BU13-1 forfeited')
+  })
+
+  it('leaves a normal game unchanged', () => {
+    const ics = buildIcs([game('scheduled')], { name: 'Feed', now: new Date('2026-01-01T00:00:00Z') })
+    expect(ics).toContain('SUMMARY:Excel U13 Boys Orange vs CoMBA BU13-1')
+    expect(ics).toContain('STATUS:CONFIRMED')
+  })
+})

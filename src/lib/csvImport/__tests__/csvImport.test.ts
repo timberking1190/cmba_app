@@ -77,8 +77,10 @@ describe('validateCsv games', () => {
   it('errors on home equals away', () => {
     expect(messages({ away_team: 'Excel U13 Boys Orange' })).toContain('Home team and away team cannot be the same.')
   })
-  it('errors on an invalid 24 hour time', () => {
-    expect(messages({ time: '25:00' })).toContain('Time is not valid 24 hour time.')
+  it('errors on a time that is not a real clock time, and says which formats work', () => {
+    // 12 hour and 24 hour spellings both import now, so the error is about the
+    // hour being impossible, not about the format. See repro-phase0.test.ts.
+    expect(messages({ time: '25:00' })).toContain('Hours must be 00 to 23 without am or pm. Use a 12 hour time like 8:00 AM or a 24 hour time like 20:00.')
   })
   it('errors on a division that does not exist', () => {
     expect(messages({ division: 'No Such Division' })).toContain('Division not found.')

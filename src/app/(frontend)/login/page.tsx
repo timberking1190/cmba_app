@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, ArrowRight, ExternalLink, Info, ClipboardList, CheckCircle2 } from "lucide-react";
 import { REGISTER } from "@/lib/cmbaLinks";
+import { performSignIn } from "@/lib/auth/signIn";
 import { safeInternalPath } from "@/lib/security/redirect";
 import { Wordmark } from "@/components/Wordmark";
 import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
@@ -126,27 +127,31 @@ export default function LoginPage() {
     return safeInternalPath(p, "/account");
   }
 
+  /*
+   * One submit, one landing. performSignIn confirms the session actually resolved
+   * before we go anywhere, and we then navigate with a FULL document load rather
+   * than the client router.
+   *
+   * The client router can serve a cached server render of the destination from
+   * before the sign in, and for a gated page like /manage that cached render is
+   * the redirect back to /login. That is exactly why signing in used to take two
+   * or three attempts to reach the admin side. A document navigation cannot come
+   * from that cache, so the server always renders with the new session cookie.
+   *
+   * busy stays true through the navigation on purpose: the button must not look
+   * ready to press again while the page is already on its way.
+   */
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
-    try {
-      const res = await fetch("/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: siEmail, password: siPassword }),
-      });
-      if (!res.ok) {
-        setError("Email or password is incorrect.");
-        return;
-      }
-      router.push(redirectTarget());
-      router.refresh();
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
+    const result = await performSignIn({ fetchImpl: fetch }, { email: siEmail, password: siPassword, redirectTo: redirectTarget() });
+    if (!result.ok) {
+      setError(result.error);
       setBusy(false);
+      return;
     }
+    window.location.assign(result.destination);
   }
 
   const requiredOk = minor ? req1 && req2 && req3 : req1 && req2;
@@ -324,7 +329,7 @@ export default function LoginPage() {
               </div>
             </div>
             <button type="submit" disabled={busy} className="w-full bg-cmba-red hover:bg-cmba-hot disabled:opacity-50 text-white font-display font-bold text-sm uppercase tracking-wider py-3 transition-colors flex items-center justify-center gap-2">
-              {busy ? "Signing in…" : "Sign In"} <ArrowRight size={16} />
+              {busy ? "Signing you in" : "Sign In"} <ArrowRight size={16} aria-hidden />
             </button>
           </form>
         ) : (

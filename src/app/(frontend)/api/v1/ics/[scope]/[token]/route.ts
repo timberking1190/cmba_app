@@ -4,6 +4,7 @@ import type { Where } from 'payload'
 
 import { getPayloadClient } from '@/lib/auth'
 import { buildIcs, verifyIcsToken, type IcsGame } from '@/lib/ics/feed'
+import { forfeitSentence } from '@/lib/manageGames'
 import { checkRateLimit } from '@/lib/rateLimit'
 
 export const dynamic = 'force-dynamic'
@@ -54,6 +55,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ scope: s
     awayTeam: rel(g.awayTeam),
     venue: rel(g.venue),
     status: g.status as string,
+    // A forfeit says who forfeited, so the calendar entry explains itself.
+    note: forfeitSentence({
+      forfeitOutcome: (g.forfeit as { outcome?: string } | undefined)?.outcome ?? null,
+      homeTeam: rel(g.homeTeam),
+      awayTeam: rel(g.awayTeam),
+    }) ?? undefined,
   }))
 
   return new Response(buildIcs(games, { name }), {

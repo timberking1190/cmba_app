@@ -68,6 +68,24 @@ export const ImportBatches: CollectionConfig = {
       access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
       admin: { readOnly: true, description: 'Undo manifest: the collections and ids created by this import.' },
     },
+    {
+      /*
+       * The same undo window, extended to a bulk edit of existing games. An
+       * import's manifest is the rows it CREATED; a bulk edit's manifest is each
+       * game's values BEFORE the batch touched it, so undo puts them back rather
+       * than deleting anything.
+       */
+      name: 'bulkAction',
+      type: 'text',
+      access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
+      admin: { readOnly: true, description: 'Set when this batch was a bulk edit rather than a file import.' },
+    },
+    {
+      name: 'bulkUndo',
+      type: 'json',
+      access: { create: superAdminFieldOnly, update: superAdminFieldOnly },
+      admin: { readOnly: true, description: 'Undo manifest for a bulk edit: each game and the values it had before.' },
+    },
     { name: 'committedBy', type: 'relationship', relationTo: 'users', admin: { readOnly: true } },
     { name: 'committedAt', type: 'date', index: true, admin: { readOnly: true } },
     { name: 'undoneBy', type: 'relationship', relationTo: 'users', admin: { readOnly: true } },

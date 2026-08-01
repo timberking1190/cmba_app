@@ -54,6 +54,28 @@ export type IcsGame = {
   awayTeam: string
   venue?: string
   status?: string
+  /*
+   * A plain sentence for the calendar entry, for example who forfeited. A parent
+   * looking at their phone calendar should learn the same thing an admin sees on
+   * the console, without opening the site.
+   */
+  note?: string
+}
+
+/*
+ * How each game status reads in a calendar app. A forfeit or a postponement used
+ * to look identical to a normal game, so a family drove to a gym for a game that
+ * was not happening. The title carries the word, because most calendar apps do
+ * not show the underlying STATUS field anywhere a person can see it.
+ */
+const ICS_STATUS: Record<string, { ics: 'CONFIRMED' | 'CANCELLED' | 'TENTATIVE'; prefix: string }> = {
+  cancelled: { ics: 'CANCELLED', prefix: 'Cancelled: ' },
+  postponed: { ics: 'TENTATIVE', prefix: 'Postponed: ' },
+  forfeit: { ics: 'CONFIRMED', prefix: 'Forfeit: ' },
+  contested: { ics: 'CONFIRMED', prefix: '' },
+  final: { ics: 'CONFIRMED', prefix: '' },
+  reported: { ics: 'CONFIRMED', prefix: '' },
+  scheduled: { ics: 'CONFIRMED', prefix: '' },
 }
 
 export function buildIcs(games: IcsGame[], opts: { name: string; now?: Date }): string {
@@ -71,16 +93,17 @@ export function buildIcs(games: IcsGame[], opts: { name: string; now?: Date }): 
   for (const g of games) {
     if (!g.startAt) continue
     const end = g.endAt || new Date(new Date(g.startAt).getTime() + 75 * 60_000).toISOString()
-    const cancelled = g.status === 'cancelled'
+    const mapped = ICS_STATUS[g.status ?? 'scheduled'] ?? { ics: 'CONFIRMED' as const, prefix: '' }
     lines.push(
       'BEGIN:VEVENT',
       `UID:game-${g.id}@cmbaplatform`,
       `DTSTAMP:${utcStamp(now)}`,
       `DTSTART;TZID=${TZID}:${localStamp(g.startAt)}`,
       `DTEND;TZID=${TZID}:${localStamp(end)}`,
-      `SUMMARY:${esc(`${g.homeTeam} vs ${g.awayTeam}`)}`,
+      `SUMMARY:${esc(`${mapped.prefix}${g.homeTeam} vs ${g.awayTeam}`)}`,
       ...(g.venue ? [`LOCATION:${esc(g.venue)}`] : []),
-      `STATUS:${cancelled ? 'CANCELLED' : 'CONFIRMED'}`,
+      ...(g.note ? [`DESCRIPTION:${esc(g.note)}`] : []),
+      `STATUS:${mapped.ics}`,
       'END:VEVENT',
     )
   }
