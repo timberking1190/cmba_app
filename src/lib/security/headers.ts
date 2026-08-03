@@ -1,6 +1,6 @@
 /*
  * Stage C / S0 — security headers and a strict, nonce-based Content Security
- * Policy for the whole app. Built once per request in middleware so every script
+ * Policy for the whole app. Built once per request in the proxy so every script
  * Next.js injects carries the per-request nonce (Next reads the nonce from the
  * request's Content-Security-Policy header and applies it automatically).
  *

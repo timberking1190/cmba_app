@@ -93,7 +93,6 @@ async function clean(payload: Payload) {
     for (const doc of res.docs) {
       await payload.delete({ collection: collection as never, id: (doc as { id: number }).id, overrideAccess: true }).catch(() => {})
     }
-    // eslint-disable-next-line no-console
     console.log(`  removed ${res.docs.length} from ${collection}`)
   }
 }
@@ -104,10 +103,8 @@ async function main() {
   const cleanOnly = process.argv.includes('--clean')
 
   if (cleanOnly) {
-    // eslint-disable-next-line no-console
     console.log('Removing the scale test data.')
     await clean(payload)
-    // eslint-disable-next-line no-console
     console.log('Done.')
     process.exit(0)
   }
@@ -245,7 +242,6 @@ async function main() {
         })
         made++
         if (made % 100 === 0) {
-          // eslint-disable-next-line no-console
           console.log(`  ${made} of ${TARGET_GAMES} games`)
         }
       }
@@ -269,7 +265,6 @@ async function main() {
   }
 
   const seconds = Math.round((Date.now() - started) / 1000)
-  // eslint-disable-next-line no-console
   console.log(
     [
       '',
@@ -291,7 +286,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error(err)
   process.exit(1)
 })

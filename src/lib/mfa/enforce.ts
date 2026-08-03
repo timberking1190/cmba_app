@@ -22,7 +22,7 @@ export { mfaEnforced, mfaRedirectTarget } from './enforcePure'
 export async function enforceMfa(path: string, opts?: { stepUp?: boolean }): Promise<void> {
   if (!mfaEnforced()) return
   const user = await getCurrentUserWithAssurance()
-  if (!user) return // signed-out is already handled by middleware + the page's own guard
+  if (!user) return // signed-out is already handled by the proxy + the page's own guard
   const target = mfaRedirectTarget(decideMfa(user as UserWithMfa, { stepUp: opts?.stepUp }), path)
   if (target) redirect(target)
 }
