@@ -111,6 +111,7 @@ export interface Config {
     'mfa-totp': MfaTotp;
     'recovery-codes': RecoveryCode;
     'email-otp': EmailOtp;
+    'email-send-log': EmailSendLog;
     badges: Badge;
     'badge-awards': BadgeAward;
     'xp-events': XpEvent;
@@ -130,6 +131,8 @@ export interface Config {
     'client-events': ClientEvent;
     'import-field-mappings': ImportFieldMapping;
     'import-exceptions': ImportException;
+    'season-surveys': SeasonSurvey;
+    'survey-responses': SurveyResponse;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -181,6 +184,7 @@ export interface Config {
     'mfa-totp': MfaTotpSelect<false> | MfaTotpSelect<true>;
     'recovery-codes': RecoveryCodesSelect<false> | RecoveryCodesSelect<true>;
     'email-otp': EmailOtpSelect<false> | EmailOtpSelect<true>;
+    'email-send-log': EmailSendLogSelect<false> | EmailSendLogSelect<true>;
     badges: BadgesSelect<false> | BadgesSelect<true>;
     'badge-awards': BadgeAwardsSelect<false> | BadgeAwardsSelect<true>;
     'xp-events': XpEventsSelect<false> | XpEventsSelect<true>;
@@ -200,6 +204,8 @@ export interface Config {
     'client-events': ClientEventsSelect<false> | ClientEventsSelect<true>;
     'import-field-mappings': ImportFieldMappingsSelect<false> | ImportFieldMappingsSelect<true>;
     'import-exceptions': ImportExceptionsSelect<false> | ImportExceptionsSelect<true>;
+    'season-surveys': SeasonSurveysSelect<false> | SeasonSurveysSelect<true>;
+    'survey-responses': SurveyResponsesSelect<false> | SurveyResponsesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1842,6 +1848,49 @@ export interface EmailOtp {
   updatedAt: string;
 }
 /**
+ * Delivery health for transactional email. Read only, PII free, append only.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-send-log".
+ */
+export interface EmailSendLog {
+  id: number;
+  category:
+    | 'report_request'
+    | 'contested'
+    | 'schedule_change'
+    | 'announcement'
+    | 'assignment'
+    | 'weekly_digest'
+    | 'recognition'
+    | 'cert_reminder'
+    | 'score_reminder'
+    | 'score_report'
+    | 'guardian'
+    | 'password_reset'
+    | 'verify'
+    | 'email_otp'
+    | 'test'
+    | 'other';
+  /**
+   * PII free by design.
+   */
+  subject?: string | null;
+  /**
+   * Salted hash of the recipient. Not reversible.
+   */
+  recipientHash?: string | null;
+  recipientDomain?: string | null;
+  recipientCount?: number | null;
+  status: 'sent' | 'failed';
+  transport: 'ses' | 'json';
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  sentAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Catalog of badge definitions with declarative earn criteria. No personal data.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2399,6 +2448,63 @@ export interface ImportException {
   createdAt: string;
 }
 /**
+ * Short season feedback surveys. Members answer once; results are aggregate only.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "season-surveys".
+ */
+export interface SeasonSurvey {
+  id: number;
+  title: string;
+  intro?: string | null;
+  season?: (number | null) | Season;
+  status: 'draft' | 'open' | 'closed';
+  /**
+   * Publish aggregate results to members.
+   */
+  showResults?: boolean | null;
+  questions?:
+    | {
+        /**
+         * Stable id for this question (e.g. q1).
+         */
+        key: string;
+        prompt: string;
+        type: 'rating' | 'choice' | 'text';
+        options?:
+          | {
+              label: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Individual survey answers. Admin-read only; members see aggregate results.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "survey-responses".
+ */
+export interface SurveyResponse {
+  id: number;
+  survey: number | SeasonSurvey;
+  respondent?: (number | null) | User;
+  answers?:
+    | {
+        key: string;
+        value?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  submittedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -2599,6 +2705,10 @@ export interface PayloadLockedDocument {
         value: number | EmailOtp;
       } | null)
     | ({
+        relationTo: 'email-send-log';
+        value: number | EmailSendLog;
+      } | null)
+    | ({
         relationTo: 'badges';
         value: number | Badge;
       } | null)
@@ -2673,6 +2783,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'import-exceptions';
         value: number | ImportException;
+      } | null)
+    | ({
+        relationTo: 'season-surveys';
+        value: number | SeasonSurvey;
+      } | null)
+    | ({
+        relationTo: 'survey-responses';
+        value: number | SurveyResponse;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -3766,6 +3884,24 @@ export interface EmailOtpSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-send-log_select".
+ */
+export interface EmailSendLogSelect<T extends boolean = true> {
+  category?: T;
+  subject?: T;
+  recipientHash?: T;
+  recipientDomain?: T;
+  recipientCount?: T;
+  status?: T;
+  transport?: T;
+  errorCode?: T;
+  errorMessage?: T;
+  sentAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "badges_select".
  */
 export interface BadgesSelect<T extends boolean = true> {
@@ -4059,6 +4195,51 @@ export interface ImportExceptionsSelect<T extends boolean = true> {
   errorCode?: T;
   message?: T;
   resolved?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "season-surveys_select".
+ */
+export interface SeasonSurveysSelect<T extends boolean = true> {
+  title?: T;
+  intro?: T;
+  season?: T;
+  status?: T;
+  showResults?: T;
+  questions?:
+    | T
+    | {
+        key?: T;
+        prompt?: T;
+        type?: T;
+        options?:
+          | T
+          | {
+              label?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "survey-responses_select".
+ */
+export interface SurveyResponsesSelect<T extends boolean = true> {
+  survey?: T;
+  respondent?: T;
+  answers?:
+    | T
+    | {
+        key?: T;
+        value?: T;
+        id?: T;
+      };
+  submittedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

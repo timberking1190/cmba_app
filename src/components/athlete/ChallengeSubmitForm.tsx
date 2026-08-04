@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+import { trackEvent } from '@/lib/observability/events'
+
 /*
  * Athlete logs a challenge result. POSTs to /api/v1/challenge-submissions (cookie
  * session). The submission lands unverified and earns fun-only participation XP; a
@@ -41,6 +43,8 @@ export function ChallengeSubmitForm({ challengeId, teams }: { challengeId: numbe
       }
       setState('done')
       setMsg('Logged. Your coach can verify it.')
+      // Anonymous, aggregate engagement signal (no user identifier).
+      trackEvent('challenge_submitted')
       router.refresh()
     } catch {
       setState('error')

@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, RotateCcw } from 'lucide-react'
 
+import { trackEvent } from '@/lib/observability/events'
+
 /* The answer key is NOT sent to the client; scoring is server-side. */
 type Q = { id: string; topic: string; question: string; options: string[] }
 
@@ -43,6 +45,8 @@ export function BasketballIqQuiz({ quizId, questions }: { quizId: string; questi
       }
       setResult({ score: data.score ?? 0, total: data.total ?? questions.length, passed: Boolean(data.passed) })
       setState('done')
+      // Anonymous, aggregate engagement signal (pass flag only, no user identifier).
+      trackEvent('quiz_completed', { passed: Boolean(data.passed) })
       router.refresh()
     } catch {
       setState('error')

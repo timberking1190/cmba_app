@@ -3,6 +3,7 @@ import { APIError } from 'payload'
 
 import { isAnyAdmin, isSuperAdmin, superAdminFieldOnly } from '../access/index'
 import { checkRateLimit } from '../lib/rateLimit'
+import { CATEGORY_HEADER } from '../lib/email/meta'
 import {
   getClientIp,
   hashIp,
@@ -90,8 +91,9 @@ export const GameReports: CollectionConfig = {
           await req.payload.sendEmail({
             to: process.env.EMAIL_FROM || 'league@cmba.ab.ca',
             subject: `New game report submitted (${doc.reportType})`,
-            // No PII in the body — reviewers open the admin panel to see details.
+            // No PII in the body. Reviewers open the admin panel to see details.
             text: `A new game report was submitted. Review it in the admin panel:\n${base}/admin/collections/game-reports/${doc.id}`,
+            headers: { [CATEGORY_HEADER]: 'score_report' },
           })
         } catch (err) {
           req.payload.logger.error(`Game report notification failed: ${String(err)}`)

@@ -4,6 +4,7 @@ import { getPayloadClient } from '@/lib/auth'
 import { checkCronAuth } from '@/lib/cron'
 import { computeCertStatus } from '@/lib/certStatus'
 import { reminderBucketFor } from '@/lib/reminders'
+import { CATEGORY_HEADER } from '@/lib/email/meta'
 import type { Certification } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -72,7 +73,8 @@ export async function GET(req: Request) {
           text:
             `One of your certifications ${when}.\n\n` +
             `Sign in to CMBA Connect to view the details and renew:\n${base}/account\n\n` +
-            `(We keep personal details out of email — please use the portal.)`,
+            `(We keep personal details out of email. Please use the portal.)`,
+          headers: { [CATEGORY_HEADER]: 'cert_reminder' },
         })
         remindersSent++
       } catch (err) {

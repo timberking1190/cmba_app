@@ -5,6 +5,7 @@ import type { Payload } from 'payload'
 import { getPayloadClient } from '@/lib/auth'
 import { checkCronAuth } from '@/lib/cron'
 import { emailReportRequest } from '@/lib/emailEvents'
+import { CATEGORY_HEADER } from '@/lib/email/meta'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -70,7 +71,7 @@ export async function GET(req: Request) {
     for (const s of supers.docs as Array<{ email?: string }>) {
       if (!s.email) continue
       try {
-        await payload.sendEmail({ to: s.email, subject: `${stale.docs.length} contested games need review`, text: `Some contested games have been waiting more than three days. Open the contested queue:\n${base}/manage/contested` })
+        await payload.sendEmail({ to: s.email, subject: `${stale.docs.length} contested games need review`, text: `Some contested games have been waiting more than three days. Open the contested queue:\n${base}/manage/contested`, headers: { [CATEGORY_HEADER]: 'score_reminder' } })
         escalations++
       } catch (err) {
         payload.logger.error(`[cron] contested escalation failed: ${String(err)}`)

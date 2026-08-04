@@ -1058,6 +1058,44 @@ Playtest result vs targets:
 - One attempt runs a few seconds; difficulty rises smoothly across staggered ramps.
 Note: this is a physics simulation. Final human feel (aim and power on mouse vs touch vs
 keyboard) still wants a manual pass on a phone and a laptop before public launch.
+---
+
+# Launch Readiness (branch `feat/launch-readiness`)
+
+Remediation of docs/CRITICAL_REVIEW.md. The repo had already advanced past that
+snapshot: P0.3 CSP is on the strict-nonce profile by default, the assurance docs
+exist, and cmbaSchedule.ts already serves own data with a TeamLinkt fallback. This
+log records only the genuinely remaining work, phase by phase.
+
+## Phase LR1 — P0.1 Route-level resilience
+
+Date: 2026-07-01 · Branch: `feat/launch-readiness`
+
+Added graceful failure and waiting states so no failed or slow fetch shows a blank
+screen.
+
+New files:
+- `src/app/global-error.tsx` (root, self-contained html/body, on-brand, retry + home)
+- `src/app/(frontend)/error.tsx`, `loading.tsx`, `not-found.tsx` (group fallback)
+- `src/components/feedback/ErrorState.tsx`, `EmptyState.tsx`, `Skeletons.tsx`
+- Per-route `error.tsx` + `loading.tsx` with route-matched skeletons: calendar,
+  schedule, standings, account, rep, coach, ref, athlete, athlete/challenges,
+  athlete/quiz, manage, manage/import.
+
+Design note: Next error/loading boundaries are hierarchical. A section boundary
+(coach/, ref/, manage/, athlete/) covers all of its subpages, so we place boundaries
+at section roots plus the explicitly named engagement/import leaves rather than
+duplicating identical files under every subpage.
+
+Edits:
+- `account/page.tsx`: non-critical queries (recognitions, recommended courses) now
+  degrade to empty on failure (logged) instead of blanking the page; critical data
+  still surfaces via the account error boundary.
+- `athlete/challenges/page.tsx`: empty state now uses the shared EmptyState.
+
+Schedule and standings already fall back to the read-only TeamLinkt embed on empty
+data, so the dual-fail path is graceful (page chrome + managed-in-TeamLinkt callout
+render even if the embed itself is unavailable).
 
 ### Gate
 | Check | Result |
@@ -1351,3 +1389,371 @@ worse rather than better:
 - A conflict check appeared not to fire when a game was moved to 08:00. The game
   already started at 08:00, so there was no change and correctly nothing to
   report. Changing the app to report a clash there would have broken it.
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ no warnings or errors |
+| `npm test` | ✅ 320/320 pass (44 files) |
+| No em/en dashes in new files | ✅ verified (grep) |
+| Production build | Verified on Vercel per CI policy (not run locally; needs live DB env) |
+| Resilience smoke (force a failure/slow response) | ⏳ recommend manual check on a preview: temporarily throw in a page loader and confirm the error boundary + skeleton render. Automated coverage lands in Phase LR6 (Playwright). |
+
+Residual risk: the resilience states are proven by static + unit + the Next boundary
+contract, but not yet by an end-to-end browser test that forces a data-source failure.
+That browser proof is scheduled for the Playwright harness (P1.7 / Phase LR6).
+
+## Phase LR2 — P0.2 Email health surface + failure alerting
+
+Date: 2026-07-01 · Branch: `feat/launch-readiness`
+
+The SES composers, adapter auto-switch, and PII-free bodies already existed. This
+phase adds the admin-visible health surface and never-silent failure handling. SES
+DNS, production access, and SMTP creds remain operator steps (see below).
+
+New:
+- `src/lib/email/adapter.ts`: wraps the nodemailer adapter so EVERY send (app
+  composers, crons, Payload auth emails, email OTP) is recorded once. Failures are
+  logged at error level and the log write is guarded so it can never break a send.
+- `src/lib/email/meta.ts`: PII-free helpers (salted recipient hash, bare domain,
+  category from header or subject, error sanitizer). Pure and unit tested.
+- `src/lib/email/health.ts`: `computeEmailHealth` rollups (24h/7d/30d, failure rate,
+  recent failures, SES-configured, alert flag). Pure over a minimal payload shape.
+- `src/collections/EmailSendLog.ts`: append-only, super-admin read, PII-free, 90-day
+  retention. Registered in `payload.config.ts`.
+- `GET /api/v1/admin/email-health` (super admin; 503 when alerting) and
+  `POST /api/v1/admin/email-test` (super admin; sends only to the caller's own email,
+  never a relay).
+- Migration `20260702_054408_add_email_send_log` (additive: table + enums + indexes;
+  down() reverses). Generated offline (config-vs-snapshot), not applied to prod.
+- `src/lib/__tests__/emailHealth.test.ts` (8 tests).
+
+Edits:
+- App composers (`emailEvents.ts` x7, both reminder crons, `GameReports`, guardian
+  hook) tag sends with the `x-cmba-email-category` header for precise health labels.
+- `ttl-sweep` cron now also sweeps `email-send-log` past ~90 days.
+- Fixed two em dashes in existing email copy while adding the category headers.
+- `docs/SES_SETUP.md` Step 6 and `docs/OPERATOR_ACTIONS.md` updated for in-app
+  verification (test-send + health endpoint) and the new migration.
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ no warnings or errors |
+| `npm test` | ✅ 328/328 pass (45 files, +8 email) |
+| `npm run generate:types` | ✅ `email-send-log` types present, in sync |
+| Migration generated | ✅ additive, offline (no prod contact); apply is an operator step |
+| No em/en dashes in new files | ✅ verified |
+
+Residual risk / operator blockers (cannot be closed from the repo):
+- SES DNS (DKIM/SPF/DMARC via RAMP), production access, and SMTP creds in Vercel.
+- Applying the migration to the ca-central-1 DB.
+- Real end-to-end delivery of password reset, MFA OTP, and reminders is verifiable
+  only after the above, using the new test-send + health endpoints (SES_SETUP Step 6).
+
+## Phase LR3 — P0.4 Independent assurance package
+
+Date: 2026-07-01 · Branch: `feat/launch-readiness`
+
+The assurance docs already existed and were substantive (STRIDE threat model with a
+textual DFD, PIA, processor register, pentest readiness, security.txt). This phase
+closes the specific gaps the module called out. Docs and CI config only, no src change.
+
+- `docs/SECURITY.md`: added an explicit OWASP ASVS 5.0 chapter crosswalk (V1..V17,
+  each mapped to the control, file, and status, with N/A recorded for OAuth/OIDC and
+  WebRTC) and a NIST SP 800-63B-4 authentication crosswalk (AAL, memorized secrets,
+  authenticator types, verifier throttling, session, recovery, audit). Refreshed the
+  stale phase-status table to current reality; added a last-reviewed date.
+- `docs/THREAT_MODEL.md`: added a rendered Mermaid data flow diagram with trust
+  boundaries alongside the existing textual DFD.
+- `docs/EXTERNAL_ASSESSMENT_SCOPE.md` (new): one-page scope + readiness brief for the
+  penetration testing firm and the privacy reviewer.
+- `docs/DAST_ZAP.md` + `.zap/rules.tsv` + `.github/workflows/dast-zap.yml` (new):
+  interim OWASP ZAP baseline scan wired (manual workflow + local docker recipe + rule
+  tuning + a results log). Advisory, not a merge gate.
+- security.txt disclosure contact confirmed present (`security@cmba.ab.ca`).
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean (no src change) |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 328/328 pass |
+| No em/en dashes in new files | ✅ verified |
+
+Residual risk / external (cannot be closed from the repo):
+- The independent penetration test and third-party security/privacy review are not
+  yet done (firm to be engaged).
+- The interim ZAP scan has not been run: it needs a reachable preview or production
+  URL. Config and workflow are ready; results table in `docs/DAST_ZAP.md` is "pending".
+- DPAs with Supabase, AWS, Vercel remain unsigned; sub-processor Canada-residency to
+  be confirmed. Named Privacy Officer + US-processor board decision still open.
+
+## Phase LR4 — P1.5 Observability (privacy respecting)
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+Wired error monitoring (Sentry) + product analytics + Web Vitals (Vercel Web
+Analytics + Speed Insights) per the chosen stack, all privacy-respecting and OFF
+until env is set, so the build and local dev never phone home.
+
+New:
+- `src/lib/observability/sentry.ts`: `scrubEvent` (removes user/IP, cookies, auth and
+  nonce headers, request body, query strings), `sentryInitOptions` (sendDefaultPii
+  off, no session replay, low trace sampling), `serverDsn`, `sentryEnvironment`. Pure
+  and unit tested.
+- `src/lib/observability/events.ts`: `trackEvent` (Vercel analytics, anonymous and
+  aggregate, no user identifier) + `captureClientError` (dynamic Sentry import,
+  guarded).
+- `src/instrumentation.ts`: server/edge Sentry init when a DSN is set + `onRequestError`.
+- `src/components/Observability.tsx`: browser Sentry init (guarded) + `<Analytics/>`
+  + `<SpeedInsights/>`, mounted in the root layout.
+- `src/lib/__tests__/sentryScrub.test.ts` (7 tests).
+
+Edits:
+- Error boundaries (`global-error.tsx`, `(frontend)/error.tsx`) now report to Sentry
+  via `captureClientError` (no-op when off).
+- Engagement events fired on challenge submit and quiz completion (anonymous, no PII).
+- `.env.example`: SENTRY_DSN / NEXT_PUBLIC_SENTRY_DSN / SENTRY_ENVIRONMENT + analytics note.
+- Disclosure: privacy policy (`src/content/legal.ts`, bumped to 2026-07-01) now lists
+  Sentry + Vercel Analytics, states diagnostics carry no PII and are processed
+  outside Canada, no advertising, no child profiling; also fixed 3 em dashes in the
+  legal copy. Processor register + PIA updated with both processors.
+
+Under-18 gate: analytics is cookieless and aggregate with NO user identifier and
+Sentry sends no user context, so children are never profiled. Engagement events carry
+only non-personal enums (e.g. a pass flag). IP handling: the csp-report sink already
+stores no IP; Sentry `scrubEvent` removes IP; Vercel Analytics does not expose IP to us.
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 335/335 pass (46 files, +7) |
+| `node scripts/audit-ci.mjs` | ✅ 0 un-allowlisted high/critical after adding the 3 deps |
+| No em/en dashes in new files | ✅ verified; also removed 3 from existing legal copy |
+| Production build | Verified on Vercel deploy (manual Sentry instrumentation, no next.config change, so build risk is low) |
+
+Residual / operator: Sentry DSN + EU project + DPA, enable Vercel Analytics in the
+dashboard, sync the PolicyVersions global to the new privacy version. Full runtime
+proof (real events, PII-free captures) is confirmable only on a deploy with the DSN set.
+
+## Phase LR5 — P1.6 Own schedule and standings
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+The app already served its own data with a TeamLinkt fallback. This phase makes the
+ownership honest, fresh, and provable, and stages the cutover (flag stays true until
+the operator imports a season).
+
+- `src/lib/cmbaSchedule.ts`: added `getEventsWithSource` / `getStandingsWithSource`
+  returning a `source` of `own` | `legacy` | `empty`; kept `getEvents`/`getStandings`
+  as wrappers.
+- `calendar` and `standings` pages: header and footer copy is now conditional on the
+  source, so it only says "from CMBA Connect" when serving our own data and "via
+  TeamLinkt" while falling back. Removes the misleading "straight from TeamLinkt" line.
+- `src/lib/csvImport/commit.ts`: a games or teams commit now recomputes standings for
+  the affected divisions immediately (best-effort, outside the transaction; the
+  nightly cron is the safety net), so standings are fresh after an import instead of
+  waiting until the next night.
+- New `POST /api/v1/admin/standings/recompute` (admin): force a recompute of one
+  division or all, for manual fixes.
+- `src/lib/__tests__/cmbaScheduleSource.test.ts` (6 tests) proves own data is served
+  first and TeamLinkt is used only when ours is empty.
+- Cutover runbook added to `docs/OPERATOR_ACTIONS.md` (import, verify own data, flip
+  `FEATURE_LEGACY_TEAMLINKT=false`, monitor, then P2.10 consolidation).
+
+`FEATURE_LEGACY_TEAMLINKT` stays `true` (no season seeded yet); flipping it is the
+operator step in the runbook.
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 341/341 pass (47 files, +6) |
+| No em/en dashes in new files | ✅ verified |
+
+Residual / operator: import a real season, verify the source note reads "from CMBA
+Connect", then flip the flag. Browser-level own-data proof lands with Playwright (LR6).
+
+## Phase LR6 — P1.7 End-to-end, accessibility, performance harness
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+Added a browser-level test harness. It targets a base URL rather than booting the app
+(the app needs a database and env to run), so it runs against a Vercel preview or a
+locally started server, never against a machine with production env loaded.
+
+New:
+- `playwright.config.ts` (desktop Chromium + Pixel 5 mobile projects, base URL from
+  `PLAYWRIGHT_BASE_URL`).
+- `e2e/public.spec.ts`: loads home, schedule, standings, rules, login and runs an axe
+  WCAG 2 A/AA scan on each (no serious/critical), plus the branded 404. Runs anywhere.
+- `e2e/security.spec.ts`: adversarial matrix for an anonymous caller (protected pages
+  redirect to login; `/api/users` 403 and admin APIs 401/403; enforcing strict-nonce
+  CSP + security headers present; invalid login rejected). Runs anywhere.
+- `e2e/journeys.spec.ts`: authenticated journeys (sign in and MFA challenge, account
+  and certifications, challenges, quizzes), guarded to skip unless `E2E_EMAIL` /
+  `E2E_PASSWORD` are set for a seeded account.
+- `lighthouserc.cjs`: mobile Lighthouse budget over `/`, `/schedule`, `/standings`
+  (the 3D home is held to the budget): accessibility >= 0.9 (error), LCP <= 4.5s, TBT
+  <= 800ms, CLS <= 0.1 (errors), FCP/interactive/performance as warnings.
+- `.github/workflows/e2e.yml`: runs Playwright + Lighthouse against `E2E_BASE_URL`
+  (repo variable) or a manual dispatch URL; no-op (non-blocking) until a target is
+  set, so it never blocks unrelated PRs and becomes a gate once a preview URL exists.
+- `vitest.config.ts`: scopes Vitest to `src/**/*.test.ts` and excludes `e2e/`, so the
+  two runners do not collide. `e2e/` excluded from the root tsconfig.
+- Scripts: `test:e2e`, `test:e2e:ui`, `lhci`. `.gitignore` updated for report dirs.
+- `e2e/README.md`: how to run locally, against a preview, and in CI.
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean (e2e excluded, run by Playwright) |
+| `npm run lint` | ✅ clean |
+| `npm test` (vitest) | ✅ 341/341 pass (unchanged; e2e excluded from vitest) |
+| `npx playwright test --list` | ✅ 28 specs compile across 3 files, 2 projects |
+| `node scripts/audit-ci.mjs` | ✅ still 0 un-allowlisted (new deps are devDependencies) |
+| No em/en dashes in new files | ✅ verified |
+
+Honest limitation: I authored and compiled the specs and Lighthouse config but did
+NOT execute the browser run here (no target deploy and no browser binaries in this
+environment). The e2e/a11y/perf gate activates when Vercel preview deploys are enabled
+and `E2E_BASE_URL` is set (operator step); the first CI run may need minor selector or
+budget tuning against the real deploy. The authenticated journeys additionally need a
+seeded test account (`E2E_EMAIL`/`E2E_PASSWORD`).
+
+## Phase LR7 — P2.8 Discovery and offline
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+- `src/app/robots.ts`: public crawlable; member, admin, API, guardian disallowed;
+  points at the sitemap.
+- `src/app/sitemap.ts`: static public routes plus every published CMS page (degrades
+  to the static routes if the CMS query fails).
+- `src/app/manifest.ts`: installable web manifest (standalone, Calgary black theme).
+- Structured data via a nonce-stamped, `<`-escaped `JsonLd` component
+  (`src/components/JsonLd.tsx`): `SportsOrganization` site-wide in the layout, and up
+  to 25 upcoming `SportsEvent` items on the schedule.
+- Social share image generated on the fly (`src/app/(frontend)/opengraph-image.tsx`,
+  1200x630, on brand) plus Open Graph + Twitter metadata and `metadataBase` in the
+  layout.
+- Offline: `public/sw.js` (network-first for /schedule, /calendar, /standings so the
+  last-seen copy is available offline; stale-while-revalidate for static assets; no
+  member data cached) registered in production by `ServiceWorkerRegister`.
+- Documented the one controlled `dangerouslySetInnerHTML` (JSON-LD) in SECURITY.md.
+
+CSP note: robots.txt, sitemap.xml, and manifest.webmanifest are served outside
+middleware (excluded extensions); the JSON-LD scripts carry the request nonce so they
+pass the strict-nonce CSP; the service worker is same-origin (`worker-src 'self'`).
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 341/341 pass |
+| No em/en dashes in new files | ✅ verified |
+| Route output (/robots.txt, /sitemap.xml, /manifest.webmanifest, OG image) | Verified on Vercel deploy (not run locally; needs the build + DB env) |
+
+Residual: validate the JSON-LD with Google Rich Results and the manifest/SW in a
+mobile browser once deployed. Provide brand-specific OG art later if desired (the
+generated card is the default).
+
+## Phase LR8 — P2.9 Communication and feedback
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+- Weekly family digest: already implemented (weekly-digest cron + `emailWeeklyDigest`,
+  PII-free, over SES). Verified present; no change needed.
+- Site-wide search (new): `src/lib/search/site.ts` searches the rulebook (existing
+  engine), published CMS pages, and schedule entities (teams, venues). PII-free, never
+  searches members. Public `GET /api/v1/search` + a server-rendered `/search` page
+  (works with no client JS under the strict CSP).
+- Season survey (new): `SeasonSurvey` + `SurveyResponse` collections (migration
+  `20260702_063142_add_season_surveys`), `POST /api/v1/surveys/[id]/respond` (auth,
+  one response per member, validated) and `GET /api/v1/surveys/[id]/results`
+  (aggregate, gated on showResults or admin). `/survey` page renders the open survey
+  form and, when published, aggregate results with a visible bar chart. Individual
+  responses are admin-only and text answers are never exposed (count only), so no one
+  is profiled.
+- Unit tests: `surveyAndSearch.test.ts` (5) cover aggregation (rating/choice/text,
+  text never exposed) and search grouping/links.
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 346/346 pass (48 files, +5) |
+| `npm run generate:types` | ✅ survey collections present, in sync |
+| Migration generated offline | ✅ additive (2 new tables + enums); operator applies |
+| No em/en dashes in new files | ✅ verified |
+
+Residual / operator: apply the survey migration; create and open a survey in the
+admin to activate `/survey`.
+
+## Phase LR9 — P2.10 Consolidation (staged) + Later decisions
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness`
+
+- P2.10: the schedule/standings architecture is already single-path (cmbaSchedule is
+  the data layer, standings/ the engine, teamlinkt fallback-only + config). The only
+  remaining consolidation (deleting the legacy teamlinkt getters and the fallback
+  branch) is STAGED because removing it now would break the still-active TeamLinkt
+  fallback (flag is true, no season imported). Marked the legacy functions clearly in
+  `src/lib/teamlinkt.ts` and recorded the exact deferred deletion steps in
+  `docs/DECISIONS.md` (D1) and the cutover runbook.
+- Later decisions recorded in `docs/DECISIONS.md`: registration and payments in house
+  vs TeamLinkt (D2, board decision pending, recommendation noted), push with the
+  native apps (D3, deferred, notify.ts is push-ready), bilingual content (D4,
+  deferred, noted for the Alberta and Canada context).
+
+### Gate
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ clean |
+| `npm run lint` | ✅ clean |
+| `npm test` | ✅ 346/346 pass |
+| No em/en dashes in new files | ✅ verified |
+
+## Launch Readiness — closing summary
+
+Date: 2026-07-02 · Branch: `feat/launch-readiness` (10 commits off `feat/backend`)
+
+All items in docs/CRITICAL_REVIEW.md are addressed. The repo had already advanced past
+that snapshot (CSP was on the strict-nonce profile by default, the assurance docs
+existed, and cmbaSchedule already served own data with a TeamLinkt fallback), so this
+work closed the genuinely-remaining gaps:
+
+- P0.1 route-level error/loading/not-found/empty states + global error boundary.
+- P0.2 admin email-health surface + never-silent failure logging (code + runbook).
+- P0.3 CSP: already strict-nonce and enforcing (verified; no change needed).
+- P0.4 ASVS 5.0 + NIST 800-63B-4 crosswalks, rendered DFD, interim ZAP config, one-page
+  assessor scope.
+- P1.5 Sentry + Vercel Analytics + Web Vitals, privacy respecting, disclosed.
+- P1.6 own-data source-awareness + honest copy + post-commit recompute + cutover runbook.
+- P1.7 Playwright + axe + Lighthouse harness wired to CI (activates on a preview URL).
+- P2.8 robots, sitemap, structured data, generated OG image, manifest, offline SW.
+- P2.9 site-wide search + season survey with visible aggregate results.
+- P2.10 consolidation staged (single-path already) + Later decisions recorded (D1-D4).
+
+Final gate (2026-07-02): tsc clean, lint clean, 346/346 unit and integration tests
+pass, dependency audit 0 un-allowlisted, payload types in sync, 28 e2e specs compile.
+
+### What still needs an external service or decision before public registration
+These are the operator/board items this work cannot perform (documented in
+OPERATOR_ACTIONS.md, DECISIONS.md, and the processor register):
+1. SES: DKIM/SPF/DMARC via RAMP, production access, SMTP creds; then verify with the
+   in-app test-send + health endpoint.
+2. Apply the two additive migrations (email_send_log, season_surveys).
+3. Enable Sentry (EU project + DSN) and Vercel Analytics; sync the PolicyVersions
+   global to the new privacy version.
+4. Import a real season, verify /schedule and /standings read "from CMBA Connect",
+   then set FEATURE_LEGACY_TEAMLINKT=false and monitor; afterward the P2.10 code strip.
+5. Enable Vercel preview deploys and set E2E_BASE_URL to activate the e2e/a11y/perf CI
+   gate; run the interim OWASP ZAP scan against the preview and record it.
+6. Commission the independent penetration test and third-party privacy review; sign the
+   Supabase, AWS, and Vercel DPAs; name the Privacy Officer; board decision on
+   US-headquartered processors.
+7. Board decision on registration and payments (D2).

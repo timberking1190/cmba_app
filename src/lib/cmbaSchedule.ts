@@ -62,7 +62,15 @@ function toGame(g: GameDoc): Game {
   }
 }
 
-export async function getEvents(): Promise<Game[]> {
+/*
+ * Where the data on the page came from, so the UI can label it honestly:
+ *   'own'    -> served from our own Payload data (this app is the source of truth)
+ *   'legacy' -> our data was empty, so we fell back to the TeamLinkt read-only view
+ *   'empty'  -> neither returned anything (fresh season, or both unavailable)
+ */
+export type ScheduleSource = 'own' | 'legacy' | 'empty'
+
+export async function getEventsWithSource(): Promise<{ games: Game[]; source: ScheduleSource }> {
   const payload = await getPayloadClient()
   try {
     const res = await payload.find({
@@ -74,36 +82,49 @@ export async function getEvents(): Promise<Game[]> {
       overrideAccess: true,
     })
     const games = (res.docs as unknown as GameDoc[]).map(toGame)
-    if (games.length) return games
+    if (games.length) return { games, source: 'own' }
   } catch (err) {
     payload.logger.error(`cmbaSchedule.getEvents failed: ${String(err)}`)
   }
   if (LEGACY) {
     try {
       const legacy = await import('./teamlinkt')
-      return legacy.getEvents()
+      const games = await legacy.getEvents()
+      if (games.length) return { games, source: 'legacy' }
     } catch {
-      return []
+      /* fall through to empty */
     }
   }
-  return []
+  return { games: [], source: 'empty' }
 }
 
-export async function getStandings(divisionId?: string | number): Promise<StandingRow[]> {
+export async function getStandingsWithSource(
+  divisionId?: string | number,
+): Promise<{ rows: StandingRow[]; source: ScheduleSource }> {
   const payload = await getPayloadClient()
   try {
     const rows = divisionId != null ? await getDivisionStandings(payload, divisionId) : await getLeagueStandings(payload)
-    if (rows.length) return rows
+    if (rows.length) return { rows, source: 'own' }
   } catch (err) {
     payload.logger.error(`cmbaSchedule.getStandings failed: ${String(err)}`)
   }
   if (LEGACY) {
     try {
       const legacy = await import('./teamlinkt')
-      return legacy.getStandings()
+      const rows = await legacy.getStandings()
+      if (rows.length) return { rows, source: 'legacy' }
     } catch {
-      return []
+      /* fall through to empty */
     }
   }
-  return []
+  return { rows: [], source: 'empty' }
+}
+
+// Backward-compatible wrappers (the page code uses the *WithSource variants now).
+export async function getEvents(): Promise<Game[]> {
+  return (await getEventsWithSource()).games
+}
+
+export async function getStandings(divisionId?: string | number): Promise<StandingRow[]> {
+  return (await getStandingsWithSource(divisionId)).rows
 }

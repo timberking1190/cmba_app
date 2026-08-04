@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { trackedEmailAdapter } from './lib/email/adapter'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
@@ -23,6 +24,7 @@ import { Courts } from './collections/Courts'
 import { Disputes } from './collections/Disputes'
 import { Divisions } from './collections/Divisions'
 import { EmailOtp } from './collections/EmailOtp'
+import { EmailSendLog } from './collections/EmailSendLog'
 import { GameIncidents } from './collections/GameIncidents'
 import { GameOfficials } from './collections/GameOfficials'
 import { GameReports } from './collections/GameReports'
@@ -43,7 +45,9 @@ import { Sanctions } from './collections/Sanctions'
 import { ScoreReports } from './collections/ScoreReports'
 import { ScoresheetFiles } from './collections/ScoresheetFiles'
 import { Seasons } from './collections/Seasons'
+import { SeasonSurvey } from './collections/SeasonSurvey'
 import { StandingsCache } from './collections/StandingsCache'
+import { SurveyResponse } from './collections/SurveyResponse'
 import { TeamMemberships } from './collections/TeamMemberships'
 import { Teams } from './collections/Teams'
 import { Users } from './collections/Users'
@@ -200,6 +204,7 @@ export default buildConfig({
     MfaTotp,
     RecoveryCodes,
     EmailOtp,
+    EmailSendLog,
     // Engagement (Member-Value foundation): unified gamification ledgers +
     // moderated recognition. Scaffolds this stage (model only); the award engine,
     // recognition approval wiring, and crons land in later phases.
@@ -224,6 +229,9 @@ export default buildConfig({
     ClientEvents,
     ImportFieldMappings,
     ImportExceptions,
+    // P2.9 season survey.
+    SeasonSurvey,
+    SurveyResponse,
   ],
   globals: [PolicyVersions, SiteSettings, HeaderNav, FooterNav, MemberCardConfig],
   editor: lexicalEditor(),
@@ -255,24 +263,29 @@ export default buildConfig({
     push: false,
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
-  email: nodemailerAdapter({
-    defaultFromAddress: process.env.EMAIL_FROM || 'no-reply@cmba.ab.ca',
-    defaultFromName: 'CMBA Connect',
-    // AWS SES (ca-central-1) over SMTP when configured. Without SES creds we use
-    // nodemailer's jsonTransport (no network) so dev/build never hangs or sends.
-    transportOptions: process.env.SES_SMTP_HOST
-      ? {
-          host: process.env.SES_SMTP_HOST,
-          port: Number(process.env.SES_SMTP_PORT) || 587,
-          secure: false,
-          requireTLS: true,
-          auth: {
-            user: process.env.SES_SMTP_USER,
-            pass: process.env.SES_SMTP_PASS,
-          },
-        }
-      : { jsonTransport: true },
-  }),
+  // Wrapped so every send is recorded in email-send-log for the admin health
+  // surface (src/lib/email/adapter.ts). The wrapper is transparent: same sends,
+  // plus a PII-free health record and never-silent failure logging.
+  email: trackedEmailAdapter(
+    nodemailerAdapter({
+      defaultFromAddress: process.env.EMAIL_FROM || 'no-reply@cmba.ab.ca',
+      defaultFromName: 'CMBA Connect',
+      // AWS SES (ca-central-1) over SMTP when configured. Without SES creds we use
+      // nodemailer's jsonTransport (no network) so dev/build never hangs or sends.
+      transportOptions: process.env.SES_SMTP_HOST
+        ? {
+            host: process.env.SES_SMTP_HOST,
+            port: Number(process.env.SES_SMTP_PORT) || 587,
+            secure: false,
+            requireTLS: true,
+            auth: {
+              user: process.env.SES_SMTP_USER,
+              pass: process.env.SES_SMTP_PASS,
+            },
+          }
+        : { jsonTransport: true },
+    }),
+  ),
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
