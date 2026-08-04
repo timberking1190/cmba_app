@@ -27,9 +27,15 @@ jobs:
     name: Playwright + axe + Lighthouse
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      # The target URL is passed through env rather than interpolated straight into
+      # the run: script. Interpolating github context data into a shell body lets a
+      # crafted value execute on the runner; via env it is only ever a string.
       - id: target
-        run: echo "url=${{ github.event.inputs.base_url || vars.E2E_BASE_URL }}" >> "$GITHUB_OUTPUT"
+        env:
+          INPUT_BASE_URL: ${{ github.event.inputs.base_url }}
+          VARS_BASE_URL: ${{ vars.E2E_BASE_URL }}
+        run: echo "url=${INPUT_BASE_URL:-$VARS_BASE_URL}" >> "$GITHUB_OUTPUT"
 
       - name: No target configured (skip)
         if: steps.target.outputs.url == ''
@@ -38,7 +44,7 @@ jobs:
           echo "Set the repo variable E2E_BASE_URL to a preview URL to enable the e2e/a11y/perf gate."
           echo "Skipping (non-blocking)."
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         if: steps.target.outputs.url != ''
         with:
           node-version: 20
@@ -63,7 +69,7 @@ jobs:
         run: npm run lhci
       - name: Upload Playwright report
         if: steps.target.outputs.url != '' && always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: playwright-report
           path: playwright-report/
