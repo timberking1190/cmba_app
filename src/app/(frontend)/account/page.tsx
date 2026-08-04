@@ -8,7 +8,7 @@ import {
 
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { enforceMfa } from '@/lib/mfa/enforce'
-import { isAnyAdmin, isSuperAdmin } from '@/access/index'
+import { canManageScheduling, isAnyAdmin, isSuperAdmin } from '@/access/index'
 import { getComplianceForUser, getPathwayProgress } from '@/lib/compliance'
 import { getUnifiedProgress } from '@/lib/gamification/progress'
 import { pathwayAudienceFor } from '@/lib/audience'
@@ -340,15 +340,33 @@ export default async function AccountPage() {
             View full certification pathway →
           </Link>
 
-          {isAnyAdmin(user) && (
+          {/*
+            Gated on canManageScheduling, not isAnyAdmin. A scheduler holds neither
+            club_admin nor super_admin, so under isAnyAdmin this whole card vanished
+            and there was NO link to /manage anywhere in the app: not the header, the
+            mobile nav, or the floating nav. Login lands on /account by default, so a
+            scheduler signed in successfully and had no route to the console they are
+            the entire point of. The page itself always allowed them.
+            Each link keeps its own gate below, so widening the card grants nothing:
+            the Payload panel and compliance stay isAnyAdmin.
+          */}
+          {canManageScheduling(user) && (
             <section className="reveal bg-cmba-black-card border border-cmba-red/20 p-4">
-              <h2 className="font-display font-bold text-white uppercase tracking-wide text-xs mb-2">Admin tools</h2>
+              <h2 className="font-display font-bold text-white uppercase tracking-wide text-xs mb-2">
+                {isAnyAdmin(user) ? 'Admin tools' : 'Scheduling'}
+              </h2>
               <div className="space-y-1.5">
-                {/* Hard nav into the Payload admin SPA — not a Next page. */}
-                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-                <a href="/admin" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Management panel (/admin) →</a>
+                {isAnyAdmin(user) && (
+                  <>
+                    {/* Hard nav into the Payload admin SPA — not a Next page. */}
+                    {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                    <a href="/admin" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Management panel (/admin) →</a>
+                  </>
+                )}
                 <Link href="/manage" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Scheduling console →</Link>
-                <Link href="/compliance/dashboard" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Compliance dashboard →</Link>
+                {isAnyAdmin(user) && (
+                  <Link href="/compliance/dashboard" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Compliance dashboard →</Link>
+                )}
                 {isSuperAdmin(user) && (
                   <Link href="/compliance/consent-audit" className="block font-mono text-xs text-cmba-red hover:text-white transition-colors">Consent audit →</Link>
                 )}
