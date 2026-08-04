@@ -307,3 +307,64 @@ anyway, because a supported patched version existed.
   unrelated risk; it is a follow-up.
 - **ESLint remains on 8.x.** `eslint-config-next@16` requires ESLint 9, which means
   a flat-config migration. Also a follow-up, and unrelated to these advisories.
+
+---
+
+## Next 16 follow-ups completed (2026-08-02)
+
+Two items deliberately left out of the security fix, done here on their own.
+
+### `middleware` renamed to `proxy`
+
+Next 16 deprecated the `middleware` file convention. `src/middleware.ts` is now
+`src/proxy.ts` with the exported function renamed; `export const config` and its
+`matcher` are unchanged, which was confirmed against the Next 16 file-convention
+reference rather than assumed. The build no longer emits the deprecation warning.
+
+Two things worth carrying forward:
+
+- **Proxy defaults to the NODE runtime** in Next 16, where Middleware defaulted to
+  Edge. `crypto.getRandomValues` and `btoa` both exist there, so the per-request
+  CSP nonce is unaffected. The `runtime` config option is not permitted in a Proxy
+  file, and this one does not set it.
+- Next documents that a matcher change, or moving a Server Function to a different
+  route, can **silently remove Proxy coverage**. The session gate in `proxy.ts` is
+  presence-only and always was; the real authorization is the `payload.auth()` plus
+  role check inside each page and route handler. That split is what makes a
+  silently-dropped matcher a performance problem rather than a security one, and it
+  is now stated in the file.
+
+### ESLint 8 to 9, flat config
+
+Forced rather than chosen: `next lint` was removed in Next 16 and
+`eslint-config-next@16` requires ESLint >= 9, which only reads flat config.
+`.eslintrc.json` is replaced by `eslint.config.mjs`. `eslint-config-next@16` ships
+native flat configs, so there is no `FlatCompat` shim. The rule surface is the same
+pairing as before (`core-web-vitals` plus `typescript`), and the project ignores
+carried over verbatim.
+
+Coverage widened as a side effect: the lint script now runs over the whole repo,
+where `next lint` only covered a few directories.
+
+#### Three rules deferred, and why
+
+ESLint 9 pulls `eslint-plugin-react-hooks` v6, whose React Compiler era rules flag
+16 pre-existing sites:
+
+| Rule | Sites | What it catches |
+|---|---|---|
+| `react-hooks/set-state-in-effect` | 11 | cascading renders from setState inside an effect |
+| `react-hooks/purity` | 4 | impure reads during render |
+| `react-hooks/refs` | 1 | ref access during render |
+
+These are switched **off** in `eslint.config.mjs`, with that reasoning in the file.
+They are real signals, not noise. Each one needs the effect's intent understood
+before it is restructured, across the login page, the header, the arcade game and
+the visual effects layer, and most of those sites have no test covering them.
+Putting a fleet of behavioural changes into a commit whose stated purpose is a
+tooling bump is how regressions ship without review.
+
+**Follow-up:** re-enable one rule at a time and fix its sites in a change that says
+so. `react-hooks/set-state-in-effect` is the highest value of the three, and
+`src/components/Header.tsx` and `src/app/(frontend)/login/page.tsx` are the sites
+most worth looking at first, being on the signed-in path for every member.

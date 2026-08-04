@@ -180,7 +180,6 @@ export function AccountActions({ userId, initial, certTypes }: Props) {
           Download a copy of your CMBA Connect data (profile, certifications, and consent history) at any time.
         </p>
         {/* Download endpoint (route handler), not a page — a plain anchor is correct. */}
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <a href="/api/account/export" download
           className="inline-flex items-center gap-1.5 border border-cmba-red/40 hover:border-cmba-red text-cmba-red hover:text-white font-mono text-xs uppercase tracking-wider px-4 py-2 transition-colors">
           <Download size={14} /> Export my data (JSON)

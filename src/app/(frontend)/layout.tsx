@@ -68,7 +68,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // Reading the per-request nonce opts the public site into dynamic rendering so
-  // Next applies the strict CSP nonce (set in middleware) to every script it
+  // Next applies the strict CSP nonce (set in src/proxy.ts) to every script it
   // emits. Without this, statically rendered pages would ship un-nonced scripts
   // that a nonce + strict-dynamic policy would block. (Stage C / S0->S1.)
   await headers();
