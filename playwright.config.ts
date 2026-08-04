@@ -19,6 +19,14 @@ import { defineConfig, devices } from '@playwright/test'
  * The swiftshader launch flags are required by the arcade spec, whose three.js scene
  * needs software WebGL to mount headless. They are inert for every other spec.
  *
+ * Execution is SERIAL (fullyParallel false, one worker), which is main's setting
+ * rather than the launch-readiness branch's fullyParallel true. That is deliberate:
+ * this merge is the first tree to hold both suites, and e2e/scheduler.spec.ts states
+ * outright that "these tests share a database and mutate it, so the first row is not
+ * stable across the suite". Running it concurrently with itself or with the arcade
+ * spec would race that shared database. The suite is small enough that serial costs
+ * little; revisit per project once each spec is confirmed side-effect free.
+ *
  * Copy rule: no em or en dashes anywhere.
  */
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || process.env.PW_BASE_URL || 'http://localhost:3000'
@@ -26,10 +34,10 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL || process.env.PW_BASE_URL || 'h
 export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.spec.ts',
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  workers: 1,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   timeout: 60_000,
   expect: { timeout: 10_000 },

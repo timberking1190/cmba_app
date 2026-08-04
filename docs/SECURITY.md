@@ -269,7 +269,11 @@ baseline) is wired in `docs/DAST_ZAP.md`, pending a reachable preview URL.
 - `docs/PENTEST_READINESS.md` — scope, architecture, test accounts, the full
   adversarial/pentest matrix as a checklist, known residuals, disclosure contact.
 - `docs/SES_SETUP.md` — SES (ca-central-1) provisioning runbook (sandbox + RAMP DNS
-  blockers documented).
+  blockers documented) + in-app email health verification.
+- `docs/EXTERNAL_ASSESSMENT_SCOPE.md` — one-page scope and readiness brief for the
+  penetration testing firm and the privacy reviewer.
+- `docs/DAST_ZAP.md` — interim OWASP ZAP baseline scan config, runbook, and results
+  log (pending a preview URL).
 
 ---
 
@@ -421,8 +425,3 @@ tooling bump is how regressions ship without review.
 so. `react-hooks/set-state-in-effect` is the highest value of the three, and
 `src/components/Header.tsx` and `src/app/(frontend)/login/page.tsx` are the sites
 most worth looking at first, being on the signed-in path for every member.
-  blockers documented) + in-app email health verification.
-- `docs/EXTERNAL_ASSESSMENT_SCOPE.md` — one-page scope and readiness brief for the
-  penetration testing firm and the privacy reviewer.
-- `docs/DAST_ZAP.md` — interim OWASP ZAP baseline scan config, runbook, and results
-  log (pending a preview URL).
