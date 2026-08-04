@@ -1,0 +1,12 @@
+# OWASP ZAP baseline scan rule tuning for CMBA Connect.
+# Format: <pluginId>	<action WARN|IGNORE|FAIL>	<comment>
+# Unlisted rules default to WARN. See docs/DAST_ZAP.md.
+#
+# Copy rule: no em or en dashes anywhere.
+#
+10055	IGNORE	CSP style-src 'unsafe-inline' is a documented accepted exception (docs/SECURITY.md); framework and Off+Brand inline styles, low XSS risk. script-src is strict-nonce.
+10096	IGNORE	Timestamp disclosure is low signal and expected in framework assets.
+10027	IGNORE	Information disclosure suspicious comments in bundled framework JS, not app-authored.
+10015	WARN	Re-check cache-control on authenticated responses.
+10038	WARN	CSP present and strict-nonce; confirm no report-only regression on the scanned deploy.
+10063	WARN	Permissions-Policy present; confirm feature set.

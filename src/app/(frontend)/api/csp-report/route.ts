@@ -38,7 +38,6 @@ export async function POST(req: Request): Promise<NextResponse> {
       for (const item of items.slice(0, 10)) {
         const summary = summarize(item)
         if (summary?.directive) {
-          // eslint-disable-next-line no-console
           console.warn('[csp-report]', JSON.stringify(summary))
         }
       }

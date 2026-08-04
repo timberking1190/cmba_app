@@ -9,8 +9,8 @@ import {
 } from '@/lib/security/headers'
 
 /*
- * Middleware does two jobs on every request (except static assets, which the
- * matcher excludes):
+ * Proxy (formerly the middleware file convention, renamed in Next 16) does two
+ * jobs on every request, except static assets which the matcher excludes:
  *
  *  1. Security headers + a per-request, nonce-based CSP (Stage C / S0). The nonce
  *     is generated here and placed on the request's Content-Security-Policy header
@@ -20,7 +20,16 @@ import {
  *  2. A lightweight session-presence gate for the private areas (/account,
  *     /compliance, /manage, /rep): no payload-token cookie -> redirect to /login.
  *     This is presence only; real authorization happens server-side in the page
- *     via payload.auth() + role checks, and /admin handles its own auth.
+ *     via payload.auth() + role checks, and /admin handles its own auth. That
+ *     split matters more under Proxy than it did under Middleware: Next documents
+ *     that a matcher change, or moving a Server Function to another route, can
+ *     silently drop Proxy coverage. The page-level check is what actually
+ *     protects anything; this gate only saves a round trip.
+ *
+ * Runtime: Proxy defaults to the NODE runtime in Next 16, where Middleware
+ * defaulted to Edge. crypto.getRandomValues and btoa both exist there, so the
+ * nonce generation below is unaffected. The `runtime` config option is not
+ * allowed in a Proxy file and this one does not set it.
  */
 
 const PROTECTED_PREFIXES = ['/account', '/compliance', '/manage', '/rep']
@@ -33,7 +42,7 @@ function makeNonce(): string {
   return btoa(binary)
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const isDev = process.env.NODE_ENV !== 'production'
   const reportOnly = process.env.CSP_REPORT_ONLY === 'true'
   const nonce = makeNonce()

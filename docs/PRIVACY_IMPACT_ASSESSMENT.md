@@ -168,8 +168,10 @@ Each processor handles data only on CMBA's instructions. Canadian hosting region
 | File storage (private) | Supabase Storage `cmba-private` | ca-central-1 | Certificate, scoresheet, and incident files | Yes (upload/download verified in prod) | Not yet signed |
 | Email | AWS SES | ca-central-1 | Recipient email and name in headers; no sensitive data in body | Pending credentials | Not yet signed |
 | League system of record | TeamLinkt | Vendor-managed | Registration, schedule, scores; not held by CMBA Connect | Not applicable | Not applicable |
+| Error monitoring (optional) | Sentry | EU region at creation | Diagnostic error events only, configured to exclude personal data (no user, IP, cookies, body) | Off unless a DSN is set | Not yet signed |
+| Usage analytics + Web Vitals | Vercel Web Analytics + Speed Insights | US (aggregate) | None; cookieless, aggregate, no user identifier, no child profiling | Enabled in the Vercel dashboard | Covered by the Vercel DPA |
 
-Residency versus sovereignty: Supabase, AWS, and Vercel keep data physically in Canada, which satisfies residency. They are US-headquartered and may be subject to US legal process such as the CLOUD Act, so this is residency, not full data sovereignty. The board should record an explicit decision on whether sovereignty is required. Signed Data Processing Agreements (DPAs) with each processor, and confirmation that each one's sub-processors are Canada-resident, are open items (Section 13).
+Residency versus sovereignty: Supabase, AWS, and Vercel keep data physically in Canada, which satisfies residency. They are US-headquartered and may be subject to US legal process such as the CLOUD Act, so this is residency, not full data sovereignty. The board should record an explicit decision on whether sovereignty is required. Signed Data Processing Agreements (DPAs) with each processor, and confirmation that each one's sub-processors are Canada-resident, are open items (Section 13). Two technical services process only non-personal data outside Canada: Sentry error monitoring (diagnostics scrubbed of personal data, off unless a DSN is set) and Vercel Web Analytics (cookieless and aggregate). Both are disclosed in the privacy policy; neither profiles children.
 
 ---
 

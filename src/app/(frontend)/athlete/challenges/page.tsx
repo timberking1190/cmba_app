@@ -5,6 +5,7 @@ import { Trophy, CheckCircle2, Clock } from 'lucide-react'
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { ChallengeSubmitForm } from '@/components/athlete/ChallengeSubmitForm'
 import { PhotoHero } from '@/components/media/PhotoHero'
+import { EmptyState } from '@/components/feedback/EmptyState'
 import type { Challenge, ChallengeSubmission, Team } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
@@ -38,7 +39,11 @@ export default async function AthleteChallengesPage() {
             <Trophy size={22} className="text-cmba-red" /> This week&apos;s challenges
           </h2>
           {challenges.length === 0 ? (
-            <p className="text-sm text-cmba-grey">No active challenges right now. Check back soon.</p>
+            <EmptyState
+              icon={Trophy}
+              title="No active challenges right now"
+              description="New skill challenges are posted through the season. Check back soon, or ask your coach what to work on next."
+            />
           ) : (
             <div className="space-y-3">
               {challenges.map((c) => (

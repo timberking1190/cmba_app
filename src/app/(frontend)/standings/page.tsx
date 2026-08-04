@@ -1,5 +1,5 @@
 import { Info } from "lucide-react";
-import { getStandings, getTeamLinktConfig } from "@/lib/cmbaSchedule";
+import { getStandingsWithSource, getTeamLinktConfig } from "@/lib/cmbaSchedule";
 import { StandingsTable } from "@/components/StandingsTable";
 import { TeamLinktEmbed } from "@/components/TeamLinktEmbed";
 import { TeamLinktActions } from "@/components/TeamLinktActions";
@@ -10,9 +10,14 @@ import { CourtLines } from "@/components/graphics/CourtLines";
 // ISR does not increase upstream load.
 
 export default async function StandingsPage() {
-  const rows = await getStandings();
+  const { rows, source } = await getStandingsWithSource();
   const { appUrl, leagueUrl } = getTeamLinktConfig();
   const hasData = rows.length > 0;
+  const isOwn = source === "own";
+  const lede = isOwn
+    ? "Standings are calculated right here in CMBA Connect from confirmed game results. Where a division has no recorded results yet, its teams show with no games played."
+    : "Standings come straight from TeamLinkt. Where a division has no recorded results yet, the official TeamLinkt view is shown instead.";
+  const sourceNote = isOwn ? "Live standings data from CMBA Connect" : "Live standings data via TeamLinkt";
 
   return (
     <div>
@@ -25,7 +30,7 @@ export default async function StandingsPage() {
             League <span className="text-stroke">Standings</span>
           </h1>
           <p className="reveal text-cmba-grey mt-4 max-w-xl text-sm md:text-base leading-relaxed">
-            Standings come straight from TeamLinkt. Where a division has no recorded results yet, the official TeamLinkt view is shown instead.
+            {lede}
           </p>
         </div>
       </section>
@@ -35,6 +40,9 @@ export default async function StandingsPage() {
           <div className="grid lg:grid-cols-[1fr_300px] gap-10">
             <div className="reveal min-w-0">
               <StandingsTable rows={rows} />
+              <p className="mt-6 font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider flex items-center gap-1.5">
+                <Info size={11} /> {sourceNote}
+              </p>
               <div className="mt-8 pt-4 border-t border-white/10">
                 <h2 className="font-display font-bold text-white uppercase tracking-wide text-xs mb-2">How standings are calculated</h2>
                 <ul className="text-[11px] text-cmba-grey leading-relaxed space-y-1 max-w-2xl">

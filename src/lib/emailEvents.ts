@@ -1,5 +1,7 @@
 import type { Payload } from 'payload'
 
+import { CATEGORY_HEADER } from './email/meta'
+
 /*
  * Scheduling notifications. Every message is plain text with NO personal data in
  * the subject or body: it states what happened and links the recipient into the
@@ -18,6 +20,7 @@ export async function emailReportRequest(payload: Payload, args: { toEmail?: str
       to: args.toEmail,
       subject: 'A game score is waiting for your confirmation',
       text: `A score has been reported for one of your games. Sign in to CMBA Connect to review and confirm it:\n${base()}/rep${PORTAL_NOTE}`,
+      headers: { [CATEGORY_HEADER]: 'report_request' },
     })
   } catch (err) {
     payload.logger.error(`Report request email failed: ${String(err)}`)
@@ -48,6 +51,7 @@ export async function emailContested(payload: Payload, args: { snapshotEmail?: s
       to,
       subject: 'A game result is contested and needs review',
       text: `A game result was contested and needs an admin review. Open the contested queue:\n${base()}/admin/contested${PORTAL_NOTE}`,
+      headers: { [CATEGORY_HEADER]: 'contested' },
     })
   } catch (err) {
     payload.logger.error(`Contested escalation email failed: ${String(err)}`)
@@ -62,6 +66,7 @@ export async function emailScheduleChange(payload: Payload, args: { toEmails: Ar
         to,
         subject: 'A game on your schedule has changed',
         text: `A game on your team schedule has changed. Sign in to see the latest time, venue, and details:\n${base()}/schedule${PORTAL_NOTE}`,
+        headers: { [CATEGORY_HEADER]: 'schedule_change' },
       })
     } catch (err) {
       payload.logger.error(`Schedule change email failed: ${String(err)}`)
@@ -80,6 +85,7 @@ export async function emailTargetedAnnouncement(payload: Payload, args: { toEmai
       to: args.toEmail,
       subject: args.subject,
       text: `${args.message}\n\nSee the latest in CMBA Connect:\n${base()}/schedule\n\nTo change your email preferences, sign in and visit your account.`,
+      headers: { [CATEGORY_HEADER]: 'announcement' },
     })
   } catch (err) {
     payload.logger.error(`Targeted announcement email failed: ${String(err)}`)
@@ -93,6 +99,7 @@ export async function emailAssignment(payload: Payload, args: { toEmail?: string
       to: args.toEmail,
       subject: 'You have a new officiating assignment',
       text: `You have been assigned to officiate a game. Sign in to CMBA Connect to see the details:\n${base()}/account${PORTAL_NOTE}`,
+      headers: { [CATEGORY_HEADER]: 'assignment' },
     })
   } catch (err) {
     payload.logger.error(`Assignment email failed: ${String(err)}`)
@@ -111,6 +118,7 @@ export async function emailWeeklyDigest(payload: Payload, args: { toEmail?: stri
       to: args.toEmail,
       subject: 'Your week in CMBA Connect',
       text: `You have new activity this week, new badges, recognitions, or team news. Sign in to see it:\n${base()}/account\n\nTo change your email preferences, sign in and visit your account.`,
+      headers: { [CATEGORY_HEADER]: 'weekly_digest' },
     })
   } catch (err) {
     payload.logger.error(`Weekly digest email failed: ${String(err)}`)
@@ -128,6 +136,7 @@ export async function emailRecognition(payload: Payload, args: { toEmail?: strin
       to: args.toEmail,
       subject: 'You received a recognition in CMBA Connect',
       text: `Someone recognized a member of your CMBA Connect account. Sign in to see it:\n${base()}/account${PORTAL_NOTE}`,
+      headers: { [CATEGORY_HEADER]: 'recognition' },
     })
   } catch (err) {
     payload.logger.error(`Recognition email failed: ${String(err)}`)

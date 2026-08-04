@@ -1,0 +1,76 @@
+name: E2E, accessibility, performance
+
+# Browser-level gates: Playwright journeys + axe accessibility + Lighthouse mobile
+# budget. They need a running deploy, so they target a base URL rather than booting
+# the app here. Set the repo variable E2E_BASE_URL to a Vercel preview (or run the
+# workflow manually with a URL) to turn the gate on. Until then the job is a no-op so
+# it never blocks unrelated PRs. See e2e/README.md and docs/OPERATOR_ACTIONS.md.
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to test (preview or production)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Playwright + axe + Lighthouse
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      # The target URL is passed through env rather than interpolated straight into
+      # the run: script. Interpolating github context data into a shell body lets a
+      # crafted value execute on the runner; via env it is only ever a string.
+      - id: target
+        env:
+          INPUT_BASE_URL: ${{ github.event.inputs.base_url }}
+          VARS_BASE_URL: ${{ vars.E2E_BASE_URL }}
+        run: echo "url=${INPUT_BASE_URL:-$VARS_BASE_URL}" >> "$GITHUB_OUTPUT"
+
+      - name: No target configured (skip)
+        if: steps.target.outputs.url == ''
+        run: |
+          echo "E2E_BASE_URL is not set and no base_url was provided."
+          echo "Set the repo variable E2E_BASE_URL to a preview URL to enable the e2e/a11y/perf gate."
+          echo "Skipping (non-blocking)."
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        if: steps.target.outputs.url != ''
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install deps
+        if: steps.target.outputs.url != ''
+        run: npm ci
+      - name: Install Playwright browsers
+        if: steps.target.outputs.url != ''
+        run: npx playwright install --with-deps chromium
+      - name: Playwright (public smoke, axe, adversarial, seeded journeys if creds set)
+        if: steps.target.outputs.url != ''
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.target.outputs.url }}
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+        run: npm run test:e2e
+      - name: Lighthouse mobile budget
+        if: steps.target.outputs.url != ''
+        env:
+          LHCI_BASE_URL: ${{ steps.target.outputs.url }}
+        run: npm run lhci
+      - name: Upload Playwright report
+        if: steps.target.outputs.url != '' && always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

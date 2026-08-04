@@ -125,3 +125,47 @@ aws sesv2 send-email --region ca-central-1 \
 
 Then in the app, trigger a guardian-confirmation signup and confirm the email
 arrives (it currently logs via jsonTransport when SES is unset).
+
+## Step 6 — verify and monitor from inside the app (P0.2)
+
+Every send now flows through a tracked email adapter (`src/lib/email/adapter.ts`)
+that records a PII-free row in the `email-send-log` collection: category, salted
+recipient hash, bare recipient domain, status (sent or failed), transport (ses or
+json), and any error code. Use it to prove delivery and to watch for silent failures.
+
+1. **Send a real test.** Signed in as a super admin, POST to the test endpoint. It
+   sends only to your own account email (never an arbitrary address, so it cannot be
+   used as a relay) and reports the transport:
+   ```bash
+   curl -X POST https://cmbaplatform.vercel.app/api/v1/admin/email-test \
+     -H "Authorization: JWT <super-admin-token>"
+   ```
+   A `"transport":"ses","delivered":true` response plus the message landing in your
+   inbox proves the full path. `"transport":"json"` means SES is not configured yet
+   (Steps 1 to 4 incomplete), so nothing was delivered.
+
+2. **Exercise the named flows** the review calls out: password reset (use the
+   forgot-password form), MFA email OTP (`FEATURE_EMAIL_OTP=true` + the recovery
+   flow), and a reminder (trigger the certification or score reminder cron). Each
+   should appear in `email-send-log` with `status: sent`.
+
+3. **Check health.** GET the health endpoint (super admin) for rollups over 24h, 7d,
+   and 30d, whether SES is configured, and an `alert` flag. It returns HTTP 503 when
+   an alert is active (elevated failure rate, or SES unconfigured in production), so
+   an uptime check can page on it:
+   ```bash
+   curl https://cmbaplatform.vercel.app/api/v1/admin/email-health \
+     -H "Authorization: JWT <super-admin-token>"
+   ```
+   The same data is browsable in the admin panel under System, EmailSendLog. Filter
+   by `status: failed` to see recent failures with error codes.
+
+4. **Alerting.** Every failed send is also logged at error level, so once error
+   monitoring is live (see docs/VERIFICATION.md, observability phase) failures page
+   automatically. Auth email can no longer fail silently.
+
+5. **Tighten DMARC.** After a week of clean sends, move DMARC from `p=none` to
+   `p=quarantine`, then `p=reject`, watching the `rua` aggregate reports.
+
+Retention: `email-send-log` is swept to about 90 days by the `ttl-sweep` cron
+(`EMAIL_LOG_RETENTION_DAYS` in `src/collections/EmailSendLog.ts`).

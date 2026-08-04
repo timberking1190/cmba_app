@@ -14,6 +14,7 @@ import { APIError } from 'payload'
 
 import { isSuperAdmin, sanitizeSelfServiceRoles } from '../../access/index'
 import { isUnder18 } from '../../lib/age'
+import { CATEGORY_HEADER } from '../../lib/email/meta'
 
 export { isUnder18 }
 
@@ -120,6 +121,7 @@ export const sendGuardianConfirmation: CollectionAfterChangeHook = async ({ doc,
         `Confirm the account to activate it: ${link}\n\n` +
         `If you did not expect this, you can ignore this email and the account will stay inactive.\n\n` +
         `CMBA Connect`,
+      headers: { [CATEGORY_HEADER]: 'guardian' },
     })
     req.payload.logger.info(`Guardian confirmation email queued for user ${doc.id}`)
   } catch (err) {

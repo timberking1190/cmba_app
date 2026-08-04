@@ -9,7 +9,7 @@ export type LegalDoc = { slug: string; title: string; version: string; body: str
 export const PRIVACY_POLICY: LegalDoc = {
   slug: 'privacy',
   title: 'Privacy Policy',
-  version: '2026-06-01',
+  version: '2026-07-01',
   body: `# CMBA Connect Privacy Policy
 
 This policy explains what personal information Calgary Minor Basketball Association ("CMBA", "we", "us") collects through the CMBA Connect website and accounts, why we collect it, how we protect it, and the choices you have. We follow Canada's Personal Information Protection and Electronic Documents Act (PIPEDA) and Alberta's Personal Information Protection Act (PIPA).
@@ -37,10 +37,12 @@ We collect, use, and share your information with your consent, given when you cr
 A parent or legal guardian must set up and manage the account for an athlete under 18. We confirm the guardian's email. A child's personal information is visible only to the guardian and to authorized CMBA administrators; it is not shown to other members and is not public.
 
 ## How we store and protect your information
-We keep personal information on servers located in Canada — database, file storage, email, and website all run from a Canadian region. We use encryption in transit and at rest, secure signed-in sessions, role-based access, and private access-controlled certificate files. No system is perfectly secure, but we work hard to protect your information.
+We keep personal information on servers located in Canada. The database, file storage, email, and website all run from a Canadian region. We use encryption in transit and at rest, secure signed-in sessions, role-based access, and private access-controlled certificate files. No system is perfectly secure, but we work hard to protect your information.
 
 ## Service providers we use
-Hosting: Vercel (Canadian region). Database and file storage: Supabase (Canadian region). Email: Amazon Web Services SES (Canadian region). League play / scores / registration: TeamLinkt (separate platform with its own policy). We choose Canadian hosting regions so your data stays in Canada.
+Hosting: Vercel (Canadian region). Database and file storage: Supabase (Canadian region). Email: Amazon Web Services SES (Canadian region). League play, scores, and registration: TeamLinkt (a separate platform with its own policy). We choose Canadian hosting regions so your personal data stays in Canada.
+
+To keep the site reliable we use two privacy-respecting technical services. Error monitoring: Sentry, which receives only diagnostic error reports configured to exclude personal data (no names, emails, or accounts, and IP addresses are not stored). Usage analytics and page performance: Vercel Web Analytics and Speed Insights, which are cookieless and aggregate, do not identify you, and do not track you across other websites. These diagnostics may be processed outside Canada by these providers; they carry no personal data and are used only to fix faults and measure overall use. We do not use advertising services and we never profile children.
 
 ## How long we keep your information
 We keep your information only as long as needed for the purposes above or as required by law and sport governance, then remove it securely. We keep children's information for the shortest period that meets those needs.
@@ -106,7 +108,7 @@ When we make a meaningful change we post a new version with a new date and, wher
 These terms are governed by the laws of Alberta and the laws of Canada that apply there. Disputes will be handled in the courts of Alberta.
 
 ## How to reach us
-Calgary Minor Basketball Association — see the Contact page for current details.`,
+Calgary Minor Basketball Association. See the Contact page for current details.`,
 }
 
 export const GUARDIAN_CONSENT: LegalDoc = {
@@ -142,7 +144,7 @@ Only as long as needed, using the shortest reasonable period for children, then 
 By creating or approving your child's account and checking the consent box at sign up, you confirm that you are the parent or legal guardian; you have read this notice, the Privacy Policy, and the Terms of Use; you consent to CMBA collecting and using your child's information as described; and you understand you can withdraw consent at any time. We record the version you agreed to, with the date and time.
 
 ## A short version for young athletes
-CMBA Connect keeps a little information about you — your name, age, team, and how you are growing as a player. A trusted adult looks after your account. Only your guardian and CMBA staff can see your information. We keep it safe and in Canada, and we never sell it.`,
+CMBA Connect keeps a little information about you, such as your name, age, team, and how you are growing as a player. A trusted adult looks after your account. Only your guardian and CMBA staff can see your information. We keep it safe and in Canada, and we never sell it.`,
 }
 
 export const LEGAL_DOCS: Record<string, LegalDoc> = {

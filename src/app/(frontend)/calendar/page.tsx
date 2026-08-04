@@ -1,10 +1,12 @@
 import { ExternalLink, Info } from "lucide-react";
-import { getEvents, getTeamLinktConfig, serializeGame } from "@/lib/cmbaSchedule";
+import { getEventsWithSource, getTeamLinktConfig, serializeGame } from "@/lib/cmbaSchedule";
 import { ScheduleView } from "@/components/ScheduleView";
 import { TeamLinktActions } from "@/components/TeamLinktActions";
 import { TeamLinktEmbed } from "@/components/TeamLinktEmbed";
 import { DOCS } from "@/lib/cmbaLinks";
 import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
+import { JsonLd } from "@/components/JsonLd";
+import { siteUrl } from "@/lib/siteUrl";
 
 // Dynamically rendered (the root layout reads the CSP nonce). TeamLinkt data stays
 // cached for an hour via unstable_cache in lib/teamlinkt, so dropping page-level
@@ -42,14 +44,37 @@ function OfficialCalendarLink() {
 }
 
 export default async function SchedulePage() {
-  const games = await getEvents();
+  const { games, source } = await getEventsWithSource();
   const { appUrl, leagueUrl } = getTeamLinktConfig();
   const serial = games.map(serializeGame);
   const now = Date.now();
   const hasData = serial.length > 0;
+  const isOwn = source === "own";
+  // Copy is honest about the source: our own data once a season is imported, or the
+  // TeamLinkt read-only view while we fall back to it.
+  const lede = isOwn
+    ? "Game times, venues, and scores are managed right here in CMBA Connect. Account actions and registration live in the TeamLinkt app."
+    : "Game times, venues, and scores come straight from TeamLinkt. Account actions and full standings live in the TeamLinkt app.";
+  const sourceNote = isOwn ? "Live schedule data from CMBA Connect" : "Live schedule data via TeamLinkt";
+
+  // SportsEvent structured data for the next games (bounded so the page stays light).
+  const base = siteUrl();
+  const upcoming = games.filter((g) => g.start && g.start.getTime() >= now).slice(0, 25);
+  const eventsLd = upcoming.map((g) => ({
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: `${g.homeTeam} vs ${g.awayTeam}`,
+    sport: "Basketball",
+    startDate: g.start ? g.start.toISOString() : undefined,
+    ...(g.location ? { location: { "@type": "Place", name: g.location } } : {}),
+    homeTeam: { "@type": "SportsTeam", name: g.homeTeam },
+    awayTeam: { "@type": "SportsTeam", name: g.awayTeam },
+    organizer: { "@type": "SportsOrganization", name: "Calgary Minor Basketball Association", url: base },
+  }));
 
   return (
     <div>
+      {eventsLd.length > 0 && <JsonLd data={eventsLd} />}
       {/* Editorial header */}
       <section className="relative px-4 md:px-10 lg:px-14 pt-12 lg:pt-20 pb-8 overflow-hidden">
         <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-24 text-white/5" />
@@ -59,7 +84,7 @@ export default async function SchedulePage() {
             Game <span className="text-stroke">Schedule</span>
           </h1>
           <p className="reveal text-cmba-grey mt-4 max-w-xl text-sm md:text-base leading-relaxed">
-            Game times, venues, and scores come straight from TeamLinkt. Account actions and full standings live in the TeamLinkt app.
+            {lede}
           </p>
         </div>
       </section>
@@ -70,7 +95,7 @@ export default async function SchedulePage() {
             <div className="min-w-0">
               <ScheduleView games={serial} now={now} />
               <p className="mt-10 pt-4 border-t border-white/10 font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider flex items-center gap-1.5">
-                <Info size={11} /> Live schedule data via TeamLinkt
+                <Info size={11} /> {sourceNote}
               </p>
             </div>
             <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">

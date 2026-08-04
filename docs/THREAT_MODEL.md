@@ -124,6 +124,48 @@ Canada) is called out at each store.
   [Server code]  ==TB-8==>  [Cloudflare Turnstile]   (challenge token verification only; optional)
 ```
 
+The same flow as a rendered diagram (thick arrows cross a trust boundary):
+
+```mermaid
+flowchart TB
+  subgraph TB0["TB-0 Public internet, untrusted"]
+    A["Anonymous visitor"]
+    M["Member browser"]
+    N["Native app client"]
+    C["Vercel Cron"]
+  end
+  subgraph EDGE["Vercel edge yul1: TLS, HSTS, CSP nonce, headers"]
+    MW["Next.js middleware"]
+  end
+  subgraph APP["Application trust boundary TB-4, server, ca-central-1"]
+    RT["Routes, pages, API"]
+    AC["Payload access layer, default-deny RBAC"]
+  end
+  subgraph CA["Canadian data stores, ca-central-1"]
+    PG[("Postgres at Supabase, personal data incl. minors")]
+    PUB[("Storage PUBLIC bucket, media images")]
+    PRIV[("Storage PRIVATE bucket, certs, scoresheets, incidents")]
+  end
+  subgraph EXT["External services, no personal data egress"]
+    SES["AWS SES ca-central-1"]
+    TL["TeamLinkt public JSON, read-only"]
+    HIBP["HIBP range API, prefix only"]
+    TS["Cloudflare Turnstile, optional"]
+  end
+  A -->|TB-1| MW
+  M -->|TB-1| MW
+  N -->|TB-2 bearer| MW
+  C -->|TB-3 secret| MW
+  MW --> RT --> AC
+  AC ==>|TB-5| PG
+  AC ==>|TB-5| PUB
+  AC ==>|TB-5| PRIV
+  RT ==>|TB-6 no PII| SES
+  RT ==>|TB-7 read-only| TL
+  RT ==>|TB-8| HIBP
+  RT ==>|TB-8| TS
+```
+
 ### Where personal data flows, and the residency assertion
 
 - **Account and profile data** (name, preferred name, pronouns, phone, date of

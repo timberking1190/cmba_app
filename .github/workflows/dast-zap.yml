@@ -1,0 +1,39 @@
+name: DAST (OWASP ZAP baseline)
+
+# Interim dynamic scan against a running deploy (a Vercel preview or production).
+# Manual only: it needs a reachable URL, which CI does not stand up. Provide the
+# target when you run it. This is an advisory scan, not a merge gate; the
+# independent penetration test remains the real assurance (docs/PENTEST_READINESS.md).
+#
+# How to run: Actions tab -> DAST (OWASP ZAP baseline) -> Run workflow -> paste the
+# preview URL. Run the FIRST scan with CSP_REPORT_ONLY=true on the target so nothing
+# is blocked while you confirm the pages render, then re-scan enforcing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Full URL to scan (e.g. https://cmba-preview.vercel.app)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  zap-baseline:
+    name: ZAP baseline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: ZAP baseline scan
+        uses: zaproxy/action-baseline@66042c8e7e24680119199a017e5b0e8603bf4dae # v0.12.0
+        with:
+          target: ${{ inputs.target_url }}
+          rules_file_name: .zap/rules.tsv
+          # Passive baseline crawl; do not fail the run (advisory, interim).
+          cmd_options: '-a'
+          fail_action: false
+          allow_issue_writing: false
+          artifact_name: zap-baseline-report
