@@ -44,6 +44,17 @@ tracked in `docs/VERIFICATION.md`. Items are ordered by urgency.
   Canada-resident (`docs/PROCESSOR_REGISTER.md`).
 - [ ] **Fill legal-doc placeholders** (effective dates, Privacy Officer contact in
   Site Settings) and confirm the `security@cmba.ab.ca` disclosure mailbox.
+  - **Partially done, checked read-only against prod on 2026-08-04.** Site Settings
+    already carries a Privacy Officer contact: `CMBA Privacy Officer` /
+    `privacy@cmba.ab.ca` / `(403) 804-3396`, and a `league@cmba.ab.ca` contact
+    address. So the CONTACT ROUTE exists and the legal copy that points at it is
+    not dangling.
+  - **What is still missing is different, and is governance rather than content:**
+    PIPEDA accountability (principle 1) wants a designated INDIVIDUAL who is
+    accountable, not only a role mailbox. "Name the Privacy Officer" in the
+    external-assurance list means recording a person. The app does not need a code
+    change for that; the board needs to designate someone, and only then is the
+    field a true statement of accountability rather than an alias.
 
 ## Observability (P1.5)
 
@@ -59,21 +70,38 @@ tracked in `docs/VERIFICATION.md`. Items are ordered by urgency.
   and Vercel Analytics and is bumped to `2026-07-01` in `src/content/legal.ts`. Bump
   the `PolicyVersions` global's privacy version to match at launch so consent
   re-acceptance reflects the disclosure (safe now, before any public accounts).
+  - **Confirmed drift, read-only check against prod on 2026-08-04:** the
+    `PolicyVersions` global still reads `terms 2026-06-01 / privacy 2026-06-01 /
+    guardian 2026-06-01`, while the shipped privacy copy is `2026-07-01`. So this
+    is a one-field change in the admin (System group, Policy Versions): set privacy
+    to `2026-07-01`. There were 5 user rows at the time of checking, so the
+    re-consent blast radius is effectively nil, which is what "safe now, before any
+    public accounts" was counting on. It gets materially harder after registration
+    opens, so do it before Sept 1, not on the day.
 
 ## Migrations
 
 - [ ] Future Payload migrations are committed but applied by you. Run
   `npm run migrate` against a Supabase branch first, then production. (The
   `add_mfa_schema` migration is already applied.)
-- [ ] **Apply `20260702_054408_add_email_send_log`** (adds the `email_send_log`
-  table for the email health surface, P0.2). Additive and non-destructive: new
-  table, enums, and indexes only. Run `npm run migrate` on a Supabase branch, then
-  production.
-- [ ] **Apply `20260702_063142_add_season_surveys`** (adds the `season_surveys` and
-  `survey_responses` tables for the P2.9 season survey). Additive and
-  non-destructive. Then, to run a survey: create a SeasonSurvey in the admin panel
+- [x] **Apply `20260702_054408_add_email_send_log`** (adds the `email_send_log`
+  table for the email health surface, P0.2). APPLIED to ca-central-1 on
+  2026-08-04, batch 24, immediately before the PR #44 deploy so schema led code.
+- [x] **Apply `20260702_063142_add_season_surveys`** (adds the `season_surveys` and
+  `survey_responses` tables for the P2.9 season survey). APPLIED to ca-central-1 on
+  2026-08-04, batch 24. To run a survey: create a SeasonSurvey in the admin panel
   (Engagement group), add questions, set status to Open, and optionally turn on
   "Show results" to publish the aggregate to members at `/survey`.
+- [x] **Apply `20260804_155514_merged_schema_snapshot`** (snapshot-only, no schema
+  change). Recorded in batch 24. It exists because Payload picks the
+  `migrate:create` diff base by sorting snapshot FILENAMES, and merging main with
+  feat/launch-readiness interleaved two chains so the highest-sorting snapshot no
+  longer described the real schema. Its companion .json is the true post-merge
+  schema and is now the baseline. Do not delete it.
+
+Verified after applying: batch 23 to 24, 28 to 31 migrations recorded, 119 to 125
+tables, all 6 new tables, all 5 new enums, and the 3 new
+`payload_locked_documents_rels` columns present.
 
 ## Data / cutover
 
