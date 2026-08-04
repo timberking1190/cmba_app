@@ -256,6 +256,29 @@ reviews consume. A one-page brief to hand an assessor is
 `docs/EXTERNAL_ASSESSMENT_SCOPE.md`. An interim automated dynamic scan (OWASP ZAP
 baseline) is wired in `docs/DAST_ZAP.md`, pending a reachable preview URL.
 
+Status as of 2026-08-04. None of items 1 to 4 are satisfied, and the heading is
+literal: no amount of repository work closes them. Each one ends in a signature, a
+purchase, or work performed by somebody outside CMBA. Send-ready packets now exist so
+that each is a short action rather than a blank page:
+
+| Item | Packet | Ends with |
+|---|---|---|
+| 1. Penetration test | `docs/launch-blockers/PENTEST_RFP.md` | an engagement and a report |
+| 2. Security / architecture review | same RFP, or a separate engagement | a written assessment |
+| 3. Privacy Impact Assessment sign-off | `docs/launch-blockers/PRIVACY_REVIEW_BRIEF.md` | a named reviewer's opinion |
+| 4. DPAs (Supabase, AWS, Vercel) | `docs/launch-blockers/DPA_EXECUTION.md` | an authorised signatory |
+
+Adjacent, and also outside CMBA's control: transactional email delivery depends on
+RAMP Interactive publishing DNS on `cmba.ab.ca` and on AWS granting SES production
+access. See `docs/launch-blockers/SES_ACTIVATION.md`. Guardian confirmation email is on
+the registration path for minors, so this gates public registration too.
+
+What HAS been settled, and should not be confused with the above: the board decision to
+accept US-headquartered processors is recorded in
+`docs/adr/0004-accept-us-headquartered-processors.md`, the Privacy Officer designation
+in `docs/DECISIONS.md` (D5), and the registration and payments question in D2. Those
+were decisions. Items 1 to 4 are executions.
+
 ## Security and privacy evidence package
 
 - `docs/THREAT_MODEL.md` — STRIDE threat model + textual data flow diagram with
