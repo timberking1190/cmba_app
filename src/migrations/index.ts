@@ -28,6 +28,7 @@ import * as migration_20260703_184818_add_parent_role from './20260703_184818_ad
 import * as migration_20260730_162639_bracket_winner_set_by from './20260730_162639_bracket_winner_set_by';
 import * as migration_20260730_164115_bulk_edit_undo from './20260730_164115_bulk_edit_undo';
 import * as migration_20260731_032821_add_scheduler_role from './20260731_032821_add_scheduler_role';
+import * as migration_20260804_155514_merged_schema_snapshot from './20260804_155514_merged_schema_snapshot';
 
 export const migrations = [
   {
@@ -178,6 +179,11 @@ export const migrations = [
   {
     up: migration_20260731_032821_add_scheduler_role.up,
     down: migration_20260731_032821_add_scheduler_role.down,
-    name: '20260731_032821_add_scheduler_role'
+    name: '20260731_032821_add_scheduler_role',
+  },
+  {
+    up: migration_20260804_155514_merged_schema_snapshot.up,
+    down: migration_20260804_155514_merged_schema_snapshot.down,
+    name: '20260804_155514_merged_schema_snapshot'
   },
 ];
