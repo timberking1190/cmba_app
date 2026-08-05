@@ -1779,3 +1779,5 @@ OPERATOR_ACTIONS.md, DECISIONS.md, and the processor register):
 - **Known follow-up:** the signing key value in the host env still does not parse on the
   Node 24 runtime even after newline-normalization — regenerate it as a standard PKCS8
   Ed25519 PEM and re-set `MEMBERCARD_SIGNING_*` so eligible coaches get a working QR.
+
+<!-- 2026-08-05: signing key rotated to a fresh PKCS8 Ed25519 keypair; this line forces a production redeploy so the new MEMBERCARD_SIGNING_* env vars take effect. -->
