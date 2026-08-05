@@ -1762,3 +1762,20 @@ OPERATOR_ACTIONS.md, DECISIONS.md, and the processor register):
    Supabase, AWS, and Vercel DPAs; name the Privacy Officer; board decision on
    US-headquartered processors.
 7. Board decision on registration and payments (D2).
+
+---
+
+## Member Cards — /account/card incident + credential gating (2026-08-05)
+
+- **Crash fixed:** `/account/card` threw `ERR_OSSL_UNSUPPORTED` (createPrivateKey could
+  not parse `MEMBERCARD_SIGNING_PRIVATE_KEY`) → error boundary showed "Account
+  Unavailable". `keys.normalizePem()` now tolerates escaped-`\n` / quote-wrapped env
+  keys; the card page + issuance mint are wrapped in try/catch so a signing failure
+  degrades gracefully (card without QR) instead of crashing.
+- **Card gating:** the member card is now gated on completed required credentials
+  (reuses `evaluateMember`). An incomplete member sees a clear "Your card isn't active
+  yet" checklist (missing / expired / complete, with course links); no QR is minted for
+  an incomplete member. Eligible → active card + QR.
+- **Known follow-up:** the signing key value in the host env still does not parse on the
+  Node 24 runtime even after newline-normalization — regenerate it as a standard PKCS8
+  Ed25519 PEM and re-set `MEMBERCARD_SIGNING_*` so eligible coaches get a working QR.
