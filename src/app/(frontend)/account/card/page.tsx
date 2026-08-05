@@ -41,13 +41,20 @@ export default async function MemberCardPage() {
 
   let qrDataUrl: string | null = null
   if (scannable && pass?.currentJti && isSigningConfigured()) {
-    const key = getActiveSigningKey()!
-    const iat = Math.floor(Date.now() / 1000)
-    const token = mintPassToken({
-      passSerial: pass.serialNumber, jti: pass.currentJti, channel: 'wallet',
-      kid: key.kid, iat, exp: tokenExpirySeconds(new Date(), 'wallet'), privateKeyPem: key.privateKeyPem,
-    })
-    qrDataUrl = await QRCode.toDataURL(token, { margin: 1, width: 320, errorCorrectionLevel: 'M' })
+    // A malformed/misconfigured signing key must NOT take down the whole card page.
+    // On failure, render the card without a QR (the "being set up" fallback) and log.
+    try {
+      const key = getActiveSigningKey()!
+      const iat = Math.floor(Date.now() / 1000)
+      const token = mintPassToken({
+        passSerial: pass.serialNumber, jti: pass.currentJti, channel: 'wallet',
+        kid: key.kid, iat, exp: tokenExpirySeconds(new Date(), 'wallet'), privateKeyPem: key.privateKeyPem,
+      })
+      qrDataUrl = await QRCode.toDataURL(token, { margin: 1, width: 320, errorCorrectionLevel: 'M' })
+    } catch (err) {
+      console.error('[account/card] QR mint failed (signing key issue):', err instanceof Error ? err.message : err)
+      qrDataUrl = null
+    }
   }
 
   const memberNumber = (user as { memberNumber?: string | null }).memberNumber ?? '—'

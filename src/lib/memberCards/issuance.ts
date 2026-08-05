@@ -163,18 +163,24 @@ export async function issueCardForUser(
   if (plan.scannable && !hasJti) {
     const signingKey = getActiveSigningKey()
     if (signingKey) {
-      const jti = randomUUID()
-      const iat = Math.floor(now.getTime() / 1000)
-      const exp = tokenExpirySeconds(now, 'print')
-      mintPassToken({ passSerial: serialNumber, jti, channel: 'print', kid: signingKey.kid, iat, exp, privateKeyPem: signingKey.privateKeyPem })
-      await payload.create({
-        collection: 'verification-tokens',
-        data: { jti, pass: passId, member: user.id, channel: 'print', kid: signingKey.kid, expiresAt: new Date(exp * 1000).toISOString() },
-        overrideAccess: true,
-        req,
-      })
-      await payload.update({ collection: 'passes', id: passId, data: { currentJti: jti }, overrideAccess: true, req })
-      tokenMinted = true
+      // A malformed signing key must NOT fail account creation. On error, leave the pass
+      // token-less (recoverable via the backfill re-issue) and log, rather than throwing.
+      try {
+        const jti = randomUUID()
+        const iat = Math.floor(now.getTime() / 1000)
+        const exp = tokenExpirySeconds(now, 'print')
+        mintPassToken({ passSerial: serialNumber, jti, channel: 'print', kid: signingKey.kid, iat, exp, privateKeyPem: signingKey.privateKeyPem })
+        await payload.create({
+          collection: 'verification-tokens',
+          data: { jti, pass: passId, member: user.id, channel: 'print', kid: signingKey.kid, expiresAt: new Date(exp * 1000).toISOString() },
+          overrideAccess: true,
+          req,
+        })
+        await payload.update({ collection: 'passes', id: passId, data: { currentJti: jti }, overrideAccess: true, req })
+        tokenMinted = true
+      } catch (err) {
+        payload.logger.error(`[issuance] token mint failed for user ${user.id} (signing key issue): ${err instanceof Error ? err.message : String(err)}`)
+      }
     }
   }
 

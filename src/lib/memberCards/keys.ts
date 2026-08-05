@@ -20,6 +20,25 @@ export interface SigningKey {
 
 export type PublicKeyResolver = (kid: string) => string | null
 
+/**
+ * Normalize a PEM read from an env var. Host env stores (Vercel, .env) frequently
+ * mangle multi-line PEMs into a single line with literal `\n` (backslash-n) escapes,
+ * and sometimes wrap the whole value in quotes. Passing that straight to
+ * crypto.createPrivateKey throws `ERR_OSSL_UNSUPPORTED` (DECODER routines::unsupported).
+ * Restore real newlines + strip stray wrapping quotes so the key parses.
+ */
+export function normalizePem(pem: string): string {
+  let s = pem
+  // Strip a single pair of wrapping quotes if present (checked on a trimmed view so
+  // outer whitespace around the quotes is dropped too). A clean PEM is left untouched.
+  const trimmed = pem.trim()
+  if (trimmed.length >= 2 && ((trimmed[0] === '"' && trimmed.endsWith('"')) || (trimmed[0] === "'" && trimmed.endsWith("'")))) {
+    s = trimmed.slice(1, -1)
+  }
+  if (s.includes('\\n')) s = s.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\\r/g, '\n')
+  return s
+}
+
 /** Parse the verify-side public key map from env; tolerant of malformed JSON. */
 export function buildPublicKeyResolver(env: Record<string, string | undefined> = process.env): PublicKeyResolver {
   const map: Record<string, string> = {}
@@ -30,7 +49,7 @@ export function buildPublicKeyResolver(env: Record<string, string | undefined> =
       const parsed = JSON.parse(json) as unknown
       if (parsed && typeof parsed === 'object') {
         for (const [kid, pem] of Object.entries(parsed as Record<string, unknown>)) {
-          if (typeof pem === 'string') map[kid] = pem
+          if (typeof pem === 'string') map[kid] = normalizePem(pem)
         }
       }
     } catch {
@@ -40,7 +59,7 @@ export function buildPublicKeyResolver(env: Record<string, string | undefined> =
 
   const singleKid = env.MEMBERCARD_SIGNING_KID
   const singlePem = env.MEMBERCARD_SIGNING_PUBLIC_KEY
-  if (singleKid && singlePem && !map[singleKid]) map[singleKid] = singlePem
+  if (singleKid && singlePem && !map[singleKid]) map[singleKid] = normalizePem(singlePem)
 
   return (kid: string) => map[kid] ?? null
 }
@@ -50,7 +69,7 @@ export function getActiveSigningKey(env: Record<string, string | undefined> = pr
   const kid = env.MEMBERCARD_SIGNING_KID
   const privateKeyPem = env.MEMBERCARD_SIGNING_PRIVATE_KEY
   if (!kid || !privateKeyPem) return null
-  return { kid, privateKeyPem }
+  return { kid, privateKeyPem: normalizePem(privateKeyPem) }
 }
 
 /** True when both mint + verify material is present. */
