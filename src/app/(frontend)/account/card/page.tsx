@@ -2,14 +2,13 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import QRCode from 'qrcode'
-import { ShieldCheck, IdCard, ArrowLeft, Apple, Wallet } from 'lucide-react'
+import { ShieldCheck, IdCard, ArrowLeft } from 'lucide-react'
 
 import { getCurrentUser, getPayloadClient } from '@/lib/auth'
 import { getActiveSigningKey, isSigningConfigured } from '@/lib/memberCards/keys'
 import { loadRequirementMatrix, tokenExpirySeconds } from '@/lib/memberCards/issuance'
 import { isRoleScannable } from '@/lib/memberCards/requirements'
 import { mintPassToken } from '@/lib/memberCards/token'
-import { googleDemoMode, isAppleWalletConfigured, isGoogleWalletConfigured } from '@/lib/memberCards/walletKeys'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'My Member Card | CMBA Connect' }
@@ -50,13 +49,6 @@ export default async function MemberCardPage() {
     })
     qrDataUrl = await QRCode.toDataURL(token, { margin: 1, width: 320, errorCorrectionLevel: 'M' })
   }
-
-  // Wallet download is offered only for a scannable pass that already carries a QR, and
-  // only when that platform's signing material is configured server-side.
-  const hasScannablePass = scannable && !!pass?.currentJti && isSigningConfigured()
-  const appleAvailable = hasScannablePass && isAppleWalletConfigured()
-  const googleAvailable = hasScannablePass && isGoogleWalletConfigured()
-  const googleDemo = googleDemoMode()
 
   const memberNumber = (user as { memberNumber?: string | null }).memberNumber ?? '—'
   const name = (user as { preferredName?: string | null }).preferredName || user.fullName || user.email
@@ -116,46 +108,9 @@ export default async function MemberCardPage() {
         </div>
       </div>
 
-      {appleAvailable || googleAvailable ? (
-        <div className="mt-6 space-y-3">
-          {appleAvailable && (
-            // Real file download (.pkpass) — a plain anchor, not next/link (which would
-            // client-navigate instead of downloading).
-            // eslint-disable-next-line @next/next/no-html-link-for-pages
-            <a
-              href="/api/v1/member-cards/apple/download"
-              // Fixed brand black/white (not the theme-flipped tokens) so the wallet
-              // buttons keep their canonical look in both light and dark.
-              style={{ backgroundColor: '#000', color: '#fff' }}
-              className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-sm transition hover:opacity-90"
-            >
-              <Apple size={18} /> Add to Apple Wallet
-            </a>
-          )}
-          {googleAvailable && (
-            <>
-              {/* Server 302-redirects to pay.google.com — must be a plain anchor. */}
-              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-              <a
-                href="/api/v1/member-cards/google/save"
-                style={{ backgroundColor: '#fff', color: '#202124' }}
-                className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold shadow-sm ring-1 ring-black/10 transition hover:opacity-90"
-              >
-                <Wallet size={18} /> Add to Google Wallet
-              </a>
-              {googleDemo && (
-                <p className="text-center text-xs text-cmba-grey-mid">
-                  Google Wallet is in preview — it currently opens for approved test accounts only.
-                </p>
-              )}
-            </>
-          )}
-        </div>
-      ) : (
-        <p className="mt-6 text-center text-xs text-cmba-grey-mid">
-          Apple Wallet &amp; Google Wallet download are coming soon.
-        </p>
-      )}
+      <p className="mt-6 text-center text-xs text-cmba-grey-mid">
+        Apple Wallet &amp; Google Wallet download are coming soon.
+      </p>
     </main>
   )
 }

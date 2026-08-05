@@ -2,7 +2,6 @@ import type { CollectionConfig } from 'payload'
 
 import { superAdminFieldOnly } from '../access/index'
 import { adminOnly, ownedByUserOrAdmin } from '../access/memberCards'
-import { pushApplePassOnMaterialChange } from './hooks/walletPush'
 
 /*
  * Passes (Member Cards) — one wallet/print pass per (member, platform).
@@ -33,10 +32,6 @@ export const Passes: CollectionConfig = {
     useAsTitle: 'serialNumber',
     defaultColumns: ['member', 'platform', 'status', 'season', 'issuedAt'],
     description: 'Wallet/print passes. Managed by issuance — do not hand-edit tokens.',
-  },
-  hooks: {
-    // Push an Apple Wallet update when a pass is revoked/superseded or its token rotates.
-    afterChange: [pushApplePassOnMaterialChange],
   },
   fields: [
     { name: 'member', type: 'relationship', relationTo: 'users', required: true, index: true },
