@@ -42,15 +42,20 @@ export interface AppleWalletConfig {
 
 const decodeBase64 = (v: string): Buffer => Buffer.from(v, 'base64')
 
-/** Missing-var names for Apple, in the order the operator should check them. */
+// The non-secret identifiers are stable, public-in-every-pass values, so they default
+// in code (env still overrides). Only the SECRET material must be set in the host env —
+// this removes the "forgot to set an identifier var in Vercel" footgun (.env.example is
+// NOT loaded in production).
+const DEFAULT_APPLE_TEAM_ID = 'D433C7C7BQ'
+const DEFAULT_APPLE_PASS_TYPE_ID = 'pass.ca.cmba.member'
+const DEFAULT_APPLE_APNS_KEY_ID = 'VJQB268XAC'
+
+/** Missing SECRET-var names for Apple (identifiers default in code). */
 export function missingAppleVars(env: Env = process.env): string[] {
   const required = [
-    'MEMBERCARD_APPLE_TEAM_ID',
-    'MEMBERCARD_APPLE_PASS_TYPE_ID',
     'MEMBERCARD_APPLE_P12_BASE64',
     'MEMBERCARD_APPLE_P12_PASSWORD',
     'MEMBERCARD_APPLE_WWDR_BASE64',
-    'MEMBERCARD_APPLE_APNS_KEY_ID',
     'MEMBERCARD_APPLE_APNS_KEY_BASE64',
   ]
   const missing = required.filter((k) => !env[k])
@@ -68,12 +73,12 @@ export function getAppleWalletConfig(env: Env = process.env): AppleWalletConfig 
   if (!isAppleWalletConfigured(env)) return null
   const apnsEnv = (env.MEMBERCARD_APPLE_APNS_ENVIRONMENT ?? 'production').toLowerCase()
   return {
-    teamId: env.MEMBERCARD_APPLE_TEAM_ID!,
-    passTypeId: env.MEMBERCARD_APPLE_PASS_TYPE_ID!,
+    teamId: env.MEMBERCARD_APPLE_TEAM_ID || DEFAULT_APPLE_TEAM_ID,
+    passTypeId: env.MEMBERCARD_APPLE_PASS_TYPE_ID || DEFAULT_APPLE_PASS_TYPE_ID,
     p12: decodeBase64(env.MEMBERCARD_APPLE_P12_BASE64!),
     p12Password: env.MEMBERCARD_APPLE_P12_PASSWORD!,
     wwdr: decodeBase64(env.MEMBERCARD_APPLE_WWDR_BASE64!),
-    apnsKeyId: env.MEMBERCARD_APPLE_APNS_KEY_ID!,
+    apnsKeyId: env.MEMBERCARD_APPLE_APNS_KEY_ID || DEFAULT_APPLE_APNS_KEY_ID,
     apnsKeyPem: decodeBase64(env.MEMBERCARD_APPLE_APNS_KEY_BASE64!).toString('utf8'),
     apnsEnvironment: apnsEnv === 'sandbox' ? 'sandbox' : 'production',
     authSecret: env.MEMBERCARD_APPLE_AUTH_SECRET || env.PAYLOAD_SECRET!,
@@ -116,9 +121,11 @@ export function googleDemoMode(env: Env = process.env): boolean {
   return (env.MEMBERCARD_GOOGLE_DEMO_MODE ?? 'true').toLowerCase() !== 'false'
 }
 
+const DEFAULT_GOOGLE_ISSUER_ID = '3388000000023180302'
+
+/** Missing SECRET-var names for Google (issuer id defaults in code). */
 export function missingGoogleVars(env: Env = process.env): string[] {
-  const required = ['MEMBERCARD_GOOGLE_ISSUER_ID', 'MEMBERCARD_GOOGLE_SERVICE_ACCOUNT_KEY_BASE64']
-  return required.filter((k) => !env[k])
+  return ['MEMBERCARD_GOOGLE_SERVICE_ACCOUNT_KEY_BASE64'].filter((k) => !env[k])
 }
 
 function parseServiceAccount(b64: string): GoogleServiceAccount | null {
@@ -140,7 +147,7 @@ export function getGoogleWalletConfig(env: Env = process.env): GoogleWalletConfi
   const sa = parseServiceAccount(env.MEMBERCARD_GOOGLE_SERVICE_ACCOUNT_KEY_BASE64!)
   if (!sa) return null
   return {
-    issuerId: env.MEMBERCARD_GOOGLE_ISSUER_ID!,
+    issuerId: env.MEMBERCARD_GOOGLE_ISSUER_ID || DEFAULT_GOOGLE_ISSUER_ID,
     serviceAccount: sa,
     classId: env.MEMBERCARD_GOOGLE_CLASS_ID || null,
     demoMode: googleDemoMode(env),

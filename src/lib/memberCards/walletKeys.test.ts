@@ -32,9 +32,24 @@ const fullAppleEnv = (): Env => ({
 const googleSA = JSON.stringify({ client_email: 'cmba-wallet-signer@cmba-wallet.iam.gserviceaccount.com', private_key: 'KEY' })
 
 describe('walletKeys — Apple', () => {
-  it('reports missing vars precisely and is not configured', () => {
+  it('reports missing SECRET vars precisely and is not configured', () => {
     expect(isAppleWalletConfigured({})).toBe(false)
-    expect(missingAppleVars({})).toContain('MEMBERCARD_APPLE_TEAM_ID')
+    expect(missingAppleVars({})).toContain('MEMBERCARD_APPLE_P12_BASE64')
+  })
+
+  it('defaults the non-secret identifiers when only secrets are set', () => {
+    const env: Env = {
+      MEMBERCARD_APPLE_P12_BASE64: b64('p12'),
+      MEMBERCARD_APPLE_P12_PASSWORD: 'pw',
+      MEMBERCARD_APPLE_WWDR_BASE64: b64('wwdr'),
+      MEMBERCARD_APPLE_APNS_KEY_BASE64: b64(APNS_PEM),
+      PAYLOAD_SECRET: 's',
+    }
+    expect(isAppleWalletConfigured(env)).toBe(true)
+    const cfg = getAppleWalletConfig(env)!
+    expect(cfg.teamId).toBe('D433C7C7BQ')
+    expect(cfg.passTypeId).toBe('pass.ca.cmba.member')
+    expect(cfg.apnsKeyId).toBe('VJQB268XAC')
   })
 
   it('resolves + decodes a full Apple env, defaulting APNs to production', () => {
@@ -83,6 +98,12 @@ describe('walletKeys — Google', () => {
     expect(cfg.serviceAccount.client_email).toContain('cmba-wallet-signer')
     expect(cfg.demoMode).toBe(true)
     expect(cfg.classId).toBeNull()
+  })
+
+  it('defaults the issuer id when only the SA key is set', () => {
+    const env: Env = { MEMBERCARD_GOOGLE_SERVICE_ACCOUNT_KEY_BASE64: b64(googleSA) }
+    expect(isGoogleWalletConfigured(env)).toBe(true)
+    expect(getGoogleWalletConfig(env)!.issuerId).toBe('3388000000023180302')
   })
 
   it('is not configured when the SA JSON is malformed', () => {
