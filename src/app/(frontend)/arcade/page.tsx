@@ -1,8 +1,24 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Press_Start_2P } from 'next/font/google'
 import { ArrowLeft } from 'lucide-react'
 
 import { ArcadeGameLazy } from '@/components/fx/arcade/ArcadeGameLazy'
+
+/*
+ * The retro pixel font lives HERE, not in the root layout.
+ *
+ * It was declared on <body> for the whole site, so all 49 routes downloaded it,
+ * to serve the one route that uses it. Measured: four font files fetched on
+ * /schedule, one of them this. next/font still self hosts it, so the strict CSP
+ * font-src 'self' is unaffected.
+ */
+const pressStart = Press_Start_2P({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-arcade',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'CMBA Hoops Arcade | CMBA Connect',
@@ -45,7 +61,7 @@ const howTo = [
 
 export default function ArcadePage() {
   return (
-    <div className="min-h-screen">
+    <div className={`${pressStart.variable} min-h-screen`}>
       <section className="max-w-5xl mx-auto px-4 lg:px-6 pt-10 lg:pt-14 pb-6 text-center">
         <span className="label-xs text-cmba-red">Arcade</span>
         <h1 className="font-display font-black uppercase tracking-tighter2 text-[clamp(30px,7vw,68px)] leading-[0.95] mt-1">

@@ -1,0 +1,112 @@
+name: Mobile audit
+
+# Accessibility and mobile performance gates, held against the baselines committed
+# in docs/audit/. A regression fails the build even when the absolute number still
+# looks acceptable, which is the point: without a baseline "92 is a good score" is
+# how a site slides from 98 to 92 one pull request at a time.
+#
+# Deliberately a separate workflow from ci.yml. This one needs a production build
+# and a running server with database access, which ci.yml explicitly avoids (see
+# the note at the end of that file). Keeping them apart means a missing database
+# secret degrades this job rather than breaking lint and unit tests for everyone.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: axe and Lighthouse vs baseline
+    runs-on: ubuntu-latest
+    # Without a database this job cannot build, and a skipped job that reports
+    # success is worse than no job at all. It is gated on the secret being present
+    # and says so in the summary when it is not.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check for the database secret
+        id: secrets
+        run: |
+          if [ -z "${{ secrets.AUDIT_DATABASE_URL }}" ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Mobile audit skipped"
+              echo ""
+              echo "AUDIT_DATABASE_URL is not set, so there is no database to build against."
+              echo "Point it at a staging or preview database, never production."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Chromium
+        if: steps.secrets.outputs.present == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        if: steps.secrets.outputs.present == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.AUDIT_DATABASE_URL }}
+          PAYLOAD_SECRET: ${{ secrets.AUDIT_PAYLOAD_SECRET }}
+          NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+        run: npm run build
+
+      - name: Start the server
+        if: steps.secrets.outputs.present == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.AUDIT_DATABASE_URL }}
+          PAYLOAD_SECRET: ${{ secrets.AUDIT_PAYLOAD_SECRET }}
+          NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+        run: |
+          npm start &
+          npx wait-on http://localhost:3000 --timeout 120000
+
+      # axe over every public route. The suite forgives the violation ids already
+      # recorded in docs/audit/axe-baseline.json and fails on any NEW one, so it is
+      # green today and still blocks a regression.
+      - name: Accessibility (axe)
+        if: steps.secrets.outputs.present == 'true'
+        env:
+          PW_WEBSERVER: 'echo server already running'
+        run: npx playwright test --project=mobile-chrome a11y.spec.ts
+
+      # The mobile fundamentals: overflow at three widths, 16px and 44px controls,
+      # touch targets, 200 percent text, pinch zoom, safe areas, reveals.
+      - name: Mobile fundamentals
+        if: steps.secrets.outputs.present == 'true'
+        env:
+          PW_WEBSERVER: 'echo server already running'
+        run: npx playwright test --project=mobile-chrome mobile.spec.ts resilience.spec.ts
+
+      # LAB numbers under simulated mobile throttling, compared against
+      # docs/audit/lighthouse-baseline.json. Not field data, and never reported as
+      # such: this app has no RUM. See docs/audit/RUM-OPTIONS.md.
+      - name: Lighthouse vs baseline
+        if: steps.secrets.outputs.present == 'true'
+        run: npm run audit:lighthouse:check
+
+      - name: Upload reports
+        if: always() && steps.secrets.outputs.present == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mobile-audit-reports
+          path: |
+            .lighthouseci/
+            playwright-report/
+            test-results/
+          retention-days: 7

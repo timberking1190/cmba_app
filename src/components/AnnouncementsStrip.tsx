@@ -1,40 +1,25 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Megaphone, X } from 'lucide-react'
 
-type Announcement = {
-  id: number | string
-  title: string
-  body?: string | null
-  tag?: string | null
-  link?: string | null
-  pinned?: boolean | null
-  expiresAt?: string | null
-}
+import type { Announcement } from '@/lib/announcements'
 
 /*
- * Live announcements strip (homepage). Client-fetches published announcements
- * from the public API so the homepage stays static and gets fresh content on
- * load. Renders nothing when there are none. Dismissible per session.
+ * Live announcements strip (homepage).
+ *
+ * The announcement is passed IN from the server (see src/lib/announcements.ts)
+ * rather than fetched here. It used to client-fetch and render nothing until the
+ * response landed, then insert itself above the hero and push the whole homepage
+ * down. That shift was the entire measured homepage CLS of 0.046. Now it is
+ * either in the first paint or absent, and nothing moves.
+ *
+ * This stays a client component only because dismissing is client state. It holds
+ * no fetching logic any more.
  */
-export function AnnouncementsStrip() {
-  const [items, setItems] = useState<Announcement[]>([])
+export function AnnouncementsStrip({ items }: { items: Announcement[] }) {
   const [dismissed, setDismissed] = useState(false)
-
-  useEffect(() => {
-    fetch('/api/announcements?limit=10&sort=-pinned&depth=0')
-      .then((r) => r.json())
-      .then((d) => {
-        const now = Date.now()
-        const live = (d?.docs ?? []).filter(
-          (a: Announcement) => !a.expiresAt || new Date(a.expiresAt).getTime() >= now,
-        )
-        setItems(live)
-      })
-      .catch(() => {})
-  }, [])
 
   if (dismissed || items.length === 0) return null
   const a = items[0]
@@ -53,11 +38,10 @@ export function AnnouncementsStrip() {
         {/*
           tap-target on both controls below, rather than min-h/min-w.
 
-          This strip is client fetched and inserted above the hero, so ANY change
-          to its height shifts the whole homepage down and shows up directly in
-          CLS. tap-target (globals.css) grows the hit area with a pseudo element
-          and leaves the layout box alone, which is what WCAG 2.5.8 measures
-          anyway. Same 44px target, no extra shift.
+          This strip sits above the hero, so any change to its height moves the
+          whole page below it. tap-target (globals.css) grows the hit area with a
+          pseudo element and leaves the layout box alone, which is what WCAG 2.5.8
+          measures anyway. Same 44px target, no change to the layout.
         */}
         {a.link ? (
           <Link href={a.link} className="tap-target ml-auto shrink-0 inline-flex items-center justify-center px-2 font-display font-bold text-xs uppercase tracking-wider text-cmba-red hover:text-white transition-colors">

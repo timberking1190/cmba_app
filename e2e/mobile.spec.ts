@@ -295,3 +295,48 @@ test.describe('safe areas', () => {
     ).toBeGreaterThanOrEqual(navHeight)
   })
 })
+
+/* ------------------------------------------------------- reveal + LCP */
+
+test.describe('scroll reveals do not hide content from the first paint', () => {
+  /*
+   * The regression this guards against is expensive and invisible in review.
+   *
+   * `.reveal` used to be `opacity: 0` in the stylesheet, waiting for an
+   * IntersectionObserver to add `.in`. Content was therefore invisible from the
+   * moment the HTML arrived until React had hydrated. On /login, where the LCP
+   * element sits inside a reveal, that measured LCP 5266ms against FCP 2232ms:
+   * four and a half seconds of render delay to fade in text already present in
+   * the markup. Inverting it (hide only what is below the fold, and only once JS
+   * is running) took /login to 2247ms.
+   *
+   * If anyone ever puts the opacity back in the stylesheet, this fails.
+   */
+  for (const route of ['/login', '/', '/coach'] as const) {
+    test(`${route}: nothing above the fold is hidden before JavaScript runs`, async ({
+      page,
+    }) => {
+      // Block every script so the page is exactly what the server sent.
+      await page.route('**/*.js', (r) => r.abort())
+      await page.goto(route, { waitUntil: 'domcontentloaded' })
+
+      const hidden = await page.evaluate(() => {
+        const vh = window.innerHeight
+        const out: string[] = []
+        for (const el of document.querySelectorAll<HTMLElement>('.reveal')) {
+          const rect = el.getBoundingClientRect()
+          if (rect.top > vh || rect.height === 0) continue // below the fold, fine
+          if (parseFloat(getComputedStyle(el).opacity) < 0.9) {
+            out.push(`${el.tagName.toLowerCase()}.${el.className.split(' ').slice(0, 3).join('.')}`)
+          }
+        }
+        return out
+      })
+
+      expect(
+        hidden,
+        `${route} hides above-the-fold content until JavaScript runs:\n    ${hidden.join('\n    ')}`,
+      ).toEqual([])
+    })
+  }
+})

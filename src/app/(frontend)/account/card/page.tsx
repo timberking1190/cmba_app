@@ -74,8 +74,24 @@ export default async function MemberCardPage() {
 
           <div className="mt-6 flex items-center gap-4">
             {photo ? (
+              /*
+               * A raw <img> rather than next/image, deliberately, and the reason is
+               * privacy rather than performance.
+               *
+               * next/image routes the source through Next's image optimizer, which
+               * fetches it server side and CACHES the optimized bytes. This image is
+               * a member photo, frequently a minor's, on a page behind auth. Putting
+               * it in an optimizer cache creates a copy of personal data outside the
+               * ca-central-1 storage bucket that the residency posture accounts for,
+               * keyed by a URL rather than by a session. Not worth it for a 64px
+               * avatar.
+               *
+               * What next/image would genuinely have given us here is CLS
+               * protection from intrinsic dimensions, so those are supplied
+               * explicitly instead.
+               */
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={photo} alt="" className="h-16 w-16 rounded-full border border-white/20 object-cover" />
+              <img src={photo} alt="" width={64} height={64} decoding="async" className="h-16 w-16 rounded-full border border-white/20 object-cover" />
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl font-bold text-white">
                 {(name || '?').slice(0, 1).toUpperCase()}
@@ -92,7 +108,7 @@ export default async function MemberCardPage() {
             qrDataUrl ? (
               <div className="mt-6 rounded-xl bg-white p-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={qrDataUrl} alt="Verification QR" className="mx-auto h-56 w-56" />
+                <img src={qrDataUrl} alt="Verification QR" width={224} height={224} decoding="async" className="mx-auto h-56 w-56" />
                 <p className="mt-2 text-center text-xs text-cmba-grey-dark">Present at the gym for sideline verification</p>
               </div>
             ) : (

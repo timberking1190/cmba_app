@@ -161,7 +161,7 @@ export function ScannerClient({ scannerName }: { scannerName: string }) {
           <div className="flex items-center gap-4 bg-cmba-black/90 p-5">
             {verdict.photoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={verdict.photoUrl} alt="" className="h-16 w-16 rounded-full border border-white/20 object-cover" />
+              <img src={verdict.photoUrl} alt="" width={64} height={64} decoding="async" className="h-16 w-16 rounded-full border border-white/20 object-cover" />
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white">?</div>
             )}

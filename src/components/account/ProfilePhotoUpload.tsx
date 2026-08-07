@@ -76,7 +76,7 @@ export function ProfilePhotoUpload({
       <div className="flex items-center gap-4">
         {photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={photoUrl} alt="" className="h-20 w-20 rounded-full border border-white/20 object-cover" />
+          <img src={photoUrl} alt="" width={80} height={80} decoding="async" className="h-20 w-20 rounded-full border border-white/20 object-cover" />
         ) : (
           <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-dashed border-cmba-red/50 text-cmba-red">
             <Camera size={26} />

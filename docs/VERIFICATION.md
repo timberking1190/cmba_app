@@ -1638,3 +1638,152 @@ zoom not blocked; `viewport-fit=cover` present; the bottom nav never covering co
 - The announcements strip still causes the remaining 0.046 of homepage CLS, because it client
   fetches and inserts itself above the hero. That is pre-existing, not introduced here. Fixing it
   properly means server rendering the strip, which is carried into Phase 3.
+
+## Mobile Phase 3: performance
+
+**Gate: budget enforced in CI against the baseline, images fixed, fonts and LCP addressed, three.js
+brought back with numbers.**
+
+### The measurement that changed the diagnosis
+
+The Phase 0 baseline said every route missed the LCP target, with 73 to 90 percent of the time in
+"render delay". That was measured with Lighthouse's default **simulated** throttling, which models
+the page from a dependency graph rather than watching it load.
+
+Re-measured with `--throttling-method=devtools`, which throttles a real browser and reports what it
+actually observed:
+
+| Route | Simulated LCP | Observed LCP | Verdict on the 2500ms target |
+|---|---|---|---|
+| `/` | 3562ms | 2299ms | pass |
+| `/schedule` | 3432ms | 2234ms | pass |
+| `/standings` | 3408ms | 2222ms | pass |
+| `/rules` | 3559ms | 2247ms | pass |
+| `/login` | 4345ms | **5266ms** | **fail** |
+
+Four of the five were already passing, and the simulator was making them all look equally bad. It
+was also **hiding the one route that genuinely failed**: `/login` is the worst page on the site by a
+factor of two, and the simulated numbers had it looking like the others.
+
+Both are lab numbers. The simulated one stays as the CI gate because it is stable and repeatable,
+which is what a gate needs. The observed one is committed alongside it in
+`docs/audit/lighthouse-observed.json` as the more realistic picture.
+
+### The `/login` defect, and the fix
+
+`/login` LCP was 5266ms against an FCP of 2232ms: **4675ms of render delay** to paint text that was
+already in the HTML. The LCP element was a paragraph inside a `.reveal`.
+
+`.reveal` was `opacity: 0` in the stylesheet, waiting for an IntersectionObserver in `GlobalFX` to
+add `.in`. So every reveal on the page was invisible from the moment the HTML arrived until React had
+hydrated and that effect had run. On the sign in page, where the whole form is wrapped in reveals,
+that is the entire page.
+
+This was tested in Phase 0 and wrongly cleared: a control run with `--force-prefers-reduced-motion`
+showed no improvement, so the reveal was ruled out. That run was against `/`, where the LCP element
+is **not** inside a reveal. Right hypothesis, wrong page.
+
+The fix inverts the mechanism. `.reveal` no longer hides anything by itself. `GlobalFX` arms only the
+elements that are **below the fold** when the page loads, and leaves anything already on screen
+alone:
+
+- On screen at load: paints with the document, costs nothing, does not animate. Correct for a scroll
+  reveal, because there was no scroll.
+- Below the fold: armed (invisible to arm, since it is off screen) and revealed on scroll as before.
+- No JavaScript: nothing is ever hidden, which is the safe direction to fail in.
+
+**`/login` observed LCP: 5266ms to 2249ms.** All five routes now pass the target.
+
+### Everything else in this phase
+
+| | Before | After |
+|---|---|---|
+| Homepage CLS | 0.046 | **0.002** |
+| Fonts per page | 4 | 3 |
+| Raw `<img>` without dimensions | 5 | 0 |
+| Simulated `/login` LCP | 4081ms | 3275ms |
+
+**CLS at the root.** The announcements strip client fetched and rendered nothing until the response
+landed, then inserted itself **above the hero**, pushing the whole page down. That shift was the
+entire measured homepage CLS. It now reads on the server (`src/lib/announcements.ts`) and is either
+in the first paint or absent. The old comment claimed the client fetch kept the homepage static; that
+had not been true since the root layout started reading the CSP nonce, which opts every route into
+dynamic rendering.
+
+**Fonts.** The retro arcade font was declared on `<body>` in the root layout, so all 49 routes
+downloaded it to serve the one route that uses it. Moved to `arcade/page.tsx`. Still self hosted by
+next/font, so the strict `font-src 'self'` is unaffected.
+
+**Images.** All five raw `<img>` tags now carry explicit `width`, `height` and `decoding`. They are
+deliberately **not** converted to `next/image`: three are member photos, frequently of minors, and
+next/image routes them through Next's image optimizer, which fetches server side and caches the
+optimized bytes. That would create a copy of personal data outside the ca-central-1 bucket the
+residency posture accounts for, keyed by URL rather than by session. Not a trade worth making for a
+64px avatar. The CLS protection next/image would have provided is supplied by the explicit
+dimensions instead.
+
+### three.js: the decision the brief reserved
+
+**No decision needed. Measured, not argued.**
+
+| Route | Chunks | Uncompressed JS | three.js loaded? |
+|---|---|---|---|
+| `/` | 12 | 664 kB | no |
+| `/schedule` | 11 | 646 kB | no |
+| `/arcade` | 14 | 1506 kB | yes, 834 kB |
+
+Measured at network idle plus 2.5 seconds, so this is not a race a slower connection would lose. The
+existing lazy loading already isolates it completely. None of the options the brief listed (reduced
+fidelity, static fallback on mobile, data saver gating) would improve the schedule or homepage,
+because the code is not there. The arcade and the hero stay exactly as designed.
+
+### CSP nonce and caching
+
+Confirmed: `await headers()` in the frontend layout opts every one of the 49 routes into dynamic
+rendering, so nothing is statically cached. This is deliberate, and it is what makes the strict nonce
+CSP work at all.
+
+It is **not** currently costing anything measurable. Server response time is 9 to 491ms across the
+measured routes, and LCP is dominated by client side paint, not by TTFB. So this is documented rather
+than mitigated, and the CSP is not weakened to chase a number that is not hurting. If TTFB ever
+becomes the bottleneck, the route to fix it is a nonce-free static shell with dynamic islands, which
+is a larger change than this module.
+
+### CI
+
+`.github/workflows/mobile-audit.yml` runs axe, the mobile suite and Lighthouse against the committed
+baselines on every push and pull request. Deliberately separate from `ci.yml`, which avoids anything
+needing live infrastructure; this job needs a database to build. It is gated on `AUDIT_DATABASE_URL`
+and writes a job summary explaining itself when the secret is absent, rather than passing silently.
+
+### Gate result
+
+| Check | Result |
+|---|---|
+| `npm run lint` | pass |
+| `npx tsc --noEmit` | pass |
+| `npm test` | pass, 68 files, 740 tests |
+| Full `mobile-chrome` project | pass, 174 of 174 |
+| Lighthouse vs baseline | **pass, no regression** |
+
+Baselines rebaselined at the end of this phase so Phases 4 and 5 are gated against the improved
+state. The before numbers are preserved in the tables above and in `docs/audit/BASELINE.md`.
+
+### Residual risk
+
+- **Script transfer is still flat at roughly 570 kB on every route**, which says most of it is a
+  shared bundle rather than per route code. It is no longer visibly hurting LCP under observed
+  throttling, but it is the obvious next lever and it is untouched. The `@next/bundle-analyzer`
+  installed in Phase 0 **does not work with Turbopack**, which is the Next 16 default, so the
+  composition of that bundle is still unknown. `next experimental-analyze` is the documented
+  replacement and has not been tried.
+- The five cold entry routes still give no feedback during an in-app navigation: tapping Standings in
+  the mobile nav leaves the previous page up with no indication. The fix is a pending navigation
+  indicator (`useLinkStatus`) rather than a full page skeleton, which would give feedback at no LCP
+  cost. Proposed, not built, because it adds a client component to the root layout and wants its own
+  measurement.
+- Observed and simulated numbers disagree by roughly 1.2 seconds on LCP. The gate uses the pessimistic
+  one. That is the safe direction, but it means the gate will not notice a real world improvement
+  until it is large.
+- All performance numbers come from a local production build against the ca-central-1 database, not
+  from the Vercel edge. Production will differ.

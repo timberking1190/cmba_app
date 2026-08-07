@@ -79,17 +79,63 @@ export function GlobalFX() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /*
+   * Reveal on scroll, arranged so it cannot delay the largest paint.
+   *
+   * The original version relied on `.reveal { opacity: 0 }` in the stylesheet and
+   * waited for this observer to add `.in`. That hides content from the moment the
+   * HTML arrives until React has hydrated and this effect has run, which on a
+   * throttled phone is seconds. On /login it was measured directly: the LCP
+   * element is a paragraph inside a `.reveal`, and LCP landed at 5266ms against an
+   * FCP of 2232ms. Over four and a half seconds of render delay, on the sign in
+   * page, to animate in text that was already in the HTML.
+   *
+   * So the hiding is now opt in, applied HERE, and only to elements that are below
+   * the fold when the page loads:
+   *
+   *   - An element already on screen is left alone. It paints with the document,
+   *     costs nothing, and does not animate. That is the correct behaviour for a
+   *     scroll reveal anyway: there was no scroll.
+   *   - An element below the fold is armed (`.reveal-armed` hides it) and then
+   *     revealed when it scrolls into view. Arming something off screen is
+   *     invisible, so there is no flash.
+   *
+   * If JavaScript never runs, nothing is ever hidden, which is the safe direction
+   * to fail in.
+   */
   useEffect(() => {
     const els = Array.from(document.querySelectorAll(".reveal")) as HTMLElement[];
-    if (!("IntersectionObserver" in window) || els.length === 0) {
+    if (els.length === 0) return;
+
+    if (!("IntersectionObserver" in window)) {
       els.forEach((e) => e.classList.add("in"));
       return;
     }
+
+    const viewportHeight = window.innerHeight;
     const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in"); }),
-      { threshold: 0.12 }
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("in");
+            io.unobserve(e.target);
+          }
+        }),
+      { threshold: 0.12 },
     );
-    els.forEach((e) => io.observe(e));
+
+    for (const el of els) {
+      // getBoundingClientRect here is a deliberate single read per element, done
+      // once on mount, not per scroll.
+      const belowTheFold = el.getBoundingClientRect().top > viewportHeight;
+      if (belowTheFold) {
+        el.classList.add("reveal-armed");
+        io.observe(el);
+      } else {
+        el.classList.add("in");
+      }
+    }
+
     return () => io.disconnect();
   }, [pathname]);
 

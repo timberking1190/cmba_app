@@ -130,7 +130,7 @@ export function TotpSetup({ enrolled }: { enrolled: boolean }) {
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4 items-start">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={data.qr} alt="Authenticator QR code" width={168} height={168} className="border border-white/12 bg-white p-2 shrink-0" />
+            <img src={data.qr} alt="Authenticator QR code" width={168} height={168} decoding="async" className="border border-white/12 bg-white p-2 shrink-0" />
             <div className="text-sm text-cmba-grey-light">
               <p className="mb-2">Scan this with your authenticator app. Cannot scan? Enter this key manually:</p>
               <code className="block font-mono text-xs text-white bg-cmba-black-surface border border-white/12 px-2 py-1 break-all">{data.secret}</code>

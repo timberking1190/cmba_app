@@ -6,6 +6,7 @@ import {
 import { HeroNetwork } from "@/components/HeroNetwork";
 import { CountUp } from "@/components/CountUp";
 import { AnnouncementsStrip } from "@/components/AnnouncementsStrip";
+import { getLiveAnnouncements } from "@/lib/announcements";
 import { BentoGrid } from "@/components/home/BentoGrid";
 import { StoryScroll } from "@/components/home/StoryScroll";
 import { REGISTER, DOCS, COURSES } from "@/lib/cmbaLinks";
@@ -42,10 +43,13 @@ const divisions = [
   { label: "U18", href: "/rules?division=U18" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Read on the server so the strip cannot appear late and shift the hero down.
+  const liveAnnouncements = await getLiveAnnouncements();
+
   return (
     <div>
-      <AnnouncementsStrip />
+      <AnnouncementsStrip items={liveAnnouncements} />
       {/* ── HERO ──────────────────────────────────────────── */}
       <section className="px-5 md:px-10 lg:px-14 pt-16 lg:pt-24 pb-20 overflow-hidden">
         <div className="max-w-7xl mx-auto relative">

@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-08-07T21:59:40.283Z",
+  "capturedAt": "2026-08-07T22:38:18.034Z",
   "baseUrl": "http://localhost:3000",
   "note": "Lab numbers from a throttled headless Chromium at a Pixel 5 viewport. Not field data. This app has no RUM, so no 75th percentile real user claim can be made from these.",
   "profile": {
@@ -16,13 +16,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 910.6,
-        "script": 590.5,
-        "stylesheet": 86.7,
+        "total": 913,
+        "script": 590.4,
+        "stylesheet": 86.8,
         "image": 2.8,
         "font": 116.6,
-        "document": 113.5,
-        "other": 0.6
+        "document": 115.5,
+        "other": 1
       },
       "requestCounts": {
         "script": 14,
@@ -30,13 +30,13 @@
         "image": 1,
         "font": 4,
         "document": 2,
-        "other": 13
+        "other": 12
       },
       "vitals": {
-        "lcp": 2032,
-        "cls": 0.045,
-        "ttfb": 30,
-        "domContentLoaded": 118
+        "lcp": 2648,
+        "cls": 0,
+        "ttfb": 513,
+        "domContentLoaded": 605
       },
       "overflow": {
         "scrollWidth": 390,
@@ -59,27 +59,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 838,
-        "script": 582.9,
-        "stylesheet": 80.7,
+        "total": 835.2,
+        "script": 583.1,
+        "stylesheet": 79,
         "image": 2.8,
-        "font": 116.6,
-        "document": 54.6,
-        "other": 0.4
+        "font": 112,
+        "document": 54.4,
+        "other": 4
       },
       "requestCounts": {
         "script": 15,
         "stylesheet": 1,
         "image": 1,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 1044,
+        "lcp": 932,
         "cls": 0,
-        "ttfb": 513,
-        "domContentLoaded": 585
+        "ttfb": 524,
+        "domContentLoaded": 596
       },
       "overflow": {
         "scrollWidth": 390,
@@ -102,27 +102,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 825.1,
-        "script": 577.6,
-        "stylesheet": 80.7,
+        "total": 824.7,
+        "script": 577.8,
+        "stylesheet": 79,
         "image": 2.8,
-        "font": 116.6,
-        "document": 43.1,
-        "other": 4.3
+        "font": 112,
+        "document": 42.8,
+        "other": 10.3
       },
       "requestCounts": {
         "script": 15,
         "stylesheet": 1,
         "image": 1,
-        "font": 4,
+        "font": 3,
         "document": 2,
         "other": 10
       },
       "vitals": {
-        "lcp": 256,
+        "lcp": 272,
         "cls": 0,
-        "ttfb": 120,
-        "domContentLoaded": 168
+        "ttfb": 118,
+        "domContentLoaded": 220
       },
       "overflow": {
         "scrollWidth": 390,
@@ -145,27 +145,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 838.4,
-        "script": 582.9,
-        "stylesheet": 80.7,
+        "total": 836,
+        "script": 583.1,
+        "stylesheet": 79,
         "image": 2.8,
-        "font": 116.6,
-        "document": 54.6,
-        "other": 0.9
+        "font": 112,
+        "document": 54.4,
+        "other": 4.8
       },
       "requestCounts": {
         "script": 15,
         "stylesheet": 1,
         "image": 1,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 9
       },
       "vitals": {
-        "lcp": 680,
+        "lcp": 684,
         "cls": 0,
-        "ttfb": 517,
-        "domContentLoaded": 626
+        "ttfb": 514,
+        "domContentLoaded": 625
       },
       "overflow": {
         "scrollWidth": 390,
@@ -188,19 +188,19 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1010.8,
-        "script": 701.7,
-        "stylesheet": 80.7,
+        "total": 1004.5,
+        "script": 701.8,
+        "stylesheet": 79,
         "image": 2.8,
-        "font": 116.6,
-        "document": 102.4,
+        "font": 112,
+        "document": 102.2,
         "other": 6.7
       },
       "requestCounts": {
         "script": 16,
         "stylesheet": 1,
         "image": 1,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 9
       },
@@ -208,7 +208,7 @@
         "lcp": 156,
         "cls": 0,
         "ttfb": 9,
-        "domContentLoaded": 108
+        "domContentLoaded": 63
       },
       "overflow": {
         "scrollWidth": 390,
@@ -233,27 +233,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 864.3,
-        "script": 612,
-        "stylesheet": 80.7,
+        "total": 857.1,
+        "script": 612.2,
+        "stylesheet": 79,
         "image": 8.9,
-        "font": 116.6,
-        "document": 45,
-        "other": 1.1
+        "font": 112,
+        "document": 44.7,
+        "other": 0.2
       },
       "requestCounts": {
         "script": 20,
         "stylesheet": 1,
         "image": 2,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 21
       },
       "vitals": {
         "lcp": 140,
         "cls": 0,
-        "ttfb": 7,
-        "domContentLoaded": 94
+        "ttfb": 8,
+        "domContentLoaded": 97
       },
       "overflow": {
         "scrollWidth": 390,
@@ -278,27 +278,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 826,
-        "script": 570.7,
-        "stylesheet": 80.7,
+        "total": 822.3,
+        "script": 570.9,
+        "stylesheet": 79,
         "image": 8.9,
-        "font": 116.6,
-        "document": 48.8,
-        "other": 0.2
+        "font": 112,
+        "document": 48.6,
+        "other": 2.9
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 2,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 13
       },
       "vitals": {
-        "lcp": 128,
+        "lcp": 116,
         "cls": 0,
-        "ttfb": 21,
-        "domContentLoaded": 100
+        "ttfb": 8,
+        "domContentLoaded": 84
       },
       "overflow": {
         "scrollWidth": 390,
@@ -321,27 +321,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 952,
-        "script": 589.3,
-        "stylesheet": 80.7,
+        "total": 945,
+        "script": 589.5,
+        "stylesheet": 79,
         "image": 120.2,
-        "font": 116.6,
-        "document": 42.6,
-        "other": 2.6
+        "font": 112,
+        "document": 42.3,
+        "other": 2
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 2,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 9
       },
       "vitals": {
-        "lcp": 380,
+        "lcp": 336,
         "cls": 0,
-        "ttfb": 11,
-        "domContentLoaded": 103
+        "ttfb": 7,
+        "domContentLoaded": 86
       },
       "overflow": {
         "scrollWidth": 390,
@@ -364,27 +364,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1677.2,
-        "script": 1187.6,
-        "stylesheet": 161.3,
+        "total": 1667.6,
+        "script": 1187.9,
+        "stylesheet": 158,
         "image": 11.7,
-        "font": 233.2,
-        "document": 81.2,
-        "other": 2.1
+        "font": 224,
+        "document": 80.7,
+        "other": 5.2
       },
       "requestCounts": {
         "script": 34,
         "stylesheet": 2,
         "image": 3,
-        "font": 8,
+        "font": 6,
         "document": 2,
         "other": 30
       },
       "vitals": {
         "lcp": 200,
         "cls": 0,
-        "ttfb": 21,
-        "domContentLoaded": 137
+        "ttfb": 15,
+        "domContentLoaded": 135
       },
       "overflow": {
         "scrollWidth": 390,
@@ -409,27 +409,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1182.8,
-        "script": 570.8,
-        "stylesheet": 80.7,
+        "total": 1170.2,
+        "script": 570.9,
+        "stylesheet": 79,
         "image": 268.6,
-        "font": 116.6,
-        "document": 139.5,
-        "other": 6.7
+        "font": 112,
+        "document": 139.2,
+        "other": 0.4
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 12
       },
       "vitals": {
-        "lcp": 228,
+        "lcp": 220,
         "cls": 0,
-        "ttfb": 10,
-        "domContentLoaded": 104
+        "ttfb": 9,
+        "domContentLoaded": 54
       },
       "overflow": {
         "scrollWidth": 390,
@@ -452,27 +452,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1165.9,
-        "script": 580.2,
-        "stylesheet": 80.7,
+        "total": 1159.8,
+        "script": 580.4,
+        "stylesheet": 79,
         "image": 326.6,
-        "font": 116.6,
-        "document": 61.6,
-        "other": 0.2
+        "font": 112,
+        "document": 61.4,
+        "other": 0.4
       },
       "requestCounts": {
         "script": 15,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 13
       },
       "vitals": {
-        "lcp": 632,
+        "lcp": 656,
         "cls": 0,
-        "ttfb": 12,
-        "domContentLoaded": 175
+        "ttfb": 9,
+        "domContentLoaded": 171
       },
       "overflow": {
         "scrollWidth": 390,
@@ -495,27 +495,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1175,
-        "script": 576.3,
-        "stylesheet": 80.7,
+        "total": 1163.7,
+        "script": 576.5,
+        "stylesheet": 79,
         "image": 326.6,
-        "font": 116.6,
-        "document": 69.9,
-        "other": 4.9
+        "font": 112,
+        "document": 69.7,
+        "other": 0
       },
       "requestCounts": {
         "script": 15,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 452,
+        "lcp": 456,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 166
+        "ttfb": 10,
+        "domContentLoaded": 182
       },
       "overflow": {
         "scrollWidth": 390,
@@ -540,27 +540,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1150.2,
-        "script": 570.8,
-        "stylesheet": 80.7,
+        "total": 1153,
+        "script": 570.9,
+        "stylesheet": 79,
         "image": 292.8,
-        "font": 116.6,
-        "document": 89.1,
-        "other": 0.2
+        "font": 112,
+        "document": 88.8,
+        "other": 9.4
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
         "lcp": 152,
         "cls": 0,
-        "ttfb": 7,
-        "domContentLoaded": 88
+        "ttfb": 10,
+        "domContentLoaded": 96
       },
       "overflow": {
         "scrollWidth": 390,
@@ -584,27 +584,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1670,
-        "script": 1181.1,
-        "stylesheet": 161.3,
+        "total": 1657.3,
+        "script": 1181.3,
+        "stylesheet": 158,
         "image": 11.7,
-        "font": 233.2,
-        "document": 81.9,
+        "font": 224,
+        "document": 81.3,
         "other": 0.8
       },
       "requestCounts": {
         "script": 34,
         "stylesheet": 2,
         "image": 3,
-        "font": 8,
+        "font": 6,
         "document": 2,
         "other": 29
       },
       "vitals": {
-        "lcp": 192,
+        "lcp": 184,
         "cls": 0,
-        "ttfb": 18,
-        "domContentLoaded": 126
+        "ttfb": 14,
+        "domContentLoaded": 115
       },
       "overflow": {
         "scrollWidth": 390,
@@ -629,27 +629,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1069.1,
-        "script": 570.8,
-        "stylesheet": 80.7,
+        "total": 1071,
+        "script": 570.9,
+        "stylesheet": 79,
         "image": 209.2,
-        "font": 116.6,
-        "document": 91.6,
-        "other": 0.2
+        "font": 112,
+        "document": 91.4,
+        "other": 8.5
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 2,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 12
       },
       "vitals": {
         "lcp": 344,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 46
+        "ttfb": 10,
+        "domContentLoaded": 48
       },
       "overflow": {
         "scrollWidth": 390,
@@ -672,27 +672,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1017.4,
-        "script": 586.7,
-        "stylesheet": 80.7,
+        "total": 1012.3,
+        "script": 586.8,
+        "stylesheet": 79,
         "image": 150.8,
-        "font": 116.6,
-        "document": 81.8,
-        "other": 0.9
+        "font": 112,
+        "document": 81.5,
+        "other": 2.2
       },
       "requestCounts": {
         "script": 15,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 14
       },
       "vitals": {
-        "lcp": 452,
+        "lcp": 464,
         "cls": 0,
-        "ttfb": 9,
-        "domContentLoaded": 168
+        "ttfb": 11,
+        "domContentLoaded": 170
       },
       "overflow": {
         "scrollWidth": 390,
@@ -717,27 +717,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1091.3,
-        "script": 570.8,
-        "stylesheet": 80.7,
+        "total": 1084.9,
+        "script": 570.9,
+        "stylesheet": 79,
         "image": 239.8,
-        "font": 116.6,
-        "document": 82.6,
+        "font": 112,
+        "document": 82.3,
         "other": 0.9
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 280,
+        "lcp": 320,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 91
+        "ttfb": 9,
+        "domContentLoaded": 99
       },
       "overflow": {
         "scrollWidth": 390,
@@ -760,27 +760,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1186.8,
-        "script": 591,
-        "stylesheet": 80.7,
+        "total": 1171,
+        "script": 591.2,
+        "stylesheet": 79,
         "image": 326.6,
-        "font": 116.6,
-        "document": 62.5,
-        "other": 9.4
+        "font": 112,
+        "document": 62.3,
+        "other": 0
       },
       "requestCounts": {
         "script": 15,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 148,
+        "lcp": 144,
         "cls": 0,
-        "ttfb": 7,
-        "domContentLoaded": 89
+        "ttfb": 8,
+        "domContentLoaded": 46
       },
       "overflow": {
         "scrollWidth": 390,
@@ -803,27 +803,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 994.6,
-        "script": 570.8,
-        "stylesheet": 80.7,
+        "total": 986.3,
+        "script": 570.9,
+        "stylesheet": 79,
         "image": 128.8,
-        "font": 116.6,
-        "document": 94.8,
-        "other": 2.9
+        "font": 112,
+        "document": 94.6,
+        "other": 0.9
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 144,
+        "lcp": 148,
         "cls": 0,
-        "ttfb": 9,
-        "domContentLoaded": 95
+        "ttfb": 11,
+        "domContentLoaded": 97
       },
       "overflow": {
         "scrollWidth": 390,
@@ -846,27 +846,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1671.7,
-        "script": 1182.4,
-        "stylesheet": 161.3,
+        "total": 1660.7,
+        "script": 1182.7,
+        "stylesheet": 158,
         "image": 11.7,
-        "font": 233.2,
-        "document": 81.9,
-        "other": 1.1
+        "font": 224,
+        "document": 81.4,
+        "other": 2.8
       },
       "requestCounts": {
         "script": 34,
         "stylesheet": 2,
         "image": 3,
-        "font": 8,
+        "font": 6,
         "document": 2,
-        "other": 30
+        "other": 29
       },
       "vitals": {
-        "lcp": 184,
+        "lcp": 192,
         "cls": 0,
-        "ttfb": 21,
-        "domContentLoaded": 122
+        "ttfb": 18,
+        "domContentLoaded": 124
       },
       "overflow": {
         "scrollWidth": 390,
@@ -891,27 +891,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1672.7,
-        "script": 1183.5,
-        "stylesheet": 161.3,
+        "total": 1659.9,
+        "script": 1183.8,
+        "stylesheet": 158,
         "image": 11.7,
-        "font": 233.2,
-        "document": 81.8,
+        "font": 224,
+        "document": 81.3,
         "other": 1.1
       },
       "requestCounts": {
         "script": 34,
         "stylesheet": 2,
         "image": 3,
-        "font": 8,
+        "font": 6,
         "document": 2,
-        "other": 29
+        "other": 25
       },
       "vitals": {
-        "lcp": 184,
+        "lcp": 196,
         "cls": 0,
-        "ttfb": 17,
-        "domContentLoaded": 119
+        "ttfb": 18,
+        "domContentLoaded": 128
       },
       "overflow": {
         "scrollWidth": 390,
@@ -936,26 +936,26 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 987.1,
-        "script": 570.7,
-        "stylesheet": 80.7,
+        "total": 988.6,
+        "script": 570.9,
+        "stylesheet": 79,
         "image": 133.2,
-        "font": 116.6,
-        "document": 85.3,
-        "other": 0.6
+        "font": 112,
+        "document": 85,
+        "other": 8.5
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 144,
+        "lcp": 152,
         "cls": 0,
-        "ttfb": 8,
+        "ttfb": 10,
         "domContentLoaded": 95
       },
       "overflow": {
@@ -979,27 +979,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1115.8,
-        "script": 567.8,
-        "stylesheet": 80.7,
+        "total": 1105.5,
+        "script": 568,
+        "stylesheet": 79,
         "image": 246.5,
-        "font": 116.6,
-        "document": 95.9,
-        "other": 8.3
+        "font": 112,
+        "document": 95.6,
+        "other": 4.4
       },
       "requestCounts": {
         "script": 13,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 156,
+        "lcp": 160,
         "cls": 0,
-        "ttfb": 9,
-        "domContentLoaded": 95
+        "ttfb": 8,
+        "domContentLoaded": 97
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1023,27 +1023,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 924.5,
-        "script": 581.7,
-        "stylesheet": 80.7,
+        "total": 909.6,
+        "script": 581.8,
+        "stylesheet": 79,
         "image": 86.4,
-        "font": 116.6,
-        "document": 50.6,
-        "other": 8.5
+        "font": 112,
+        "document": 50.3,
+        "other": 0
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 2,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 144,
+        "lcp": 148,
         "cls": 0,
-        "ttfb": 7,
-        "domContentLoaded": 92
+        "ttfb": 9,
+        "domContentLoaded": 47
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1062,27 +1062,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1120.9,
-        "script": 567.8,
-        "stylesheet": 80.7,
+        "total": 1118.7,
+        "script": 568,
+        "stylesheet": 79,
         "image": 280.1,
-        "font": 116.6,
-        "document": 75.7,
-        "other": 0
+        "font": 112,
+        "document": 75.4,
+        "other": 4.2
       },
       "requestCounts": {
         "script": 13,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 156,
+        "lcp": 172,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 93
+        "ttfb": 9,
+        "domContentLoaded": 53
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1107,27 +1107,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1089.9,
-        "script": 567.8,
-        "stylesheet": 80.7,
+        "total": 1077,
+        "script": 568,
+        "stylesheet": 79,
         "image": 233.8,
-        "font": 116.6,
-        "document": 83.9,
-        "other": 7.2
+        "font": 112,
+        "document": 83.6,
+        "other": 0.6
       },
       "requestCounts": {
         "script": 13,
         "stylesheet": 1,
         "image": 3,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 12
       },
       "vitals": {
-        "lcp": 564,
+        "lcp": 524,
         "cls": 0,
-        "ttfb": 19,
-        "domContentLoaded": 102
+        "ttfb": 11,
+        "domContentLoaded": 97
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1150,27 +1150,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 837.1,
-        "script": 583,
-        "stylesheet": 80.7,
+        "total": 833.3,
+        "script": 583.1,
+        "stylesheet": 79,
         "image": 2.8,
-        "font": 116.6,
-        "document": 54,
-        "other": 0
+        "font": 112,
+        "document": 53.8,
+        "other": 2.6
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 1,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 416,
+        "lcp": 436,
         "cls": 0,
-        "ttfb": 10,
-        "domContentLoaded": 347
+        "ttfb": 9,
+        "domContentLoaded": 359
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1189,27 +1189,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 843.3,
-        "script": 583,
-        "stylesheet": 80.7,
+        "total": 839.6,
+        "script": 583.1,
+        "stylesheet": 79,
         "image": 2.8,
-        "font": 116.6,
-        "document": 60,
-        "other": 0.2
+        "font": 112,
+        "document": 59.8,
+        "other": 2.9
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 1,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 428,
+        "lcp": 432,
         "cls": 0,
         "ttfb": 8,
-        "domContentLoaded": 134
+        "domContentLoaded": 129
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1228,27 +1228,27 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 849.9,
-        "script": 583,
-        "stylesheet": 80.7,
+        "total": 838.1,
+        "script": 583.1,
+        "stylesheet": 79,
         "image": 2.8,
-        "font": 116.6,
-        "document": 56.6,
-        "other": 10.3
+        "font": 112,
+        "document": 56.4,
+        "other": 4.9
       },
       "requestCounts": {
         "script": 14,
         "stylesheet": 1,
         "image": 1,
-        "font": 4,
+        "font": 3,
         "document": 1,
         "other": 10
       },
       "vitals": {
-        "lcp": 436,
+        "lcp": 456,
         "cls": 0,
-        "ttfb": 7,
-        "domContentLoaded": 123
+        "ttfb": 8,
+        "domContentLoaded": 125
       },
       "overflow": {
         "scrollWidth": 390,
