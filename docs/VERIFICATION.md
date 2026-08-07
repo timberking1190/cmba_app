@@ -1449,3 +1449,102 @@ consecutive clean runs afterwards. Load induced, not a code defect, and noted ra
   anywhere in this work.
 - Pre-existing and out of scope: `scripts/audit-ci.mjs` fails on the clean tree at the branch point
   on `undici` GHSA-4cwx-7wf7-3272. Verified pre-existing by running the gate on a stashed checkout.
+
+## Mobile Phase 1: resilience
+
+**Gate: error, loading and empty coverage across the data routes, plus a global error boundary. No
+caching or security surface touched.**
+
+### What was added
+
+| | |
+|---|---|
+| `src/components/states/ErrorState.tsx` | on brand failure screen, plain language, retry plus a safe path home |
+| `src/components/states/PageSkeleton.tsx` | five layout variants sized to the real editorial header so they do not add shift |
+| `src/components/states/EmptyState.tsx` | says whether a list is empty or broken, which used to be indistinguishable |
+| `src/app/global-error.tsx` | catches a root layout failure. Zero imports, all styles inline, on purpose |
+| `(frontend)/error.tsx`, `not-found.tsx` | catch-all for the public site |
+| 25 route level `error.tsx` | tailored copy per area, role areas send you back to their own hub |
+| 28 route level `loading.tsx` | see the two exemptions below |
+| `src/app/__tests__/routeBoundaries.test.ts` | walks the route tree and fails the build on an uncovered route |
+| `src/components/states/__tests__/states.test.tsx` | 18 tests on the states themselves |
+| `e2e/resilience.spec.ts` | 32 specs: never a blank screen, dropped payload, slow route, 404 |
+
+Coverage went from 0 error boundaries over 49 routes to every route covered.
+
+### Two defects this phase found in its own work
+
+**1. A loading boundary at the route group root turned every 404 into a 200.** A `loading.tsx` makes
+its segment stream, and streaming flushes the HTTP status before the page component runs, so a later
+`notFound()` can no longer set 404. Measured: 404 before, 200 after, 404 again once removed. The
+not-found screen still rendered, which is what made it easy to miss. A 200 on a dead URL means search
+engines index it, monitoring stops seeing 404s, and a CDN can cache "found" for a page that is not.
+Fixed by keeping loading boundaries off any segment at or above a `notFound()` caller, and the rule
+is now a test.
+
+**2. Skeletons on the cold entry routes made LCP worse, not better.**
+
+| Route | Baseline | With `loading.tsx` | Without |
+|---|---|---|---|
+| `/schedule` | 3284ms | 3842ms | 3420ms |
+| `/standings` | 3146ms | 3716ms | 3446ms |
+| `/rules` | 3288ms | 4026ms | 3498ms |
+
+Removing the skeleton's `animate-pulse` was tried first and changed nothing, so the cost is the
+streaming, not the skeleton's own paint. The reason it buys nothing on a cold load is that FCP is
+roughly 1065ms either way: the root layout paints the header, nav and footer first, so the visitor is
+already looking at the site by the time a skeleton would appear. All it adds is a second render pass
+that delays the real content.
+
+So `/schedule`, `/calendar`, `/standings`, `/rules` and `/login` keep no loading boundary, exactly as
+before this work. Nothing was lost on them. The other 28 routes, which are reached by navigating
+inside the app where the page body would otherwise sit stale, keep theirs. Both exemptions are
+enforced by tests rather than left as comments.
+
+### Correction to the Phase 0 accessibility baseline
+
+The Phase 0 axe count (two types, 25 routes) was too low. Two environment differences were making the
+scan non-deterministic: reveal animations being scanned mid fade, and the capture script running
+without the software WebGL flags the Playwright config sets, so the FluidBackground canvas was not
+painting behind the text being scored. Both are now pinned to one shared profile. The corrected
+baseline is three types over 36 routes: `color-contrast` 24, `heading-order` 10,
+`link-in-text-block` 2. Detail in `docs/audit/BASELINE.md`.
+
+### Gate result
+
+| Check | Result |
+|---|---|
+| `npm run lint` | pass |
+| `npx tsc --noEmit` | pass |
+| `npm test` | pass, 67 files, 728 tests, up from 65 and 613 |
+| `e2e/resilience.spec.ts` | pass, 32 of 32 |
+| `e2e/a11y.spec.ts` | pass, 27 of 27, stable across repeat runs |
+| Lighthouse vs baseline | **pass, no regression** |
+
+Lighthouse after Phase 1, median of 3, against the Phase 0 baseline:
+
+| Route | LCP | vs baseline | TBT | CLS |
+|---|---|---|---|---|
+| `/` | 3478ms | +113ms | 25ms | 0.046 |
+| `/schedule` | 3420ms | +136ms | 20ms | 0.002 |
+| `/standings` | 3446ms | +300ms | 22ms | 0.002 |
+| `/rules` | 3498ms | +210ms | 20ms | 0.002 |
+| `/login` | 4292ms | +211ms | 20ms | 0.002 |
+
+All within the tolerance the summarizer allows (the larger of 250ms or 10 percent). Homepage TBT
+moved from 230ms to 25ms, which is a real improvement but was not the target of this phase and is
+not claimed as one.
+
+### Residual risk
+
+- The five exempted routes have no in-app navigation feedback: clicking Standings from the mobile nav
+  leaves the previous page on screen with no indication anything is happening. The fix is a pending
+  navigation indicator (`useLinkStatus`, available in Next 16) rather than a full page skeleton,
+  which would give feedback at no LCP cost. Carried to Phase 3 as a proposal, not done here, because
+  it adds a client component to the layout and this phase was scoped to stay low risk.
+- Server side data failures cannot be induced from a browser, so `e2e/resilience.spec.ts` exercises
+  the client navigation path (a dropped RSC payload), which is the case a phone on gym wifi actually
+  hits. The server path is covered structurally by `routeBoundaries.test.ts` asserting every route
+  resolves to a boundary, not by observing a real server error.
+- Error copy is written but unreviewed by anyone who is not an engineer. Worth a read by someone who
+  talks to parents.

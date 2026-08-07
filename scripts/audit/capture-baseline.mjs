@@ -63,8 +63,17 @@ const ROUTES = (process.env.AUDIT_ROUTES?.split(',') ?? [
 
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']
 
-/** Pixel 5 sized, which is a fair mid range Android stand in. */
-const VIEWPORT = { width: 393, height: 851 }
+/*
+ * MUST match e2e/a11y.spec.ts exactly.
+ *
+ * These started 3px apart (393 vs 390) and that was enough to disagree: a
+ * different width reflows the page, which changes which elements are on screen and
+ * which text sits on which background, which changes what axe reports. The
+ * baseline then forgave violations the suite was still finding, and the suite
+ * failed on routes the baseline called clean. Same numbers in both places, or the
+ * comparison is meaningless.
+ */
+const VIEWPORT = { width: 390, height: 844 }
 
 function kb(bytes) {
   return Math.round((bytes / 1024) * 10) / 10
@@ -181,12 +190,34 @@ async function measure(context, route) {
 }
 
 async function main() {
-  const browser = await chromium.launch()
+  /*
+   * The same software WebGL flags playwright.config.ts sets. Without them this
+   * headless Chromium has no GL context, the FluidBackground canvas never paints,
+   * and axe scores text contrast against a plain page background. With them the
+   * canvas renders, which is what a real device does and what the Playwright suite
+   * sees. The two disagreed on /game-report and /scan until these were added.
+   */
+  const browser = await chromium.launch({
+    args: [
+      '--use-gl=angle',
+      '--use-angle=swiftshader',
+      '--enable-unsafe-swiftshader',
+      '--ignore-gpu-blocklist',
+    ],
+  })
   const context = await browser.newContext({
     viewport: VIEWPORT,
-    deviceScaleFactor: 2.75,
+    deviceScaleFactor: 3,
     isMobile: true,
     hasTouch: true,
+    /*
+     * Matches e2e/a11y.spec.ts. The site's .reveal elements fade in from opacity 0,
+     * and axe scores contrast against the current opacity, so scanning mid
+     * transition invents contrast failures on text that is fine once it settles.
+     * globals.css forces reveals visible under prefers-reduced-motion, so this
+     * measures the settled state and the two agree with each other.
+     */
+    reducedMotion: 'reduce',
     userAgent:
       'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36',
   })

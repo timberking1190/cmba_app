@@ -1,11 +1,11 @@
 {
-  "capturedAt": "2026-08-07T20:05:18.288Z",
+  "capturedAt": "2026-08-07T20:54:18.599Z",
   "baseUrl": "http://localhost:3000",
   "note": "Lab numbers from a throttled headless Chromium at a Pixel 5 viewport. Not field data. This app has no RUM, so no 75th percentile real user claim can be made from these.",
   "profile": {
     "viewport": {
-      "width": 393,
-      "height": 851
+      "width": 390,
+      "height": 844
     },
     "deviceScaleFactor": 2.75,
     "isMobile": true
@@ -16,16 +16,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 896.9,
-        "script": 579.8,
-        "stylesheet": 84.6,
+        "total": 908.9,
+        "script": 590.3,
+        "stylesheet": 85.6,
         "image": 2.8,
         "font": 116.6,
-        "document": 112.5,
-        "other": 0.6
+        "document": 112.4,
+        "other": 1.2
       },
       "requestCounts": {
-        "script": 10,
+        "script": 14,
         "stylesheet": 2,
         "image": 1,
         "font": 4,
@@ -33,24 +33,24 @@
         "other": 13
       },
       "vitals": {
-        "lcp": 320,
-        "cls": 0.002,
-        "ttfb": 112,
-        "domContentLoaded": 197
+        "lcp": 2168,
+        "cls": 0.045,
+        "ttfb": 43,
+        "domContentLoaded": 117
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
         "violationCount": 1,
-        "nodeCount": 2,
+        "nodeCount": 9,
         "ids": [
           "color-contrast"
         ],
         "byImpact": {
-          "serious": 2
+          "serious": 9
         }
       }
     },
@@ -59,16 +59,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 819.4,
-        "script": 567.8,
-        "stylesheet": 78.6,
+        "total": 837.1,
+        "script": 582.8,
+        "stylesheet": 79.5,
         "image": 2.8,
         "font": 116.6,
-        "document": 53.6,
-        "other": 0
+        "document": 54.4,
+        "other": 0.9
       },
       "requestCounts": {
-        "script": 10,
+        "script": 15,
         "stylesheet": 1,
         "image": 1,
         "font": 4,
@@ -76,14 +76,14 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 644,
-        "cls": 0.002,
-        "ttfb": 519,
-        "domContentLoaded": 587
+        "lcp": 940,
+        "cls": 0,
+        "ttfb": 512,
+        "domContentLoaded": 583
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
@@ -102,16 +102,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 804.8,
-        "script": 564.1,
-        "stylesheet": 78.6,
+        "total": 820.2,
+        "script": 577.5,
+        "stylesheet": 79.5,
         "image": 2.8,
         "font": 116.6,
-        "document": 42.8,
-        "other": 0
+        "document": 42.9,
+        "other": 0.9
       },
       "requestCounts": {
-        "script": 10,
+        "script": 15,
         "stylesheet": 1,
         "image": 1,
         "font": 4,
@@ -119,21 +119,25 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 220,
-        "cls": 0.002,
-        "ttfb": 123,
-        "domContentLoaded": 222
+        "lcp": 268,
+        "cls": 0,
+        "ttfb": 113,
+        "domContentLoaded": 213
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
-        "violationCount": 0,
-        "nodeCount": 0,
-        "ids": [],
-        "byImpact": {}
+        "violationCount": 1,
+        "nodeCount": 1,
+        "ids": [
+          "color-contrast"
+        ],
+        "byImpact": {
+          "serious": 1
+        }
       }
     },
     {
@@ -141,16 +145,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 821.3,
-        "script": 567.8,
-        "stylesheet": 78.6,
+        "total": 846.4,
+        "script": 582.8,
+        "stylesheet": 79.5,
         "image": 2.8,
         "font": 116.6,
-        "document": 53.6,
-        "other": 1.9
+        "document": 54.4,
+        "other": 10.2
       },
       "requestCounts": {
-        "script": 10,
+        "script": 15,
         "stylesheet": 1,
         "image": 1,
         "font": 4,
@@ -158,14 +162,14 @@
         "other": 9
       },
       "vitals": {
-        "lcp": 636,
-        "cls": 0.002,
-        "ttfb": 523,
-        "domContentLoaded": 580
+        "lcp": 680,
+        "cls": 0,
+        "ttfb": 503,
+        "domContentLoaded": 610
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
@@ -184,16 +188,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 988.5,
-        "script": 688.2,
-        "stylesheet": 78.6,
+        "total": 1003.7,
+        "script": 701.6,
+        "stylesheet": 79.5,
         "image": 2.8,
         "font": 116.6,
-        "document": 102.2,
-        "other": 0.2
+        "document": 102.3,
+        "other": 0.9
       },
       "requestCounts": {
-        "script": 11,
+        "script": 16,
         "stylesheet": 1,
         "image": 1,
         "font": 4,
@@ -201,14 +205,59 @@
         "other": 9
       },
       "vitals": {
-        "lcp": 116,
+        "lcp": 152,
         "cls": 0,
-        "ttfb": 20,
-        "domContentLoaded": 75
+        "ttfb": 8,
+        "domContentLoaded": 61
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 2,
+        "nodeCount": 7,
+        "ids": [
+          "color-contrast",
+          "heading-order"
+        ],
+        "byImpact": {
+          "serious": 5,
+          "moderate": 2
+        }
+      }
+    },
+    {
+      "route": "/login",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 862.3,
+        "script": 611.5,
+        "stylesheet": 79.5,
+        "image": 8.9,
+        "font": 116.6,
+        "document": 44.7,
+        "other": 1
+      },
+      "requestCounts": {
+        "script": 20,
+        "stylesheet": 1,
+        "image": 2,
+        "font": 4,
+        "document": 1,
+        "other": 21
+      },
+      "vitals": {
+        "lcp": 136,
+        "cls": 0,
+        "ttfb": 6,
+        "domContentLoaded": 93
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
@@ -219,50 +268,7 @@
           "heading-order"
         ],
         "byImpact": {
-          "serious": 1,
-          "moderate": 2
-        }
-      }
-    },
-    {
-      "route": "/login",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 832.3,
-        "script": 583.3,
-        "stylesheet": 78.6,
-        "image": 8.9,
-        "font": 116.6,
-        "document": 44.6,
-        "other": 0.2
-      },
-      "requestCounts": {
-        "script": 10,
-        "stylesheet": 1,
-        "image": 2,
-        "font": 4,
-        "document": 1,
-        "other": 21
-      },
-      "vitals": {
-        "lcp": 948,
-        "cls": 0,
-        "ttfb": 17,
-        "domContentLoaded": 67
-      },
-      "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 1,
-        "nodeCount": 1,
-        "ids": [
-          "heading-order"
-        ],
-        "byImpact": {
+          "serious": 2,
           "moderate": 1
         }
       }
@@ -272,16 +278,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 806,
-        "script": 557.2,
-        "stylesheet": 78.6,
+        "total": 825.4,
+        "script": 570.7,
+        "stylesheet": 79.5,
         "image": 8.9,
         "font": 116.6,
-        "document": 44.6,
-        "other": 0
+        "document": 48.7,
+        "other": 0.9
       },
       "requestCounts": {
-        "script": 9,
+        "script": 14,
         "stylesheet": 1,
         "image": 2,
         "font": 4,
@@ -289,21 +295,25 @@
         "other": 13
       },
       "vitals": {
-        "lcp": 940,
+        "lcp": 112,
         "cls": 0,
-        "ttfb": 13,
-        "domContentLoaded": 98
+        "ttfb": 8,
+        "domContentLoaded": 82
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
-        "violationCount": 0,
-        "nodeCount": 0,
-        "ids": [],
-        "byImpact": {}
+        "violationCount": 1,
+        "nodeCount": 1,
+        "ids": [
+          "color-contrast"
+        ],
+        "byImpact": {
+          "serious": 1
+        }
       }
     },
     {
@@ -311,16 +321,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 933.7,
-        "script": 580,
-        "stylesheet": 78.6,
+        "total": 954.1,
+        "script": 590.6,
+        "stylesheet": 79.5,
         "image": 120.2,
         "font": 116.6,
-        "document": 38.4,
-        "other": 0
+        "document": 42.5,
+        "other": 4.8
       },
       "requestCounts": {
-        "script": 10,
+        "script": 14,
         "stylesheet": 1,
         "image": 2,
         "font": 4,
@@ -328,14 +338,14 @@
         "other": 9
       },
       "vitals": {
-        "lcp": 452,
-        "cls": 0.002,
-        "ttfb": 15,
-        "domContentLoaded": 54
+        "lcp": 328,
+        "cls": 0,
+        "ttfb": 7,
+        "domContentLoaded": 78
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
@@ -354,40 +364,42 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 832.4,
-        "script": 583.3,
-        "stylesheet": 78.6,
-        "image": 8.9,
-        "font": 116.6,
-        "document": 44.7,
-        "other": 0.2
+        "total": 1673.8,
+        "script": 1187,
+        "stylesheet": 159.1,
+        "image": 11.7,
+        "font": 233.2,
+        "document": 80.9,
+        "other": 1.9
       },
       "requestCounts": {
-        "script": 10,
-        "stylesheet": 1,
-        "image": 2,
-        "font": 4,
+        "script": 34,
+        "stylesheet": 2,
+        "image": 3,
+        "font": 8,
         "document": 2,
-        "other": 21
+        "other": 29
       },
       "vitals": {
-        "lcp": 964,
-        "cls": 0.002,
-        "ttfb": 33,
-        "domContentLoaded": 73
+        "lcp": 212,
+        "cls": 0,
+        "ttfb": 26,
+        "domContentLoaded": 141
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
-        "violationCount": 1,
-        "nodeCount": 1,
+        "violationCount": 2,
+        "nodeCount": 3,
         "ids": [
+          "color-contrast",
           "heading-order"
         ],
         "byImpact": {
+          "serious": 2,
           "moderate": 1
         }
       }
@@ -397,16 +409,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1158.6,
-        "script": 557.2,
-        "stylesheet": 78.6,
+        "total": 1186,
+        "script": 570.7,
+        "stylesheet": 79.5,
         "image": 268.6,
         "font": 116.6,
-        "document": 137.5,
-        "other": 0
+        "document": 139.4,
+        "other": 11.1
       },
       "requestCounts": {
-        "script": 9,
+        "script": 14,
         "stylesheet": 1,
         "image": 3,
         "font": 4,
@@ -414,24 +426,24 @@
         "other": 12
       },
       "vitals": {
-        "lcp": 624,
-        "cls": 0.002,
-        "ttfb": 22,
-        "domContentLoaded": 84
+        "lcp": 216,
+        "cls": 0,
+        "ttfb": 11,
+        "domContentLoaded": 100
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
         "violationCount": 1,
-        "nodeCount": 3,
+        "nodeCount": 8,
         "ids": [
           "color-contrast"
         ],
         "byImpact": {
-          "serious": 3
+          "serious": 8
         }
       }
     },
@@ -440,16 +452,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1145.9,
-        "script": 566.7,
-        "stylesheet": 78.6,
+        "total": 1165.7,
+        "script": 580.2,
+        "stylesheet": 79.5,
         "image": 326.6,
         "font": 116.6,
-        "document": 57.4,
-        "other": 0
+        "document": 61.5,
+        "other": 1.3
       },
       "requestCounts": {
-        "script": 10,
+        "script": 15,
         "stylesheet": 1,
         "image": 3,
         "font": 4,
@@ -457,14 +469,14 @@
         "other": 13
       },
       "vitals": {
-        "lcp": 316,
+        "lcp": 640,
         "cls": 0,
-        "ttfb": 207,
-        "domContentLoaded": 258
+        "ttfb": 11,
+        "domContentLoaded": 169
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
@@ -483,16 +495,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1150.3,
-        "script": 562.8,
-        "stylesheet": 78.6,
+        "total": 1169,
+        "script": 576.3,
+        "stylesheet": 79.5,
         "image": 326.6,
         "font": 116.6,
-        "document": 65.7,
-        "other": 0
+        "document": 69.8,
+        "other": 0.2
       },
       "requestCounts": {
-        "script": 10,
+        "script": 15,
         "stylesheet": 1,
         "image": 3,
         "font": 4,
@@ -500,14 +512,14 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 292,
-        "cls": 0.002,
-        "ttfb": 187,
-        "domContentLoaded": 286
+        "lcp": 460,
+        "cls": 0,
+        "ttfb": 21,
+        "domContentLoaded": 191
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
@@ -528,16 +540,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1131.3,
-        "script": 557.2,
-        "stylesheet": 78.6,
+        "total": 1161.1,
+        "script": 570.7,
+        "stylesheet": 79.5,
         "image": 292.8,
         "font": 116.6,
-        "document": 86,
-        "other": 0
+        "document": 89,
+        "other": 12.4
       },
       "requestCounts": {
-        "script": 9,
+        "script": 14,
         "stylesheet": 1,
         "image": 3,
         "font": 4,
@@ -545,24 +557,25 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 480,
+        "lcp": 152,
         "cls": 0,
-        "ttfb": 20,
-        "domContentLoaded": 113
+        "ttfb": 10,
+        "domContentLoaded": 95
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
-        "violationCount": 1,
-        "nodeCount": 1,
+        "violationCount": 2,
+        "nodeCount": 8,
         "ids": [
-          "color-contrast"
+          "color-contrast",
+          "link-in-text-block"
         ],
         "byImpact": {
-          "serious": 1
+          "serious": 8
         }
       }
     },
@@ -571,40 +584,42 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 832.4,
-        "script": 583.3,
-        "stylesheet": 78.6,
-        "image": 8.9,
-        "font": 116.6,
-        "document": 44.7,
-        "other": 0.2
+        "total": 1673.9,
+        "script": 1180.4,
+        "stylesheet": 159.1,
+        "image": 11.7,
+        "font": 233.2,
+        "document": 81.5,
+        "other": 7.9
       },
       "requestCounts": {
-        "script": 10,
-        "stylesheet": 1,
-        "image": 2,
-        "font": 4,
+        "script": 34,
+        "stylesheet": 2,
+        "image": 3,
+        "font": 8,
         "document": 2,
-        "other": 21
+        "other": 29
       },
       "vitals": {
-        "lcp": 968,
-        "cls": 0.002,
-        "ttfb": 40,
-        "domContentLoaded": 132
+        "lcp": 176,
+        "cls": 0,
+        "ttfb": 17,
+        "domContentLoaded": 116
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
-        "violationCount": 1,
-        "nodeCount": 1,
+        "violationCount": 2,
+        "nodeCount": 3,
         "ids": [
+          "color-contrast",
           "heading-order"
         ],
         "byImpact": {
+          "serious": 2,
           "moderate": 1
         }
       }
@@ -614,16 +629,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1049.2,
-        "script": 557.2,
-        "stylesheet": 78.6,
+        "total": 1068.5,
+        "script": 570.7,
+        "stylesheet": 79.5,
         "image": 209.2,
         "font": 116.6,
-        "document": 87.6,
-        "other": 0
+        "document": 91.5,
+        "other": 0.9
       },
       "requestCounts": {
-        "script": 9,
+        "script": 14,
         "stylesheet": 1,
         "image": 2,
         "font": 4,
@@ -631,24 +646,24 @@
         "other": 12
       },
       "vitals": {
-        "lcp": 148,
+        "lcp": 352,
         "cls": 0,
-        "ttfb": 13,
-        "domContentLoaded": 54
+        "ttfb": 8,
+        "domContentLoaded": 88
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
         "violationCount": 1,
-        "nodeCount": 5,
+        "nodeCount": 13,
         "ids": [
           "color-contrast"
         ],
         "byImpact": {
-          "serious": 5
+          "serious": 13
         }
       }
     },
@@ -657,16 +672,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 996.7,
-        "script": 573.1,
-        "stylesheet": 78.6,
+        "total": 1024.4,
+        "script": 586.6,
+        "stylesheet": 79.5,
         "image": 150.8,
         "font": 116.6,
-        "document": 77.6,
-        "other": 0
+        "document": 81.7,
+        "other": 9.1
       },
       "requestCounts": {
-        "script": 10,
+        "script": 15,
         "stylesheet": 1,
         "image": 3,
         "font": 4,
@@ -674,25 +689,25 @@
         "other": 14
       },
       "vitals": {
-        "lcp": 612,
-        "cls": 0.002,
-        "ttfb": 189,
-        "domContentLoaded": 304
+        "lcp": 464,
+        "cls": 0,
+        "ttfb": 22,
+        "domContentLoaded": 176
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
         "violationCount": 2,
-        "nodeCount": 5,
+        "nodeCount": 6,
         "ids": [
           "color-contrast",
           "heading-order"
         ],
         "byImpact": {
-          "serious": 4,
+          "serious": 5,
           "moderate": 1
         }
       }
@@ -702,94 +717,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1071.3,
-        "script": 557.2,
-        "stylesheet": 78.6,
+        "total": 1089.3,
+        "script": 570.7,
+        "stylesheet": 79.5,
         "image": 239.8,
         "font": 116.6,
-        "document": 79.1,
-        "other": 0
-      },
-      "requestCounts": {
-        "script": 9,
-        "stylesheet": 1,
-        "image": 3,
-        "font": 4,
-        "document": 1,
-        "other": 10
-      },
-      "vitals": {
-        "lcp": 164,
-        "cls": 0,
-        "ttfb": 27,
-        "domContentLoaded": 72
-      },
-      "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 0,
-        "nodeCount": 0,
-        "ids": [],
-        "byImpact": {}
-      }
-    },
-    {
-      "route": "/ref/quick-ref",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 1158.1,
-        "script": 577.5,
-        "stylesheet": 78.6,
-        "image": 326.6,
-        "font": 116.6,
-        "document": 58.6,
+        "document": 82.5,
         "other": 0.2
       },
       "requestCounts": {
-        "script": 10,
-        "stylesheet": 1,
-        "image": 3,
-        "font": 4,
-        "document": 1,
-        "other": 10
-      },
-      "vitals": {
-        "lcp": 112,
-        "cls": 0,
-        "ttfb": 15,
-        "domContentLoaded": 108
-      },
-      "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 0,
-        "nodeCount": 0,
-        "ids": [],
-        "byImpact": {}
-      }
-    },
-    {
-      "route": "/athlete",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 972.7,
-        "script": 557.2,
-        "stylesheet": 78.6,
-        "image": 128.8,
-        "font": 116.6,
-        "document": 91.5,
-        "other": 0
-      },
-      "requestCounts": {
-        "script": 9,
+        "script": 14,
         "stylesheet": 1,
         "image": 3,
         "font": 4,
@@ -798,185 +735,13 @@
       },
       "vitals": {
         "lcp": 304,
-        "cls": 0.002,
-        "ttfb": 11,
-        "domContentLoaded": 108
-      },
-      "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 1,
-        "nodeCount": 3,
-        "ids": [
-          "color-contrast"
-        ],
-        "byImpact": {
-          "serious": 3
-        }
-      }
-    },
-    {
-      "route": "/athlete/challenges",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 832.4,
-        "script": 583.3,
-        "stylesheet": 78.6,
-        "image": 8.9,
-        "font": 116.6,
-        "document": 44.7,
-        "other": 0.2
-      },
-      "requestCounts": {
-        "script": 10,
-        "stylesheet": 1,
-        "image": 2,
-        "font": 4,
-        "document": 2,
-        "other": 21
-      },
-      "vitals": {
-        "lcp": 988,
-        "cls": 0.002,
-        "ttfb": 46,
-        "domContentLoaded": 91
-      },
-      "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 1,
-        "nodeCount": 1,
-        "ids": [
-          "heading-order"
-        ],
-        "byImpact": {
-          "moderate": 1
-        }
-      }
-    },
-    {
-      "route": "/athlete/quiz",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 832.6,
-        "script": 583.3,
-        "stylesheet": 78.6,
-        "image": 8.9,
-        "font": 116.6,
-        "document": 44.7,
-        "other": 0.4
-      },
-      "requestCounts": {
-        "script": 10,
-        "stylesheet": 1,
-        "image": 2,
-        "font": 4,
-        "document": 2,
-        "other": 21
-      },
-      "vitals": {
-        "lcp": 960,
-        "cls": 0.002,
-        "ttfb": 32,
-        "domContentLoaded": 87
-      },
-      "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 1,
-        "nodeCount": 1,
-        "ids": [
-          "heading-order"
-        ],
-        "byImpact": {
-          "moderate": 1
-        }
-      }
-    },
-    {
-      "route": "/parent",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 969.4,
-        "script": 557.2,
-        "stylesheet": 78.6,
-        "image": 133.2,
-        "font": 116.6,
-        "document": 81.2,
-        "other": 2.6
-      },
-      "requestCounts": {
-        "script": 9,
-        "stylesheet": 1,
-        "image": 3,
-        "font": 4,
-        "document": 1,
-        "other": 10
-      },
-      "vitals": {
-        "lcp": 112,
         "cls": 0,
-        "ttfb": 14,
-        "domContentLoaded": 107
+        "ttfb": 10,
+        "domContentLoaded": 74
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 1,
-        "nodeCount": 3,
-        "ids": [
-          "color-contrast"
-        ],
-        "byImpact": {
-          "serious": 3
-        }
-      }
-    },
-    {
-      "route": "/resources",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 1091.2,
-        "script": 557.2,
-        "stylesheet": 78.6,
-        "image": 246.5,
-        "font": 116.6,
-        "document": 92.2,
-        "other": 0
-      },
-      "requestCounts": {
-        "script": 9,
-        "stylesheet": 1,
-        "image": 3,
-        "font": 4,
-        "document": 1,
-        "other": 10
-      },
-      "vitals": {
-        "lcp": 592,
-        "cls": 0.002,
-        "ttfb": 35,
-        "domContentLoaded": 82
-      },
-      "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
@@ -991,20 +756,283 @@
       }
     },
     {
+      "route": "/ref/quick-ref",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 1185.2,
+        "script": 591,
+        "stylesheet": 79.5,
+        "image": 326.6,
+        "font": 116.6,
+        "document": 62.4,
+        "other": 9.1
+      },
+      "requestCounts": {
+        "script": 15,
+        "stylesheet": 1,
+        "image": 3,
+        "font": 4,
+        "document": 1,
+        "other": 10
+      },
+      "vitals": {
+        "lcp": 172,
+        "cls": 0,
+        "ttfb": 23,
+        "domContentLoaded": 112
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 1,
+        "nodeCount": 9,
+        "ids": [
+          "color-contrast"
+        ],
+        "byImpact": {
+          "serious": 9
+        }
+      }
+    },
+    {
+      "route": "/athlete",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 991.3,
+        "script": 570.7,
+        "stylesheet": 79.5,
+        "image": 128.8,
+        "font": 116.6,
+        "document": 94.7,
+        "other": 0.9
+      },
+      "requestCounts": {
+        "script": 14,
+        "stylesheet": 1,
+        "image": 3,
+        "font": 4,
+        "document": 1,
+        "other": 10
+      },
+      "vitals": {
+        "lcp": 144,
+        "cls": 0,
+        "ttfb": 11,
+        "domContentLoaded": 66
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 1,
+        "nodeCount": 8,
+        "ids": [
+          "color-contrast"
+        ],
+        "byImpact": {
+          "serious": 8
+        }
+      }
+    },
+    {
+      "route": "/athlete/challenges",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 1669.2,
+        "script": 1181.8,
+        "stylesheet": 159.1,
+        "image": 11.7,
+        "font": 233.2,
+        "document": 81.6,
+        "other": 1.9
+      },
+      "requestCounts": {
+        "script": 34,
+        "stylesheet": 2,
+        "image": 3,
+        "font": 8,
+        "document": 2,
+        "other": 29
+      },
+      "vitals": {
+        "lcp": 192,
+        "cls": 0,
+        "ttfb": 19,
+        "domContentLoaded": 121
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 2,
+        "nodeCount": 3,
+        "ids": [
+          "color-contrast",
+          "heading-order"
+        ],
+        "byImpact": {
+          "serious": 2,
+          "moderate": 1
+        }
+      }
+    },
+    {
+      "route": "/athlete/quiz",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 1670,
+        "script": 1182.8,
+        "stylesheet": 159.1,
+        "image": 11.7,
+        "font": 233.2,
+        "document": 81.5,
+        "other": 1.6
+      },
+      "requestCounts": {
+        "script": 34,
+        "stylesheet": 2,
+        "image": 3,
+        "font": 8,
+        "document": 2,
+        "other": 25
+      },
+      "vitals": {
+        "lcp": 184,
+        "cls": 0,
+        "ttfb": 18,
+        "domContentLoaded": 120
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 2,
+        "nodeCount": 3,
+        "ids": [
+          "color-contrast",
+          "heading-order"
+        ],
+        "byImpact": {
+          "serious": 2,
+          "moderate": 1
+        }
+      }
+    },
+    {
+      "route": "/parent",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 994.5,
+        "script": 570.7,
+        "stylesheet": 79.5,
+        "image": 133.2,
+        "font": 116.6,
+        "document": 85.2,
+        "other": 9.3
+      },
+      "requestCounts": {
+        "script": 14,
+        "stylesheet": 1,
+        "image": 3,
+        "font": 4,
+        "document": 1,
+        "other": 10
+      },
+      "vitals": {
+        "lcp": 148,
+        "cls": 0,
+        "ttfb": 8,
+        "domContentLoaded": 93
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 1,
+        "nodeCount": 10,
+        "ids": [
+          "color-contrast"
+        ],
+        "byImpact": {
+          "serious": 10
+        }
+      }
+    },
+    {
+      "route": "/resources",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 1107.1,
+        "script": 567.8,
+        "stylesheet": 79.5,
+        "image": 246.5,
+        "font": 116.6,
+        "document": 95.8,
+        "other": 0.9
+      },
+      "requestCounts": {
+        "script": 13,
+        "stylesheet": 1,
+        "image": 3,
+        "font": 4,
+        "document": 1,
+        "other": 10
+      },
+      "vitals": {
+        "lcp": 200,
+        "cls": 0,
+        "ttfb": 19,
+        "domContentLoaded": 77
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 2,
+        "nodeCount": 3,
+        "ids": [
+          "color-contrast",
+          "link-in-text-block"
+        ],
+        "byImpact": {
+          "serious": 3
+        }
+      }
+    },
+    {
       "route": "/faq",
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 900.2,
-        "script": 571.1,
-        "stylesheet": 78.6,
+        "total": 915.6,
+        "script": 581.6,
+        "stylesheet": 79.5,
         "image": 86.4,
         "font": 116.6,
-        "document": 47,
-        "other": 0.4
+        "document": 50.5,
+        "other": 0.9
       },
       "requestCounts": {
-        "script": 10,
+        "script": 14,
         "stylesheet": 1,
         "image": 2,
         "font": 4,
@@ -1012,14 +1040,14 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 116,
+        "lcp": 140,
         "cls": 0,
-        "ttfb": 26,
-        "domContentLoaded": 113
+        "ttfb": 7,
+        "domContentLoaded": 59
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
@@ -1034,16 +1062,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1106.3,
-        "script": 557.2,
-        "stylesheet": 78.6,
+        "total": 1120.5,
+        "script": 567.8,
+        "stylesheet": 79.5,
         "image": 280.1,
         "font": 116.6,
-        "document": 71.8,
-        "other": 1.9
+        "document": 75.6,
+        "other": 0.9
       },
       "requestCounts": {
-        "script": 9,
+        "script": 13,
         "stylesheet": 1,
         "image": 3,
         "font": 4,
@@ -1051,14 +1079,14 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 104,
+        "lcp": 184,
         "cls": 0,
-        "ttfb": 13,
-        "domContentLoaded": 102
+        "ttfb": 20,
+        "domContentLoaded": 109
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
@@ -1079,16 +1107,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1068.7,
-        "script": 557.2,
-        "stylesheet": 78.6,
+        "total": 1084.5,
+        "script": 567.8,
+        "stylesheet": 79.5,
         "image": 233.8,
         "font": 116.6,
-        "document": 80.3,
-        "other": 2.2
+        "document": 83.8,
+        "other": 3.1
       },
       "requestCounts": {
-        "script": 9,
+        "script": 13,
         "stylesheet": 1,
         "image": 3,
         "font": 4,
@@ -1096,24 +1124,24 @@
         "other": 12
       },
       "vitals": {
-        "lcp": 120,
-        "cls": 0.002,
-        "ttfb": 26,
-        "domContentLoaded": 117
+        "lcp": 536,
+        "cls": 0,
+        "ttfb": 11,
+        "domContentLoaded": 92
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
         "violationCount": 1,
-        "nodeCount": 1,
+        "nodeCount": 8,
         "ids": [
           "color-contrast"
         ],
         "byImpact": {
-          "serious": 1
+          "serious": 8
         }
       }
     },
@@ -1122,16 +1150,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 819.8,
-        "script": 572.4,
-        "stylesheet": 78.6,
+        "total": 837.7,
+        "script": 582.9,
+        "stylesheet": 79.5,
         "image": 2.8,
         "font": 116.6,
-        "document": 49.5,
-        "other": 0
+        "document": 54,
+        "other": 2
       },
       "requestCounts": {
-        "script": 10,
+        "script": 14,
         "stylesheet": 1,
         "image": 1,
         "font": 4,
@@ -1139,14 +1167,14 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 1332,
-        "cls": 0.002,
-        "ttfb": 367,
-        "domContentLoaded": 433
+        "lcp": 420,
+        "cls": 0,
+        "ttfb": 9,
+        "domContentLoaded": 337
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
@@ -1161,16 +1189,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 826.3,
-        "script": 572.4,
-        "stylesheet": 78.6,
+        "total": 844.6,
+        "script": 582.9,
+        "stylesheet": 79.5,
         "image": 2.8,
         "font": 116.6,
-        "document": 56,
-        "other": 0
+        "document": 60,
+        "other": 2.9
       },
       "requestCounts": {
-        "script": 10,
+        "script": 14,
         "stylesheet": 1,
         "image": 1,
         "font": 4,
@@ -1178,14 +1206,14 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 264,
+        "lcp": 436,
         "cls": 0,
-        "ttfb": 160,
-        "domContentLoaded": 262
+        "ttfb": 8,
+        "domContentLoaded": 134
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {
@@ -1200,16 +1228,16 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 822.9,
-        "script": 572.4,
-        "stylesheet": 78.6,
+        "total": 838.8,
+        "script": 582.9,
+        "stylesheet": 79.5,
         "image": 2.8,
         "font": 116.6,
-        "document": 52.6,
-        "other": 0
+        "document": 56.5,
+        "other": 0.4
       },
       "requestCounts": {
-        "script": 10,
+        "script": 14,
         "stylesheet": 1,
         "image": 1,
         "font": 4,
@@ -1217,14 +1245,14 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 1080,
+        "lcp": 432,
         "cls": 0,
-        "ttfb": 142,
-        "domContentLoaded": 239
+        "ttfb": 10,
+        "domContentLoaded": 133
       },
       "overflow": {
-        "scrollWidth": 393,
-        "clientWidth": 393,
+        "scrollWidth": 390,
+        "clientWidth": 390,
         "overflows": false
       },
       "axe": {

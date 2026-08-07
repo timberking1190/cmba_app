@@ -112,12 +112,32 @@ with. This finding is carried into Phase 3 as "no action", with the measurement 
 axe-core, WCAG 2.0/2.1/2.2 A and AA plus best practice rules, at a 390x844 phone viewport, across
 29 public routes.
 
-**Two violation types, 25 route instances. Nothing else.**
+**Three violation types, 36 route instances.**
 
 | Rule | Routes affected | Impact |
 |---|---|---|
-| `color-contrast` | 15 | serious |
+| `color-contrast` | 24 | serious |
 | `heading-order` | 10 | moderate |
+| `link-in-text-block` | 2 | serious |
+
+**Correction.** The first capture of this table reported two types over 25 routes. That number was
+wrong, and low, for two reasons found while wiring the Playwright suite against it:
+
+1. **The reveal animation.** The site's `.reveal` elements fade in from `opacity: 0` over 0.8s, and
+   axe scores contrast against whatever opacity an element currently has. Scanning mid transition
+   both invented failures on legible text and hid real ones. Both the capture script and the suite
+   now run with `prefers-reduced-motion`, which `globals.css` already turns into `.reveal { opacity:
+   1 }`, so the settled state is what gets measured.
+2. **WebGL.** `playwright.config.ts` launches Chromium with software WebGL so the three.js arcade
+   mounts headless. The capture script did not, so its Chromium had no GL context, the
+   `FluidBackground` canvas never painted, and text was scored against a plain background instead of
+   the animated canvas that is actually behind it. The two environments disagreed on `/game-report`
+   and `/scan` until the script was given the same flags.
+
+Both are now pinned to one profile (390x844, DPR 3, reduced motion, software WebGL) shared by the
+capture script and the suite. A 3px viewport difference was enough to make them disagree, so the
+numbers are only comparable because they are now identical by construction. The higher count is the
+honest one.
 
 Affected routes are listed per route in `docs/audit/axe-baseline.json`, which the a11y suite reads
 as its forgiven set: a violation id already in that file is reported but does not fail the build, a

@@ -39,14 +39,28 @@ async function loadBaseline(): Promise<Baseline> {
 
 async function scan(page: Page, route: string) {
   await page.goto(route, { waitUntil: 'domcontentloaded' })
-  // The fluid background and reveal animations settle after first paint; scanning
-  // mid animation produces contrast false positives against a half faded element.
+  // Give the page a beat to settle before scanning.
   await page.waitForTimeout(600)
   return new AxeBuilder({ page }).withTags(TAGS).analyze()
 }
 
 test.describe('accessibility, phone viewport', () => {
-  test.use({ viewport: { width: 390, height: 844 } })
+  /*
+   * reducedMotion is not a preference here, it is what makes this suite
+   * deterministic.
+   *
+   * The site's `.reveal` elements start at opacity 0 and fade in over 0.8s. axe
+   * computes contrast against whatever opacity the element currently has, so
+   * scanning mid transition reports serious contrast failures on text that is
+   * perfectly legible once it lands. That produced three flaky routes
+   * (/game-report, /scan, /ref/quick-ref) whose results changed run to run.
+   *
+   * globals.css already forces `.reveal { opacity: 1 }` under
+   * prefers-reduced-motion, so this scans the settled state: what the text
+   * actually looks like when someone reads it, and exactly what a reduced motion
+   * user sees the whole time.
+   */
+  test.use({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
 
   for (const route of PUBLIC_ROUTES) {
     test(`axe finds no new violations on ${route}`, async ({ page }) => {

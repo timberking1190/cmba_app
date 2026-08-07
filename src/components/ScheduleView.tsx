@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MapPin, ExternalLink } from "lucide-react";
+import { MapPin, ExternalLink, CalendarOff } from "lucide-react";
 import { StatusChip } from "@/components/StatusChip";
+import { EmptyState } from "@/components/states/EmptyState";
 import {
   deserializeGame,
   divisionsFrom,
@@ -86,11 +87,23 @@ export function ScheduleView({
       </div>
 
       {groups.length === 0 ? (
-        <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-8 text-center">
-          <p className="text-sm text-cmba-grey">
-            No {tab === "upcoming" ? "upcoming games" : "results"}{division !== "all" ? ` for ${division}` : ""} right now.
-          </p>
-        </div>
+        /*
+         * An empty list and a failed fetch used to look the same here: one line of
+         * 14px grey text. This says which one it is, at a readable size, and gives
+         * a way forward when the emptiness is caused by the division filter rather
+         * than by there being no games.
+         */
+        <EmptyState
+          icon={CalendarOff}
+          title={tab === "upcoming" ? "No upcoming games" : "No results yet"}
+          body={
+            division !== "all"
+              ? `Nothing is scheduled for ${division} right now. Choose All divisions above to see the rest of the league.`
+              : tab === "upcoming"
+                ? "Nothing is on the schedule right now. New games appear here as soon as they are published."
+                : "No final scores have been posted yet. Results appear here once games are confirmed."
+          }
+        />
       ) : (
         <div className="space-y-10">
           {groups.map((grp) => (
