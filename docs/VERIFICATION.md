@@ -1874,3 +1874,119 @@ rule is now scoped to the specific tinted-chip combination.
 - axe runs on the 30 public routes only. `/manage`, `/rep`, `/compliance` and the signed in parts of
   `/account` are unscanned, and the admin console is where the densest tables live.
 - Contrast was checked at one viewport in one browser. Colour rendering differs across displays.
+
+## Mobile Phase 5: offline and PWA
+
+**Gate: manifest completed, robots and sitemap and structured data, service worker behind a flag
+with a passing cache privacy test and a demonstrated kill switch.**
+
+### The finding that redefined this phase
+
+The plan was stale-while-revalidate caching of the public schedule and standings so a parent in a
+gym with no signal could still read game times. **That was dropped, and it was the right call.**
+
+The root layout renders `<Header user={...}>` on the server, so **every page document in this app
+contains the signed in person's name and email address**. Verified by reading the served HTML, not
+assumed. Caching `/schedule` for offline reading would therefore write a member's identity to
+unencrypted storage on a possibly shared family phone, under a URL that looks public. In an app that
+holds minors' data that is not a fair trade for an offline schedule.
+
+So the worker caches **static build assets only**: content hashed `/_next/static/`, icons, the
+manifest, and the offline page. No page documents, no API responses, no non-GET requests. What it
+buys is a branded page at `/offline` instead of the browser's error page, and nothing more. That is
+the honest scope and it is stated as such in `docs/audit/SERVICE-WORKER.md` and on the page itself.
+
+### Shipped off, and killable
+
+`NEXT_PUBLIC_ENABLE_SW` is not set, so no worker registers and no cache exists. Verified: 0
+registrations, 0 caches on a default build.
+
+The flag is also the kill switch. With it off, `ServiceWorkerManager` does not merely skip
+registration, it **actively unregisters any installed worker and purges every cache on each page
+load**. A service worker is sticky, so "stop shipping it" is not the same as "remove it" for someone
+who already has one, and without this path a bad worker would keep serving stale assets forever.
+Honest limitation, recorded in the doc: on Vercel a flag change needs a redeploy, so this is a
+minute or two rather than instant.
+
+Second lever: bumping `CACHE_VERSION` orphans every existing cache, which the activate handler then
+deletes.
+
+Updates ask rather than swap. The worker never calls `skipWaiting()` on install, because a worker
+that activates immediately can serve new assets to a page running old code. The user gets "A new
+version of CMBA+ is ready" with a Refresh button, and the reload waits for `controllerchange` rather
+than firing immediately, which would land back on the old worker.
+
+### Cache privacy test: 9 tests, two layers, adversarially verified
+
+| Layer | Count | What it does |
+|---|---|---|
+| Source | 5 | Reads `public/sw.js` and asserts the allowlist literally, that `NEVER_CACHE` names every private area, that non-GET is refused, that the navigation handler never writes to a cache, and that the purge and version machinery exists. Runs with the flag off. |
+| Runtime | 4 | Drives a real browser with the worker installed, enumerates the actual contents of Cache Storage, checks no page document is cached, checks sign out empties everything, exercises the kill switch. |
+
+**Verified by breaking it.** Adding `/^\/schedule$/` to the allowlist made the source layer fail
+immediately. The runtime layer stayed green, because the navigation guard blocks document caching
+independently. That is defence in depth working rather than a gap, and it is why there are two
+layers.
+
+The runtime tests **skip loudly** when the flag is off rather than passing silently, so a green run
+with the worker disabled cannot be mistaken for proof the worker is safe.
+
+Sign out purges: `Header.signOut()` dispatches `auth:signout`, which the manager listens for. An
+event rather than a direct call, so signing out does not depend on the component being mounted.
+
+### Everything else
+
+| | Before | After |
+|---|---|---|
+| Manifest icons | 1 source declared 192x192 for both `any` and `maskable` | 192 and 512 `any`, plus a padded 512 `maskable` with the logo inside the safe zone |
+| Shortcuts | none | Schedule, My card, Standings |
+| Screenshots | none | 2 narrow, 1 wide, captured from the real running app |
+| `robots.txt` | did not exist | generated, disallowing `/admin`, `/api/`, `/account`, `/manage`, `/rep`, `/compliance`, `/scan` and the tokenised guardian links |
+| `sitemap.xml` | did not exist | 24 static routes plus published CMS pages, public only |
+| Structured data | none | `SportsOrganization` and `WebSite`, nonce-aware |
+
+**A routing defect found on the way.** `robots.ts` inside the `(frontend)` route group returned a
+404 HTML page, because the `[slug]` catch-all matched `/robots.txt` first. `sitemap.ts` in the same
+place worked, which made it look like a robots-specific problem rather than a routing one. Both are
+now at the app root, where they take precedence. Verified by fetching them, not by trusting the
+build.
+
+**The structured data needed the CSP nonce.** The strict nonce policy blocks an un-nonced
+`<script>`, including `type="application/ld+json"`. Blocked structured data is invisible: the page
+looks perfect and search engines see nothing. The nonce is read from the request header the proxy
+already sets. `worker-src 'self'` was already present, so **no CSP change was needed anywhere in
+this phase and none was made.**
+
+### Gate result
+
+| Check | Result |
+|---|---|
+| `npm run lint` | pass |
+| `npx tsc --noEmit` | pass |
+| `npm test` | pass, 68 files, 740 tests |
+| Full `mobile-chrome` project | pass, 190 of 190, 4 skipped (worker off), stable across repeat runs |
+| Cache privacy, worker enabled | pass, 9 of 9 |
+| Kill switch | demonstrated, 0 registrations and 0 caches afterwards |
+| Lighthouse vs baseline | **pass, no regression**. Homepage SEO 91 to 92 |
+
+One flake was found and fixed rather than retried: `/athlete/challenges` overflowed at tablet width
+in one combined run and passed 4 of 4 in dedicated runs. The reveal variants translate elements up
+to 48px horizontally, so measuring `scrollWidth` mid transition reads a page that is transiently
+wider. The overflow suite now runs with reduced motion, removing the animation from the measurement
+rather than nudging a timeout.
+
+### Residual risk
+
+- **The service worker has never run on a real device.** Everything above is headless Chromium. iOS
+  Safari's service worker implementation differs, and install-to-home-screen behaviour cannot be
+  emulated. Operator checks in `docs/audit/OPERATOR-CHECKS.md`.
+- **It has never survived a real Vercel deploy.** The stale-worker-after-deploy failure mode is the
+  one that hurts returning users most, and it needs two real deploys to test.
+- **The kill switch needs a redeploy** on Vercel to change an environment variable. Not instant. A
+  genuinely instant kill would need the worker to poll a server-controlled endpoint on activate,
+  which is more machinery than a worker this limited justifies.
+- **The offline page is the only user-visible benefit**, and it is worth asking whether that
+  justifies shipping a service worker at all. The answer is deliberately left to the operator, with
+  the trade-off written down.
+- The sitemap lists CMS pages read with public permissions. If a page is published but access
+  controlled in some future way, it would need re-checking.

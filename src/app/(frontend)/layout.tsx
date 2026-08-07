@@ -8,6 +8,8 @@ import { MobileNav } from "@/components/MobileNav";
 import { FluidBackground } from "@/components/FluidBackground";
 import { GlobalFX } from "@/components/GlobalFX";
 import { AssistantWidget } from "@/components/AssistantWidget";
+import { StructuredData } from "@/components/StructuredData";
+import { ServiceWorkerManager } from "@/components/ServiceWorkerManager";
 import { getCurrentUser } from "@/lib/auth";
 
 const archivo = Archivo({
@@ -76,7 +78,10 @@ export default async function RootLayout({
   // Next applies the strict CSP nonce (set in src/proxy.ts) to every script it
   // emits. Without this, statically rendered pages would ship un-nonced scripts
   // that a nonce + strict-dynamic policy would block. (Stage C / S0->S1.)
-  await headers();
+  const requestHeaders = await headers();
+  // The proxy puts the per-request CSP nonce here. Structured data needs it, or
+  // the strict policy blocks the script and the markup is silently invisible.
+  const nonce = requestHeaders.get("x-nonce") ?? undefined;
 
   /*
    * Resolve the session HERE, on the server, and pass it down. The header used to
@@ -100,6 +105,8 @@ export default async function RootLayout({
       <body
         className={`${archivo.variable} ${inter.variable} ${jetbrains.variable} font-body antialiased text-cmba-grey-light`}
       >
+        <StructuredData nonce={nonce} />
+
         {/* Editorial chrome */}
         <FluidBackground />
         <GlobalFX />
@@ -115,6 +122,10 @@ export default async function RootLayout({
         <Footer />
         <MobileNav />
         <AssistantWidget />
+        {/* Registers the worker when NEXT_PUBLIC_ENABLE_SW is "true", and actively
+            unregisters plus purges when it is not. A service worker is sticky, so
+            "stop shipping it" is not the same as "remove it". */}
+        <ServiceWorkerManager />
       </body>
     </html>
   );

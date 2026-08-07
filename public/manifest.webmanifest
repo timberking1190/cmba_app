@@ -2,14 +2,65 @@
   "name": "CMBA+ | Calgary Minor Basketball",
   "short_name": "CMBA+",
   "description": "Calgary Minor Basketball: schedules, standings, rules, member ID cards, and the coach-verification scanner.",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#08080A",
   "theme_color": "#08080A",
+  "lang": "en-CA",
+  "dir": "ltr",
+  "categories": ["sports", "education"],
   "icons": [
-    { "src": "/favicon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/favicon.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Game schedule",
+      "short_name": "Schedule",
+      "description": "Upcoming games and results",
+      "url": "/schedule",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "My member card",
+      "short_name": "My card",
+      "description": "Your CMBA member ID card",
+      "url": "/account/card",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "League standings",
+      "short_name": "Standings",
+      "description": "Division standings",
+      "url": "/standings",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/schedule-phone.png",
+      "sizes": "412x892",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "The game schedule on a phone"
+    },
+    {
+      "src": "/screenshots/standings-phone.png",
+      "sizes": "412x892",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "League standings on a phone"
+    },
+    {
+      "src": "/screenshots/schedule-wide.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "The game schedule on a larger screen"
+    }
   ]
 }

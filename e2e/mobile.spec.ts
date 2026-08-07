@@ -43,7 +43,22 @@ test.describe('pinch zoom is not blocked', () => {
 
 for (const vp of MOBILE_VIEWPORTS) {
   test.describe(`no horizontal overflow at ${vp.name}`, () => {
-    test.use({ viewport: { width: vp.width, height: vp.height } })
+    /*
+     * reducedMotion so the measurement is of the settled layout.
+     *
+     * The reveal variants translate elements by up to 48px horizontally
+     * (`.rv-left`, `.rv-right`) before they land. Measuring scrollWidth while one
+     * is still in flight reads a page that is transiently wider than it ends up.
+     * This flaked exactly once, on /athlete/challenges at tablet width, in a full
+     * suite run where the machine was loaded enough for the 400ms settle to be
+     * too short. A flake is a measurement that depends on how fast the machine
+     * is, so the animation is removed from the equation rather than the timeout
+     * being nudged upwards.
+     */
+    test.use({
+      viewport: { width: vp.width, height: vp.height },
+      contextOptions: { reducedMotion: 'reduce' },
+    })
 
     for (const route of PUBLIC_ROUTES) {
       test(`${route}`, async ({ page }) => {

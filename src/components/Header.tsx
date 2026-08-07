@@ -82,6 +82,18 @@ export function Header({ user: serverUser = null }: { user?: AuthUser }) {
       await fetch("/api/users/logout", { method: "POST", credentials: "include" });
     } catch { /* the cookie is cleared server side either way */ }
     setSignedOut(true);
+
+    /*
+     * Tell anything holding local state that the session is over. ServiceWorkerManager
+     * listens for this and purges Cache Storage. Nothing personal should be in
+     * there (see the allowlist in public/sw.js), but "should" is doing too much
+     * work when the subject is a child's data on a shared family phone.
+     *
+     * An event rather than a direct call, so signing out does not depend on the
+     * service worker component being mounted.
+     */
+    window.dispatchEvent(new Event("auth:signout"));
+
     // A full document load, for the same reason sign in uses one: the client
     // router may hold a cached render made while the member was still signed in.
     window.location.assign("/");
