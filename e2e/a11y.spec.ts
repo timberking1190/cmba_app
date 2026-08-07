@@ -84,3 +84,101 @@ test.describe('accessibility, phone viewport', () => {
     })
   }
 })
+
+/* ------------------------------------------------------- reduced motion */
+
+test.describe('reduced motion is honoured', () => {
+  test.use({ contextOptions: { reducedMotion: 'reduce' }, viewport: { width: 390, height: 844 } })
+
+  /*
+   * The brief asks for confirmation that reduced motion is honoured "everywhere:
+   * marquee, reveals, 3D, cursor, arcade". globals.css has a
+   * prefers-reduced-motion block, but a rule existing is not the same as it
+   * winning, so this reads the computed values.
+   */
+  test('the marquee is not animating', async ({ page }) => {
+    await page.goto('/')
+    const track = page.locator('.marq-track').first()
+    await expect(track).toBeVisible()
+    // `animation: none !important` in the reduced-motion block.
+    const name = await track.evaluate((el) => getComputedStyle(el).animationName)
+    expect(name, 'the marquee still animates under prefers-reduced-motion').toBe('none')
+  })
+
+  test('reveals are fully visible rather than waiting to animate', async ({ page }) => {
+    await page.goto('/coach', { waitUntil: 'domcontentloaded' })
+    await page.waitForTimeout(300)
+    const opacities = await page.evaluate(() =>
+      [...document.querySelectorAll('.reveal')].map((el) => parseFloat(getComputedStyle(el).opacity)),
+    )
+    expect(opacities.length).toBeGreaterThan(0)
+    expect(Math.min(...opacities), 'a reveal is still hidden under reduced motion').toBe(1)
+  })
+
+  test('the intro counter overlay is skipped entirely', async ({ page }) => {
+    // GlobalFX checks prefers-reduced-motion and sets introDone immediately. If it
+    // ever stops doing that, a reduced-motion user gets a full screen counter.
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await expect(page.locator('.intro')).toHaveCount(0)
+  })
+
+  test('the custom cursor is not used on a touch device', async ({ page }) => {
+    // `body { cursor: none }` is scoped to hover + fine pointer. On a phone it
+    // would hide the cursor for anyone using a paired mouse or switch device.
+    await page.goto('/')
+    const cursor = await page.evaluate(() => getComputedStyle(document.body).cursor)
+    expect(cursor).not.toBe('none')
+  })
+})
+
+/* ------------------------------------------------------------ keyboard */
+
+test.describe('keyboard only', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('tabbing reaches the primary navigation with a visible focus ring', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await page.waitForTimeout(300)
+
+    const focused: string[] = []
+    for (let i = 0; i < 8; i++) {
+      await page.keyboard.press('Tab')
+      focused.push(
+        await page.evaluate(() => {
+          const el = document.activeElement as HTMLElement | null
+          if (!el || el === document.body) return 'none'
+          const style = getComputedStyle(el)
+          // WCAG 2.2 SC 2.4.11: focus must be visible AND not obscured. An
+          // outline of 0 with no other indicator is the classic failure.
+          const hasRing =
+            (style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0) ||
+            style.boxShadow !== 'none'
+          return `${el.tagName.toLowerCase()}:${hasRing ? 'ring' : 'NO-RING'}`
+        }),
+      )
+    }
+
+    const reached = focused.filter((f) => f !== 'none')
+    expect(reached.length, 'tabbing did not reach anything focusable').toBeGreaterThan(3)
+    expect(
+      reached.filter((f) => f.endsWith('NO-RING')),
+      `focusable elements with no visible focus indicator: ${reached.join(', ')}`,
+    ).toEqual([])
+  })
+
+  test('the sign in form can be completed without a mouse', async ({ page }) => {
+    await page.goto('/login', { waitUntil: 'domcontentloaded' })
+
+    const email = page.locator('input[type="email"]').first()
+    await email.focus()
+    await page.keyboard.type('parent@example.com')
+    await page.keyboard.press('Tab')
+
+    // enterKeyHint="next" on the email field promises the keyboard moves on; this
+    // checks the tab order actually delivers that.
+    const nextType = await page.evaluate(
+      () => (document.activeElement as HTMLInputElement | null)?.type,
+    )
+    expect(nextType, 'tab from email did not land on the password field').toBe('password')
+  })
+})

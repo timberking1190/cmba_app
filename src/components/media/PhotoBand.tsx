@@ -37,7 +37,7 @@ export function PhotoBand({
       <div className="p-7 lg:p-10 flex flex-col justify-center bg-cmba-black-card/60 backdrop-blur-sm">
         {eyebrow && <div className="label-sm text-cmba-red mb-3">{eyebrow}</div>}
         {title && (
-          <h3 className="font-display font-black uppercase tracking-tighter2 text-2xl lg:text-3xl leading-[0.95] mb-3">{title}</h3>
+          <h2 className="font-display font-black uppercase tracking-tighter2 text-2xl lg:text-3xl leading-[0.95] mb-3">{title}</h2>
         )}
         {children && <div className="text-cmba-grey-light/90 leading-relaxed space-y-3">{children}</div>}
       </div>

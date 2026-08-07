@@ -39,6 +39,7 @@ export const PUBLIC_ROUTES = [
   '/guardian-consent',
   '/privacy',
   '/terms',
+  '/accessibility',
 ] as const
 
 /**

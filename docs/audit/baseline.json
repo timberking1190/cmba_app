@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-08-07T22:38:18.034Z",
+  "capturedAt": "2026-08-07T23:08:49.841Z",
   "baseUrl": "http://localhost:3000",
   "note": "Lab numbers from a throttled headless Chromium at a Pixel 5 viewport. Not field data. This app has no RUM, so no 75th percentile real user claim can be made from these.",
   "profile": {
@@ -16,13 +16,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 913,
+        "total": 914.1,
         "script": 590.4,
-        "stylesheet": 86.8,
+        "stylesheet": 88,
         "image": 2.8,
         "font": 116.6,
-        "document": 115.5,
-        "other": 1
+        "document": 115.7,
+        "other": 0.6
       },
       "requestCounts": {
         "script": 14,
@@ -33,53 +33,10 @@
         "other": 12
       },
       "vitals": {
-        "lcp": 2648,
+        "lcp": 2396,
         "cls": 0,
-        "ttfb": 513,
-        "domContentLoaded": 605
-      },
-      "overflow": {
-        "scrollWidth": 390,
-        "clientWidth": 390,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 1,
-        "nodeCount": 10,
-        "ids": [
-          "color-contrast"
-        ],
-        "byImpact": {
-          "serious": 10
-        }
-      }
-    },
-    {
-      "route": "/schedule",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 835.2,
-        "script": 583.1,
-        "stylesheet": 79,
-        "image": 2.8,
-        "font": 112,
-        "document": 54.4,
-        "other": 4
-      },
-      "requestCounts": {
-        "script": 15,
-        "stylesheet": 1,
-        "image": 1,
-        "font": 3,
-        "document": 1,
-        "other": 10
-      },
-      "vitals": {
-        "lcp": 932,
-        "cls": 0,
-        "ttfb": 524,
-        "domContentLoaded": 596
+        "ttfb": 262,
+        "domContentLoaded": 432
       },
       "overflow": {
         "scrollWidth": 390,
@@ -98,17 +55,56 @@
       }
     },
     {
+      "route": "/schedule",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 841.7,
+        "script": 583.1,
+        "stylesheet": 80.2,
+        "image": 2.8,
+        "font": 112,
+        "document": 54.7,
+        "other": 8.9
+      },
+      "requestCounts": {
+        "script": 15,
+        "stylesheet": 1,
+        "image": 1,
+        "font": 3,
+        "document": 1,
+        "other": 10
+      },
+      "vitals": {
+        "lcp": 952,
+        "cls": 0,
+        "ttfb": 529,
+        "domContentLoaded": 604
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
+      }
+    },
+    {
       "route": "/standings",
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 824.7,
+        "total": 816.1,
         "script": 577.8,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 2.8,
         "font": 112,
-        "document": 42.8,
-        "other": 10.3
+        "document": 43.1,
+        "other": 0.2
       },
       "requestCounts": {
         "script": 15,
@@ -119,10 +115,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 272,
+        "lcp": 264,
         "cls": 0,
-        "ttfb": 118,
-        "domContentLoaded": 220
+        "ttfb": 129,
+        "domContentLoaded": 174
       },
       "overflow": {
         "scrollWidth": 390,
@@ -130,14 +126,10 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 1,
-        "nodeCount": 1,
-        "ids": [
-          "color-contrast"
-        ],
-        "byImpact": {
-          "serious": 1
-        }
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
       }
     },
     {
@@ -145,13 +137,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 836,
+        "total": 833.6,
         "script": 583.1,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 2.8,
         "font": 112,
-        "document": 54.4,
-        "other": 4.8
+        "document": 54.6,
+        "other": 0.9
       },
       "requestCounts": {
         "script": 15,
@@ -162,10 +154,10 @@
         "other": 9
       },
       "vitals": {
-        "lcp": 684,
+        "lcp": 704,
         "cls": 0,
-        "ttfb": 514,
-        "domContentLoaded": 625
+        "ttfb": 539,
+        "domContentLoaded": 651
       },
       "overflow": {
         "scrollWidth": 390,
@@ -173,14 +165,10 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 1,
-        "nodeCount": 2,
-        "ids": [
-          "color-contrast"
-        ],
-        "byImpact": {
-          "serious": 2
-        }
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
       }
     },
     {
@@ -188,13 +176,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1004.5,
+        "total": 1010.4,
         "script": 701.8,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 2.8,
         "font": 112,
-        "document": 102.2,
-        "other": 6.7
+        "document": 102.4,
+        "other": 11.2
       },
       "requestCounts": {
         "script": 16,
@@ -205,10 +193,10 @@
         "other": 9
       },
       "vitals": {
-        "lcp": 156,
+        "lcp": 168,
         "cls": 0,
-        "ttfb": 9,
-        "domContentLoaded": 63
+        "ttfb": 17,
+        "domContentLoaded": 116
       },
       "overflow": {
         "scrollWidth": 390,
@@ -216,16 +204,10 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 2,
-        "nodeCount": 7,
-        "ids": [
-          "color-contrast",
-          "heading-order"
-        ],
-        "byImpact": {
-          "serious": 5,
-          "moderate": 2
-        }
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
       }
     },
     {
@@ -233,13 +215,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 857.1,
+        "total": 859.5,
         "script": 612.2,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 8.9,
         "font": 112,
-        "document": 44.7,
-        "other": 0.2
+        "document": 45,
+        "other": 1.2
       },
       "requestCounts": {
         "script": 20,
@@ -252,8 +234,8 @@
       "vitals": {
         "lcp": 140,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 97
+        "ttfb": 11,
+        "domContentLoaded": 98
       },
       "overflow": {
         "scrollWidth": 390,
@@ -261,16 +243,10 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 2,
-        "nodeCount": 3,
-        "ids": [
-          "color-contrast",
-          "heading-order"
-        ],
-        "byImpact": {
-          "serious": 2,
-          "moderate": 1
-        }
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
       }
     },
     {
@@ -278,13 +254,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 822.3,
+        "total": 823.6,
         "script": 570.9,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 8.9,
         "font": 112,
-        "document": 48.6,
-        "other": 2.9
+        "document": 48.8,
+        "other": 2.6
       },
       "requestCounts": {
         "script": 14,
@@ -297,8 +273,125 @@
       "vitals": {
         "lcp": 116,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 84
+        "ttfb": 14,
+        "domContentLoaded": 85
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
+      }
+    },
+    {
+      "route": "/game-report",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 944.5,
+        "script": 589.5,
+        "stylesheet": 80.2,
+        "image": 120.2,
+        "font": 112,
+        "document": 42.6,
+        "other": 0
+      },
+      "requestCounts": {
+        "script": 14,
+        "stylesheet": 1,
+        "image": 2,
+        "font": 3,
+        "document": 1,
+        "other": 9
+      },
+      "vitals": {
+        "lcp": 348,
+        "cls": 0,
+        "ttfb": 9,
+        "domContentLoaded": 82
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
+      }
+    },
+    {
+      "route": "/scan",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 1667.3,
+        "script": 1187.9,
+        "stylesheet": 160.5,
+        "image": 11.7,
+        "font": 224,
+        "document": 81.2,
+        "other": 1.9
+      },
+      "requestCounts": {
+        "script": 34,
+        "stylesheet": 2,
+        "image": 3,
+        "font": 6,
+        "document": 2,
+        "other": 30
+      },
+      "vitals": {
+        "lcp": 212,
+        "cls": 0,
+        "ttfb": 29,
+        "domContentLoaded": 138
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
+      }
+    },
+    {
+      "route": "/coach",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 1173.9,
+        "script": 570.9,
+        "stylesheet": 80.2,
+        "image": 268.6,
+        "font": 112,
+        "document": 139.5,
+        "other": 2.7
+      },
+      "requestCounts": {
+        "script": 14,
+        "stylesheet": 1,
+        "image": 3,
+        "font": 3,
+        "document": 1,
+        "other": 12
+      },
+      "vitals": {
+        "lcp": 220,
+        "cls": 0,
+        "ttfb": 10,
+        "domContentLoaded": 101
       },
       "overflow": {
         "scrollWidth": 390,
@@ -317,31 +410,70 @@
       }
     },
     {
-      "route": "/game-report",
+      "route": "/coach/pathway",
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 945,
-        "script": 589.5,
-        "stylesheet": 79,
-        "image": 120.2,
+        "total": 1160.8,
+        "script": 580.4,
+        "stylesheet": 80.2,
+        "image": 326.6,
         "font": 112,
-        "document": 42.3,
+        "document": 61.6,
+        "other": 0
+      },
+      "requestCounts": {
+        "script": 15,
+        "stylesheet": 1,
+        "image": 3,
+        "font": 3,
+        "document": 1,
+        "other": 13
+      },
+      "vitals": {
+        "lcp": 628,
+        "cls": 0,
+        "ttfb": 13,
+        "domContentLoaded": 182
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
+      }
+    },
+    {
+      "route": "/coach/courses",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 1167.2,
+        "script": 576.5,
+        "stylesheet": 80.2,
+        "image": 326.6,
+        "font": 112,
+        "document": 69.9,
         "other": 2
       },
       "requestCounts": {
-        "script": 14,
+        "script": 15,
         "stylesheet": 1,
-        "image": 2,
+        "image": 3,
         "font": 3,
         "document": 1,
-        "other": 9
+        "other": 10
       },
       "vitals": {
-        "lcp": 336,
+        "lcp": 460,
         "cls": 0,
-        "ttfb": 7,
-        "domContentLoaded": 86
+        "ttfb": 14,
+        "domContentLoaded": 190
       },
       "overflow": {
         "scrollWidth": 390,
@@ -360,193 +492,17 @@
       }
     },
     {
-      "route": "/scan",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 1667.6,
-        "script": 1187.9,
-        "stylesheet": 158,
-        "image": 11.7,
-        "font": 224,
-        "document": 80.7,
-        "other": 5.2
-      },
-      "requestCounts": {
-        "script": 34,
-        "stylesheet": 2,
-        "image": 3,
-        "font": 6,
-        "document": 2,
-        "other": 30
-      },
-      "vitals": {
-        "lcp": 200,
-        "cls": 0,
-        "ttfb": 15,
-        "domContentLoaded": 135
-      },
-      "overflow": {
-        "scrollWidth": 390,
-        "clientWidth": 390,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 2,
-        "nodeCount": 3,
-        "ids": [
-          "color-contrast",
-          "heading-order"
-        ],
-        "byImpact": {
-          "serious": 2,
-          "moderate": 1
-        }
-      }
-    },
-    {
-      "route": "/coach",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 1170.2,
-        "script": 570.9,
-        "stylesheet": 79,
-        "image": 268.6,
-        "font": 112,
-        "document": 139.2,
-        "other": 0.4
-      },
-      "requestCounts": {
-        "script": 14,
-        "stylesheet": 1,
-        "image": 3,
-        "font": 3,
-        "document": 1,
-        "other": 12
-      },
-      "vitals": {
-        "lcp": 220,
-        "cls": 0,
-        "ttfb": 9,
-        "domContentLoaded": 54
-      },
-      "overflow": {
-        "scrollWidth": 390,
-        "clientWidth": 390,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 1,
-        "nodeCount": 8,
-        "ids": [
-          "color-contrast"
-        ],
-        "byImpact": {
-          "serious": 8
-        }
-      }
-    },
-    {
-      "route": "/coach/pathway",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 1159.8,
-        "script": 580.4,
-        "stylesheet": 79,
-        "image": 326.6,
-        "font": 112,
-        "document": 61.4,
-        "other": 0.4
-      },
-      "requestCounts": {
-        "script": 15,
-        "stylesheet": 1,
-        "image": 3,
-        "font": 3,
-        "document": 1,
-        "other": 13
-      },
-      "vitals": {
-        "lcp": 656,
-        "cls": 0,
-        "ttfb": 9,
-        "domContentLoaded": 171
-      },
-      "overflow": {
-        "scrollWidth": 390,
-        "clientWidth": 390,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 1,
-        "nodeCount": 4,
-        "ids": [
-          "color-contrast"
-        ],
-        "byImpact": {
-          "serious": 4
-        }
-      }
-    },
-    {
-      "route": "/coach/courses",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 1163.7,
-        "script": 576.5,
-        "stylesheet": 79,
-        "image": 326.6,
-        "font": 112,
-        "document": 69.7,
-        "other": 0
-      },
-      "requestCounts": {
-        "script": 15,
-        "stylesheet": 1,
-        "image": 3,
-        "font": 3,
-        "document": 1,
-        "other": 10
-      },
-      "vitals": {
-        "lcp": 456,
-        "cls": 0,
-        "ttfb": 10,
-        "domContentLoaded": 182
-      },
-      "overflow": {
-        "scrollWidth": 390,
-        "clientWidth": 390,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 2,
-        "nodeCount": 13,
-        "ids": [
-          "color-contrast",
-          "heading-order"
-        ],
-        "byImpact": {
-          "serious": 12,
-          "moderate": 1
-        }
-      }
-    },
-    {
       "route": "/coach/clinics",
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1153,
+        "total": 1149.6,
         "script": 570.9,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 292.8,
         "font": 112,
-        "document": 88.8,
-        "other": 9.4
+        "document": 89.1,
+        "other": 4.5
       },
       "requestCounts": {
         "script": 14,
@@ -557,10 +513,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 152,
+        "lcp": 148,
         "cls": 0,
-        "ttfb": 10,
-        "domContentLoaded": 96
+        "ttfb": 8,
+        "domContentLoaded": 94
       },
       "overflow": {
         "scrollWidth": 390,
@@ -568,15 +524,10 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 2,
-        "nodeCount": 8,
-        "ids": [
-          "color-contrast",
-          "link-in-text-block"
-        ],
-        "byImpact": {
-          "serious": 8
-        }
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
       }
     },
     {
@@ -584,13 +535,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1657.3,
+        "total": 1661.3,
         "script": 1181.3,
-        "stylesheet": 158,
+        "stylesheet": 160.5,
         "image": 11.7,
         "font": 224,
-        "document": 81.3,
-        "other": 0.8
+        "document": 81.9,
+        "other": 1.9
       },
       "requestCounts": {
         "script": 34,
@@ -601,10 +552,10 @@
         "other": 29
       },
       "vitals": {
-        "lcp": 184,
+        "lcp": 200,
         "cls": 0,
-        "ttfb": 14,
-        "domContentLoaded": 115
+        "ttfb": 24,
+        "domContentLoaded": 125
       },
       "overflow": {
         "scrollWidth": 390,
@@ -612,16 +563,10 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 2,
-        "nodeCount": 3,
-        "ids": [
-          "color-contrast",
-          "heading-order"
-        ],
-        "byImpact": {
-          "serious": 2,
-          "moderate": 1
-        }
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
       }
     },
     {
@@ -629,13 +574,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1071,
+        "total": 1064.8,
         "script": 570.9,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 209.2,
         "font": 112,
-        "document": 91.4,
-        "other": 8.5
+        "document": 91.6,
+        "other": 0.8
       },
       "requestCounts": {
         "script": 14,
@@ -648,8 +593,8 @@
       "vitals": {
         "lcp": 344,
         "cls": 0,
-        "ttfb": 10,
-        "domContentLoaded": 48
+        "ttfb": 13,
+        "domContentLoaded": 95
       },
       "overflow": {
         "scrollWidth": 390,
@@ -657,14 +602,10 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 1,
-        "nodeCount": 13,
-        "ids": [
-          "color-contrast"
-        ],
-        "byImpact": {
-          "serious": 13
-        }
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
       }
     },
     {
@@ -672,13 +613,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1012.3,
+        "total": 1013.6,
         "script": 586.8,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 150.8,
         "font": 112,
-        "document": 81.5,
-        "other": 2.2
+        "document": 81.8,
+        "other": 2
       },
       "requestCounts": {
         "script": 15,
@@ -689,10 +630,10 @@
         "other": 14
       },
       "vitals": {
-        "lcp": 464,
+        "lcp": 460,
         "cls": 0,
-        "ttfb": 11,
-        "domContentLoaded": 170
+        "ttfb": 10,
+        "domContentLoaded": 169
       },
       "overflow": {
         "scrollWidth": 390,
@@ -700,15 +641,13 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 2,
-        "nodeCount": 6,
+        "violationCount": 1,
+        "nodeCount": 1,
         "ids": [
-          "color-contrast",
-          "heading-order"
+          "color-contrast"
         ],
         "byImpact": {
-          "serious": 5,
-          "moderate": 1
+          "serious": 1
         }
       }
     },
@@ -717,13 +656,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1084.9,
+        "total": 1085.5,
         "script": 570.9,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 239.8,
         "font": 112,
-        "document": 82.3,
-        "other": 0.9
+        "document": 82.6,
+        "other": 0
       },
       "requestCounts": {
         "script": 14,
@@ -734,10 +673,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 320,
+        "lcp": 308,
         "cls": 0,
-        "ttfb": 9,
-        "domContentLoaded": 99
+        "ttfb": 8,
+        "domContentLoaded": 101
       },
       "overflow": {
         "scrollWidth": 390,
@@ -760,13 +699,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1171,
+        "total": 1181.4,
         "script": 591.2,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 326.6,
         "font": 112,
-        "document": 62.3,
-        "other": 0
+        "document": 62.5,
+        "other": 8.9
       },
       "requestCounts": {
         "script": 15,
@@ -777,10 +716,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 144,
+        "lcp": 156,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 46
+        "ttfb": 13,
+        "domContentLoaded": 95
       },
       "overflow": {
         "scrollWidth": 390,
@@ -788,14 +727,10 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 1,
-        "nodeCount": 9,
-        "ids": [
-          "color-contrast"
-        ],
-        "byImpact": {
-          "serious": 9
-        }
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
       }
     },
     {
@@ -803,146 +738,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 986.3,
+        "total": 996.2,
         "script": 570.9,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 128.8,
         "font": 112,
-        "document": 94.6,
-        "other": 0.9
-      },
-      "requestCounts": {
-        "script": 14,
-        "stylesheet": 1,
-        "image": 3,
-        "font": 3,
-        "document": 1,
-        "other": 10
-      },
-      "vitals": {
-        "lcp": 148,
-        "cls": 0,
-        "ttfb": 11,
-        "domContentLoaded": 97
-      },
-      "overflow": {
-        "scrollWidth": 390,
-        "clientWidth": 390,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 1,
-        "nodeCount": 8,
-        "ids": [
-          "color-contrast"
-        ],
-        "byImpact": {
-          "serious": 8
-        }
-      }
-    },
-    {
-      "route": "/athlete/challenges",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 1660.7,
-        "script": 1182.7,
-        "stylesheet": 158,
-        "image": 11.7,
-        "font": 224,
-        "document": 81.4,
-        "other": 2.8
-      },
-      "requestCounts": {
-        "script": 34,
-        "stylesheet": 2,
-        "image": 3,
-        "font": 6,
-        "document": 2,
-        "other": 29
-      },
-      "vitals": {
-        "lcp": 192,
-        "cls": 0,
-        "ttfb": 18,
-        "domContentLoaded": 124
-      },
-      "overflow": {
-        "scrollWidth": 390,
-        "clientWidth": 390,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 2,
-        "nodeCount": 3,
-        "ids": [
-          "color-contrast",
-          "heading-order"
-        ],
-        "byImpact": {
-          "serious": 2,
-          "moderate": 1
-        }
-      }
-    },
-    {
-      "route": "/athlete/quiz",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 1659.9,
-        "script": 1183.8,
-        "stylesheet": 158,
-        "image": 11.7,
-        "font": 224,
-        "document": 81.3,
-        "other": 1.1
-      },
-      "requestCounts": {
-        "script": 34,
-        "stylesheet": 2,
-        "image": 3,
-        "font": 6,
-        "document": 2,
-        "other": 25
-      },
-      "vitals": {
-        "lcp": 196,
-        "cls": 0,
-        "ttfb": 18,
-        "domContentLoaded": 128
-      },
-      "overflow": {
-        "scrollWidth": 390,
-        "clientWidth": 390,
-        "overflows": false
-      },
-      "axe": {
-        "violationCount": 2,
-        "nodeCount": 3,
-        "ids": [
-          "color-contrast",
-          "heading-order"
-        ],
-        "byImpact": {
-          "serious": 2,
-          "moderate": 1
-        }
-      }
-    },
-    {
-      "route": "/parent",
-      "status": 200,
-      "error": null,
-      "transferKb": {
-        "total": 988.6,
-        "script": 570.9,
-        "stylesheet": 79,
-        "image": 133.2,
-        "font": 112,
-        "document": 85,
-        "other": 8.5
+        "document": 94.8,
+        "other": 9.4
       },
       "requestCounts": {
         "script": 14,
@@ -955,8 +757,8 @@
       "vitals": {
         "lcp": 152,
         "cls": 0,
-        "ttfb": 10,
-        "domContentLoaded": 95
+        "ttfb": 14,
+        "domContentLoaded": 103
       },
       "overflow": {
         "scrollWidth": 390,
@@ -965,12 +767,133 @@
       },
       "axe": {
         "violationCount": 1,
-        "nodeCount": 10,
+        "nodeCount": 1,
         "ids": [
           "color-contrast"
         ],
         "byImpact": {
-          "serious": 10
+          "serious": 1
+        }
+      }
+    },
+    {
+      "route": "/athlete/challenges",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 1662.2,
+        "script": 1182.7,
+        "stylesheet": 160.5,
+        "image": 11.7,
+        "font": 224,
+        "document": 81.9,
+        "other": 1.4
+      },
+      "requestCounts": {
+        "script": 34,
+        "stylesheet": 2,
+        "image": 3,
+        "font": 6,
+        "document": 2,
+        "other": 30
+      },
+      "vitals": {
+        "lcp": 192,
+        "cls": 0,
+        "ttfb": 29,
+        "domContentLoaded": 134
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
+      }
+    },
+    {
+      "route": "/athlete/quiz",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 1662.6,
+        "script": 1183.8,
+        "stylesheet": 160.5,
+        "image": 11.7,
+        "font": 224,
+        "document": 81.8,
+        "other": 0.8
+      },
+      "requestCounts": {
+        "script": 34,
+        "stylesheet": 2,
+        "image": 3,
+        "font": 6,
+        "document": 2,
+        "other": 29
+      },
+      "vitals": {
+        "lcp": 192,
+        "cls": 0,
+        "ttfb": 23,
+        "domContentLoaded": 126
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
+      }
+    },
+    {
+      "route": "/parent",
+      "status": 200,
+      "error": null,
+      "transferKb": {
+        "total": 984.6,
+        "script": 570.9,
+        "stylesheet": 80.2,
+        "image": 133.2,
+        "font": 112,
+        "document": 85.3,
+        "other": 3.1
+      },
+      "requestCounts": {
+        "script": 14,
+        "stylesheet": 1,
+        "image": 3,
+        "font": 3,
+        "document": 1,
+        "other": 10
+      },
+      "vitals": {
+        "lcp": 164,
+        "cls": 0,
+        "ttfb": 13,
+        "domContentLoaded": 108
+      },
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "overflows": false
+      },
+      "axe": {
+        "violationCount": 1,
+        "nodeCount": 1,
+        "ids": [
+          "color-contrast"
+        ],
+        "byImpact": {
+          "serious": 1
         }
       }
     },
@@ -979,13 +902,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1105.5,
+        "total": 1107.5,
         "script": 568,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 246.5,
         "font": 112,
-        "document": 95.6,
-        "other": 4.4
+        "document": 95.9,
+        "other": 4.9
       },
       "requestCounts": {
         "script": 13,
@@ -996,10 +919,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 160,
+        "lcp": 156,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 97
+        "ttfb": 12,
+        "domContentLoaded": 98
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1007,15 +930,10 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 2,
-        "nodeCount": 3,
-        "ids": [
-          "color-contrast",
-          "link-in-text-block"
-        ],
-        "byImpact": {
-          "serious": 3
-        }
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
       }
     },
     {
@@ -1023,13 +941,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 909.6,
+        "total": 913.1,
         "script": 581.8,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 86.4,
         "font": 112,
-        "document": 50.3,
-        "other": 0
+        "document": 50.6,
+        "other": 2
       },
       "requestCounts": {
         "script": 14,
@@ -1040,10 +958,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 148,
+        "lcp": 144,
         "cls": 0,
-        "ttfb": 9,
-        "domContentLoaded": 47
+        "ttfb": 11,
+        "domContentLoaded": 87
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1062,13 +980,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1118.7,
+        "total": 1116.9,
         "script": 568,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 280.1,
         "font": 112,
-        "document": 75.4,
-        "other": 4.2
+        "document": 75.7,
+        "other": 0.9
       },
       "requestCounts": {
         "script": 13,
@@ -1079,10 +997,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 172,
+        "lcp": 156,
         "cls": 0,
-        "ttfb": 9,
-        "domContentLoaded": 53
+        "ttfb": 11,
+        "domContentLoaded": 89
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1090,16 +1008,10 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 2,
-        "nodeCount": 2,
-        "ids": [
-          "color-contrast",
-          "heading-order"
-        ],
-        "byImpact": {
-          "serious": 1,
-          "moderate": 1
-        }
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
       }
     },
     {
@@ -1107,13 +1019,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1077,
+        "total": 1079,
         "script": 568,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 233.8,
         "font": 112,
-        "document": 83.6,
-        "other": 0.6
+        "document": 83.9,
+        "other": 1.2
       },
       "requestCounts": {
         "script": 13,
@@ -1124,7 +1036,7 @@
         "other": 12
       },
       "vitals": {
-        "lcp": 524,
+        "lcp": 528,
         "cls": 0,
         "ttfb": 11,
         "domContentLoaded": 97
@@ -1135,14 +1047,10 @@
         "overflows": false
       },
       "axe": {
-        "violationCount": 1,
-        "nodeCount": 8,
-        "ids": [
-          "color-contrast"
-        ],
-        "byImpact": {
-          "serious": 8
-        }
+        "violationCount": 0,
+        "nodeCount": 0,
+        "ids": [],
+        "byImpact": {}
       }
     },
     {
@@ -1150,13 +1058,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 833.3,
+        "total": 836.7,
         "script": 583.1,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 2.8,
         "font": 112,
-        "document": 53.8,
-        "other": 2.6
+        "document": 54.1,
+        "other": 4.5
       },
       "requestCounts": {
         "script": 14,
@@ -1167,10 +1075,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 436,
+        "lcp": 420,
         "cls": 0,
-        "ttfb": 9,
-        "domContentLoaded": 359
+        "ttfb": 11,
+        "domContentLoaded": 363
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1189,13 +1097,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 839.6,
+        "total": 838.2,
         "script": 583.1,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 2.8,
         "font": 112,
-        "document": 59.8,
-        "other": 2.9
+        "document": 60,
+        "other": 0
       },
       "requestCounts": {
         "script": 14,
@@ -1206,10 +1114,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 432,
+        "lcp": 428,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 129
+        "ttfb": 11,
+        "domContentLoaded": 147
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1228,13 +1136,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 838.1,
+        "total": 834.8,
         "script": 583.1,
-        "stylesheet": 79,
+        "stylesheet": 80.2,
         "image": 2.8,
         "font": 112,
-        "document": 56.4,
-        "other": 4.9
+        "document": 56.6,
+        "other": 0
       },
       "requestCounts": {
         "script": 14,
@@ -1245,10 +1153,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 456,
+        "lcp": 428,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 125
+        "ttfb": 11,
+        "domContentLoaded": 131
       },
       "overflow": {
         "scrollWidth": 390,

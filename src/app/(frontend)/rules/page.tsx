@@ -294,9 +294,9 @@ export default function RulesPage() {
                   <FileText size={20} className="text-cmba-red" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-display font-bold text-sm text-white uppercase tracking-wide truncate group-hover:text-cmba-red transition-colors">
+                  <h3 className="font-display font-bold text-sm text-white uppercase tracking-wide truncate group-hover:text-cmba-red transition-colors">
                     {doc.title}
-                  </h4>
+                  </h3>
                   <span className="font-mono text-[10px] text-cmba-grey-mid">
                     Google Doc
                   </span>
@@ -375,9 +375,9 @@ export default function RulesPage() {
                   <FileText size={20} className="text-cmba-red" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-display font-bold text-sm text-white uppercase tracking-wide truncate group-hover:text-cmba-red transition-colors">
+                  <h3 className="font-display font-bold text-sm text-white uppercase tracking-wide truncate group-hover:text-cmba-red transition-colors">
                     {doc.title}
-                  </h4>
+                  </h3>
                   <span className="font-mono text-[10px] text-cmba-grey-mid">
                     Google Doc
                   </span>

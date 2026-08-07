@@ -65,6 +65,99 @@
   color-scheme: light;
 }
 
+/* ── Light theme contrast repairs ─────────────────────────────────────────
+   Every colour contrast failure the audit found was in the LIGHT theme, and all
+   of them come from the same root cause: the light theme flips `--c-white` to
+   near-black (#18181b) so that pervasive `text-white` reads correctly on white
+   surfaces. That is right for text on a page, and wrong for text on a RED FILL,
+   where it turns the primary call to action into near-black on red.
+
+   Measured with axe at a 390px viewport:
+     text-white on bg-cmba-red     3.13:1   needs 4.5:1
+     text-cmba-red/30 on white     1.71:1   needs 3:1 even as large text
+
+   Worth being explicit about why this was invisible: <html> ships
+   data-theme="dark", but ThemeToggle switches to light when the visitor's
+   device asks for it via prefers-color-scheme. So this is not a rarely used
+   setting, it is what every light-mode phone gets.
+   ─────────────────────────────────────────────────────────────────────── */
+[data-theme="light"] .bg-cmba-red,
+[data-theme="light"] .bg-cmba-hot,
+[data-theme="light"] .bg-red-gradient,
+[data-theme="light"] .bg-cmba-red-dark {
+  /* True white, not the themed token. A red fill needs white text in both
+     themes; this is the one place the flip must not apply. */
+  color: rgb(255 255 255);
+}
+
+/*
+ * Large decorative-looking numbers and letters that are actually content: age
+ * groups on the clinics grid, step numbers on the parent pathway, section
+ * letters in Managing the Moment. At 30 percent alpha on a white card they land
+ * at 1.71:1, which fails even the relaxed large-text threshold. Raised only in
+ * the light theme; the dark theme value is fine and is left alone.
+ */
+[data-theme="light"] .text-cmba-red\/20,
+[data-theme="light"] .text-cmba-red\/25,
+[data-theme="light"] .text-cmba-red\/30,
+[data-theme="light"] .text-cmba-red\/40 { color: rgb(var(--cmba-red) / 0.85); }
+[data-theme="light"] .text-cmba-red\/50,
+[data-theme="light"] .text-cmba-red\/60 { color: rgb(var(--cmba-red) / 0.9); }
+
+/*
+ * Red text on the tinted red chips (`bg-cmba-red/15 text-cmba-red`), which land
+ * at 3.51:1 against their own 15 percent tint.
+ *
+ * Scoped to the chip rather than to `.text-cmba-red` generally, and that
+ * distinction was learned by breaking it: a blanket
+ * `[data-theme="light"] .text-cmba-red { color: var(--cmba-red-dark) }` fixed the
+ * chips and the white cards, then FAILED harder on the dark panels, where a
+ * darker red on a dark surface went from 4.0:1 to 2.24:1. The light theme flips
+ * `--c-black` to white and `--c-white` to near-black, so "the background" is not
+ * one thing and a single global text colour cannot be right for all of it.
+ */
+[data-theme="light"] .bg-cmba-red\/15.text-cmba-red,
+[data-theme="light"] .bg-cmba-red\/10.text-cmba-red,
+[data-theme="light"] .bg-cmba-red\/20.text-cmba-red {
+  color: rgb(var(--cmba-red-dark));
+}
+
+/*
+ * White text at reduced alpha INSIDE a red fill. The rule above sets the colour
+ * on the filled element itself, but a child carrying `text-white/90` overrides
+ * it and lands at 3:1, because light-theme white is near-black. Descendants of a
+ * red fill need the same treatment as the fill itself.
+ */
+[data-theme="light"] .bg-cmba-red [class*="text-white"],
+[data-theme="light"] .bg-cmba-red-dark [class*="text-white"],
+[data-theme="light"] .bg-red-gradient [class*="text-white"] {
+  color: rgb(255 255 255 / 0.95);
+}
+
+/*
+ * Fixed Tailwind palette colours are not theme aware, so `text-yellow-400`
+ * (#facc15) is 1.46:1 on a white card. The app already has a status vocabulary
+ * tuned per theme; this points the stray palette colour at it.
+ */
+[data-theme="light"] .text-yellow-400,
+[data-theme="light"] .text-yellow-300 { color: rgb(var(--st-warn)); }
+[data-theme="light"] .text-green-400 { color: rgb(var(--st-ok)); }
+[data-theme="light"] .text-red-400 { color: rgb(var(--st-danger)); }
+
+/*
+ * WCAG 1.4.1 Use of Colour. A red link inside a grey paragraph is distinguished
+ * from the text around it by hue alone, which is invisible to a red-green
+ * colour blind reader and measured at 1.24:1 by axe. An underline is the
+ * conventional and cheapest fix. Scoped to a DIRECT child of a paragraph so card
+ * links, buttons and nav links, which are distinguishable by their own shape, are
+ * left alone.
+ */
+p > a:not([class*="inline-flex"]):not([class*="tap-target"]) {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: from-font;
+}
+
 :root {
   --background: rgb(var(--cmba-black));
   --foreground: rgb(var(--cmba-grey-light));

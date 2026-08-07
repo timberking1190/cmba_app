@@ -43,6 +43,7 @@ const footerSections = [
 const legalLinks = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Use", href: "/terms" },
+  { label: "Accessibility", href: "/accessibility" },
   { label: "Guardian Consent", href: "/guardian-consent" },
 ];
 
@@ -53,9 +54,9 @@ export function Footer() {
         <div className="grid grid-cols-4 gap-8">
           {footerSections.map((section) => (
             <div key={section.title}>
-              <h3 className="font-mono font-medium text-[11px] text-cmba-red uppercase tracking-[0.18em] mb-4">
+              <h2 className="font-mono font-medium text-[11px] text-cmba-red uppercase tracking-[0.18em] mb-4">
                 {section.title}
-              </h3>
+              </h2>
               <ul className="space-y-2.5">
                 {section.links.map((link) => (
                   <li key={link.href}>

@@ -1787,3 +1787,90 @@ state. The before numbers are preserved in the tables above and in `docs/audit/B
   until it is large.
 - All performance numbers come from a local production build against the ca-central-1 database, not
   from the Vercel edge. Production will differ.
+
+## Mobile Phase 4: accessibility (WCAG 2.2 AA)
+
+**Gate: axe on every route in CI, manual keyboard and screen reader passes, colour contrast,
+reduced motion, an accessibility statement.**
+
+### Result
+
+**axe violations: 36 route instances down to 7. An 81 percent reduction.**
+
+| Rule | Before | After |
+|---|---|---|
+| `color-contrast` | 24 routes | 6 |
+| `heading-order` | 10 routes | 1 |
+| `link-in-text-block` | 2 routes | 0 |
+
+Lighthouse accessibility scores moved with it: `/login` 98 to 100, `/rules` 94 to 96, `/standings`
+held at 100.
+
+### The finding underneath almost all of it
+
+**Every colour contrast failure was in the LIGHT theme, and they share one root cause.** The light
+theme flips `--c-white` to near-black (#18181b) so that the app's pervasive `text-white` reads
+correctly on white surfaces. That is right for text on a page and wrong for text on a **red fill**,
+where it turns the primary call to action into near-black on red at 3.13:1.
+
+This matters more than "a theme nobody uses". `<html>` ships `data-theme="dark"`, but `ThemeToggle`
+switches to light whenever the visitor's device asks via `prefers-color-scheme`. Every light-mode
+phone gets it. It went unnoticed because a developer looking at the site in dark mode never sees it.
+
+Fixed by keeping true white on red fills and their descendants, darkening the red used on tinted red
+chips, raising the alpha on low-opacity red text, and pointing stray fixed-palette colours
+(`text-yellow-400` at 1.46:1 on a white card) at the theme-aware status tokens the app already has.
+
+### A fix that had to be undone
+
+The first attempt was a blanket `[data-theme="light"] .text-cmba-red { color: var(--cmba-red-dark) }`.
+It fixed the chips and the white cards, then **failed harder on the dark panels**: darker red on a
+dark surface went from 4.0:1 to 2.24:1. Because the light theme flips `--c-black` to white as well,
+"the background" is not one thing, and no single global text colour can be right for all of it. The
+rule is now scoped to the specific tinted-chip combination.
+
+### Everything else
+
+- **Heading order.** `PhotoBand` used an `h3` directly under a page `h1`; the footer's column
+  headings were `h3` with no `h2` above them; `/rules` jumped `h2` to `h4`; `/login` and `/ref` had
+  `h3` cards under an `h1`. All corrected.
+- **Links in running text.** Red links inside grey paragraphs were distinguished by hue alone, which
+  axe measured at 1.24:1 against the surrounding text and which a red-green colour blind reader
+  cannot see at all. Direct children of a `<p>` now carry an underline. Card links, buttons and nav
+  links are excluded, since their shape already distinguishes them.
+- **Reduced motion, verified rather than assumed.** Four new tests read computed values: the marquee
+  is not animating, every reveal is fully opaque, the intro counter is skipped entirely, and the
+  custom cursor does not hide the pointer on touch. A rule existing in the stylesheet is not the same
+  as it winning.
+- **Keyboard.** Tabbing reaches the primary navigation and every focusable element has a visible
+  focus indicator (SC 2.4.11). The sign in form completes without a mouse, and tab from email lands
+  on password, which is what the `enterKeyHint="next"` added in Phase 2 promises.
+- **Accessibility statement** at `/accessibility`, linked from the footer. It lists what is not fixed
+  yet, in plain language, with what to do instead. A statement claiming everything works is a
+  statement nobody trusts.
+
+### Gate result
+
+| Check | Result |
+|---|---|
+| `npm run lint` | pass |
+| `npx tsc --noEmit` | pass |
+| `npm test` | pass, 68 files, 740 tests |
+| Full `mobile-chrome` project | pass, 185 of 185 |
+| Lighthouse vs baseline | **pass, no regression** |
+
+### Residual risk
+
+- **7 violations remain and are baselined, not fixed.** Six colour contrast (`/`, `/coach`, `/ref`,
+  `/ref/signals`, `/athlete`, `/parent`) and one heading order (`/coach/courses`). Each needs
+  per-component design judgement in the light theme rather than another global rule, and the last
+  global rule made things worse. They are recorded in `docs/audit/axe-baseline.json` so they cannot
+  get worse, and listed honestly on `/accessibility` so a user knows before they hit them.
+- **The manual screen reader pass has not been done.** The brief asks for a smoke test on sign in,
+  schedule, score reporting and the account card with a real screen reader. axe catches roughly a
+  third of WCAG issues and cannot judge whether alt text is meaningful, whether focus order makes
+  sense, or whether an error message is understandable. This is an operator task, scripted in
+  `docs/audit/OPERATOR-CHECKS.md`.
+- axe runs on the 30 public routes only. `/manage`, `/rep`, `/compliance` and the signed in parts of
+  `/account` are unscanned, and the admin console is where the densest tables live.
+- Contrast was checked at one viewport in one browser. Colour rendering differs across displays.

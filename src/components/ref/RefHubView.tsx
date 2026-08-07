@@ -99,7 +99,7 @@ export function RefHubView({
                 </div>
               </div>
               <div className="bg-cmba-black-card border border-cmba-grey-dark/20 p-4">
-                <h3 className="font-display font-bold text-xs text-cmba-grey-mid uppercase tracking-widest mb-2 flex items-center gap-2"><Star size={14} className="text-cmba-red" /> Badges</h3>
+                <h2 className="font-display font-bold text-xs text-cmba-grey-mid uppercase tracking-widest mb-2 flex items-center gap-2"><Star size={14} className="text-cmba-red" /> Badges</h2>
                 <div className="flex gap-2 overflow-x-auto hide-scrollbar">
                   {earnedBadges.map((b) => <span key={b.id} title={b.name} className="text-xl shrink-0">{b.icon}</span>)}
                   {lockedBadges.map((b) => <span key={b.id} title={b.name} className="text-xl shrink-0 grayscale opacity-40">{b.icon}</span>)}
@@ -115,7 +115,7 @@ export function RefHubView({
           {quickActions.map((action) => (
             <Link key={action.label} href={action.href} className="bg-cmba-black-card border border-cmba-grey-dark/20 hover:border-cmba-red/50 p-5 transition-all card-hover group">
               <action.icon size={24} className="text-cmba-red mb-3" />
-              <h3 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-0.5 group-hover:text-cmba-red transition-colors">{action.label}</h3>
+              <h2 className="font-display font-bold text-sm text-white uppercase tracking-wider mb-0.5 group-hover:text-cmba-red transition-colors">{action.label}</h2>
               <p className="text-xs text-cmba-grey">{action.desc}</p>
             </Link>
           ))}

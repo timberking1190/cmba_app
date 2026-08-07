@@ -447,7 +447,7 @@ export default function LoginPage() {
 
         {/* Official CMBA registration */}
         <div className="reveal mt-6 bg-cmba-black-card border border-white/12 p-4">
-          <h3 className="font-display font-bold text-xs text-white uppercase tracking-wider mb-1">Registering for the season?</h3>
+          <h2 className="font-display font-bold text-xs text-white uppercase tracking-wider mb-1">Registering for the season?</h2>
           <p className="text-xs text-cmba-grey leading-relaxed mb-3">
             League registration (different from this training account) is handled on TeamLinkt.
           </p>

@@ -2,87 +2,22 @@
   "/": [
     "color-contrast"
   ],
-  "/schedule": [
-    "color-contrast"
-  ],
-  "/standings": [
-    "color-contrast"
-  ],
-  "/calendar": [
-    "color-contrast"
-  ],
-  "/rules": [
-    "color-contrast",
-    "heading-order"
-  ],
-  "/login": [
-    "color-contrast",
-    "heading-order"
-  ],
-  "/score-login": [
-    "color-contrast"
-  ],
-  "/game-report": [
-    "heading-order"
-  ],
-  "/scan": [
-    "color-contrast",
-    "heading-order"
-  ],
   "/coach": [
     "color-contrast"
   ],
-  "/coach/pathway": [
-    "color-contrast"
-  ],
   "/coach/courses": [
-    "color-contrast",
     "heading-order"
-  ],
-  "/coach/clinics": [
-    "color-contrast",
-    "link-in-text-block"
-  ],
-  "/coach/challenges": [
-    "color-contrast",
-    "heading-order"
-  ],
-  "/coach/managing-the-moment": [
-    "color-contrast"
   ],
   "/ref": [
-    "color-contrast",
-    "heading-order"
-  ],
-  "/ref/signals": [
     "color-contrast"
   ],
-  "/ref/quick-ref": [
+  "/ref/signals": [
     "color-contrast"
   ],
   "/athlete": [
     "color-contrast"
   ],
-  "/athlete/challenges": [
-    "color-contrast",
-    "heading-order"
-  ],
-  "/athlete/quiz": [
-    "color-contrast",
-    "heading-order"
-  ],
   "/parent": [
-    "color-contrast"
-  ],
-  "/resources": [
-    "color-contrast",
-    "link-in-text-block"
-  ],
-  "/contact": [
-    "color-contrast",
-    "heading-order"
-  ],
-  "/leadership": [
     "color-contrast"
   ]
 }
