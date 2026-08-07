@@ -57,35 +57,43 @@ test.describe('a dropped connection mid session', () => {
       .toBeGreaterThan(40)
   })
 
-  test('a slow route shows a loading skeleton rather than a frozen page', async ({ page }) => {
+  /*
+   * What a loading boundary does, and what it does NOT do, measured on this app.
+   *
+   * The obvious test to write here is "delay the navigation payload, assert the
+   * skeleton appears". It was written, and it was wrong. Traced against a real
+   * browser: clicking a link with the RSC payload held for 10s leaves the URL
+   * unchanged and renders no boundary at all. Next 16 waits for the payload before
+   * committing the navigation, so the user keeps looking at the page they were
+   * already on.
+   *
+   * That is still not a blank screen, which is the actual requirement, and the
+   * "failed navigation payload" test above covers it. But it does mean a
+   * loading.tsx is NOT what protects a slow in-app navigation, and claiming
+   * otherwise would be a claim this suite cannot support.
+   *
+   * What a loading.tsx genuinely does is stream a skeleton ahead of the content on
+   * a COLD load, which is observable in the server's own HTML. That is what this
+   * asserts.
+   */
+  test('a route with a loading boundary streams its skeleton ahead of the content', async ({
+    request,
+  }) => {
+    const html = await (await request.get('/coach')).text()
+    expect(html, '/coach did not stream a loading skeleton').toContain('aria-busy="true"')
+  })
+
+  test('the cold entry routes deliberately do not stream a skeleton', async ({ request }) => {
     /*
-     * The delay has to be installed BEFORE the first page load, not after it.
-     * Next prefetches the RSC payload for every Link in the viewport, so by the
-     * time a test clicks one the payload is already cached and the navigation
-     * completes instantly with no loading state to observe. Intercepting from the
-     * start means the prefetch is slow too, so the click has nothing cached to
-     * fall back on. This cost a debugging round and is worth writing down.
+     * The other half of the same decision. A skeleton on these costs 300 to 550ms
+     * of measured LCP and buys nothing, because the site chrome has already
+     * painted by the time it would appear. If one ever reappears here, LCP will
+     * regress and this is the test that says why.
      */
-    await page.route(RSC, async (r) => {
-      await new Promise((resolve) => setTimeout(resolve, 10_000))
-      await r.abort()
-    })
-
-    await page.goto('/', { waitUntil: 'domcontentloaded' })
-
-    /*
-     * /coach, not /schedule or /standings. The five cold entry routes deliberately
-     * have no loading boundary: measured, a skeleton there costs 300 to 550ms of
-     * LCP and buys nothing, because the site chrome has already painted by then.
-     * See the reasoning in src/app/__tests__/routeBoundaries.test.ts. /coach is
-     * reached by navigating inside the app, which is exactly where a skeleton
-     * earns its place, so it keeps one.
-     */
-    await page.getByRole('link', { name: /coach/i }).first().click()
-
-    // The skeleton announces itself as busy; that is the assertion, because it is
-    // also what a screen reader depends on.
-    await expect(page.locator('[aria-busy="true"]').first()).toBeVisible({ timeout: 15_000 })
+    for (const route of ['/schedule', '/standings', '/rules']) {
+      const html = await (await request.get(route)).text()
+      expect(html, `${route} started streaming a skeleton again`).not.toContain('aria-busy="true"')
+    }
   })
 })
 

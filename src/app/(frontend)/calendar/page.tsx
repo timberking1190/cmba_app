@@ -76,7 +76,7 @@ export default async function SchedulePage() {
             <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
               <ManagedCallout appUrl={appUrl} />
               <OfficialCalendarLink />
-              <a href={`${leagueUrl}/Schedule`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-mono text-[11px] text-cmba-red hover:text-white uppercase tracking-wider transition-colors">
+              <a href={`${leagueUrl}/Schedule`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 min-h-[44px] font-mono text-[11px] text-cmba-red hover:text-white uppercase tracking-wider transition-colors">
                 View on TeamLinkt <ExternalLink size={11} />
               </a>
             </aside>

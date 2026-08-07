@@ -12,6 +12,16 @@ const reportedPartyOptions = ["Officials", "Coaches", "Players", "Spectators", "
 const officialCategories = ["Professionalism", "Rules Knowledge", "Game Management"];
 const submitterRoles = ["Parent", "Coach", "Referee", "Player", "Other"];
 
+/*
+ * One class string for every control on this form. `form-control` (globals.css)
+ * carries the mobile rules: 16px minimum so iOS does not zoom the page on focus,
+ * and a 48px minimum height so it can be hit one handed. The text-sm that used to
+ * be repeated on each of these is gone deliberately, because 14px is exactly what
+ * triggers the zoom.
+ */
+const fieldCls =
+  "form-control bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors";
+
 export default function GameReportPage() {
   const [reportType, setReportType] = useState<"concern" | "compliment" | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -190,26 +200,26 @@ export default function GameReportPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Game Date *</label>
-                  <input required type="date" name="gameDate" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input required type="date" name="gameDate" className={fieldCls} />
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Division *</label>
-                  <select required name="division" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors">
+                  <select required name="division" className={fieldCls}>
                     <option value="">Select division...</option>
                     {divisions.map((d) => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Home Team</label>
-                  <input type="text" name="homeTeam" placeholder="Team name" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input type="text" name="homeTeam" placeholder="Team name" autoComplete="off" enterKeyHint="next" className={fieldCls} />
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Away Team</label>
-                  <input type="text" name="awayTeam" placeholder="Team name" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input type="text" name="awayTeam" placeholder="Team name" autoComplete="off" enterKeyHint="next" className={fieldCls} />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Facility / Gym</label>
-                  <input type="text" name="facility" placeholder="Gym or facility name" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input type="text" name="facility" placeholder="Gym or facility name" autoComplete="off" enterKeyHint="next" className={fieldCls} />
                 </div>
               </div>
             </div>
@@ -220,19 +230,19 @@ export default function GameReportPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Your Name *</label>
-                  <input required type="text" name="reporterName" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input required type="text" name="reporterName" autoComplete="name" enterKeyHint="next" className={fieldCls} />
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Email *</label>
-                  <input required type="email" name="reporterEmail" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input required type="email" name="reporterEmail" autoComplete="email" inputMode="email" enterKeyHint="next" className={fieldCls} />
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Phone (optional)</label>
-                  <input type="tel" name="reporterPhone" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input type="tel" name="reporterPhone" autoComplete="tel" inputMode="tel" enterKeyHint="next" className={fieldCls} />
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Your Role *</label>
-                  <select required name="reporterRole" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light focus:border-cmba-red focus:outline-none transition-colors">
+                  <select required name="reporterRole" className={fieldCls}>
                     <option value="">Select role...</option>
                     {submitterRoles.map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
@@ -250,7 +260,8 @@ export default function GameReportPage() {
                 name="description"
                 rows={6}
                 placeholder={reportType === "concern" ? "Please describe what happened factually and specifically..." : "Tell us who impressed you and why..."}
-                className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors resize-none"
+                enterKeyHint="enter"
+                className={`${fieldCls} resize-none`}
                 minLength={50}
               />
               <p className="font-mono text-[10px] text-cmba-grey-dark mt-1">Minimum 50 characters</p>
@@ -262,7 +273,7 @@ export default function GameReportPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Witness Names</label>
-                  <input type="text" name="witnesses" placeholder="Names of anyone who can corroborate" className="w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors" />
+                  <input type="text" name="witnesses" placeholder="Names of anyone who can corroborate" autoComplete="off" enterKeyHint="next" className={fieldCls} />
                 </div>
                 <div>
                   <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-2">Evidence</label>

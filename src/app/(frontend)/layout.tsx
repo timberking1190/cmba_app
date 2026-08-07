@@ -59,7 +59,21 @@ export const viewport: Viewport = {
   themeColor: "#08080A",
   width: "device-width",
   initialScale: 1,
+  /*
+   * maximumScale stays at 5 and userScalable is deliberately NOT set to false.
+   * Blocking pinch zoom is a WCAG 1.4.4 failure, and it is the single most common
+   * accessibility mistake in mobile web. Someone who needs to zoom in on a game
+   * time must be able to. e2e/mobile.spec.ts asserts this and will fail the build
+   * if anyone ever "fixes" the double tap zoom by disabling it.
+   */
   maximumScale: 5,
+  /*
+   * Lets the page paint into the notch and home indicator areas instead of being
+   * letterboxed by them. This is what makes env(safe-area-inset-*) return real
+   * values; without it those insets are always 0 and every safe area rule in
+   * globals.css is silently dead. The fixed bottom nav depends on it.
+   */
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({
@@ -102,7 +116,11 @@ export default async function RootLayout({
         <Header user={headerUser} />
         {/* overflow-x-clip on mobile guards against any stray horizontal scroll;
             visible on lg so desktop sticky sidebars are unaffected. */}
-        <main className="relative z-10 min-h-screen pb-16 lg:pb-0 overflow-x-clip lg:overflow-x-visible">{children}</main>
+        {/* pb-mobile-nav reserves the bottom nav's real height (4rem + its 1px
+            border) plus the home indicator inset, instead of the flat pb-16 that
+            left the last row of content 1px under the nav and more than that on a
+            notched phone. See globals.css. */}
+        <main className="relative z-10 min-h-screen pb-mobile-nav overflow-x-clip lg:overflow-x-visible">{children}</main>
         <Footer />
         <MobileNav />
         <AssistantWidget />

@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-08-07T20:54:18.599Z",
+  "capturedAt": "2026-08-07T21:59:40.283Z",
   "baseUrl": "http://localhost:3000",
   "note": "Lab numbers from a throttled headless Chromium at a Pixel 5 viewport. Not field data. This app has no RUM, so no 75th percentile real user claim can be made from these.",
   "profile": {
@@ -16,13 +16,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 908.9,
-        "script": 590.3,
-        "stylesheet": 85.6,
+        "total": 910.6,
+        "script": 590.5,
+        "stylesheet": 86.7,
         "image": 2.8,
         "font": 116.6,
-        "document": 112.4,
-        "other": 1.2
+        "document": 113.5,
+        "other": 0.6
       },
       "requestCounts": {
         "script": 14,
@@ -33,10 +33,10 @@
         "other": 13
       },
       "vitals": {
-        "lcp": 2168,
+        "lcp": 2032,
         "cls": 0.045,
-        "ttfb": 43,
-        "domContentLoaded": 117
+        "ttfb": 30,
+        "domContentLoaded": 118
       },
       "overflow": {
         "scrollWidth": 390,
@@ -45,12 +45,12 @@
       },
       "axe": {
         "violationCount": 1,
-        "nodeCount": 9,
+        "nodeCount": 10,
         "ids": [
           "color-contrast"
         ],
         "byImpact": {
-          "serious": 9
+          "serious": 10
         }
       }
     },
@@ -59,13 +59,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 837.1,
-        "script": 582.8,
-        "stylesheet": 79.5,
+        "total": 838,
+        "script": 582.9,
+        "stylesheet": 80.7,
         "image": 2.8,
         "font": 116.6,
-        "document": 54.4,
-        "other": 0.9
+        "document": 54.6,
+        "other": 0.4
       },
       "requestCounts": {
         "script": 15,
@@ -76,10 +76,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 940,
+        "lcp": 1044,
         "cls": 0,
-        "ttfb": 512,
-        "domContentLoaded": 583
+        "ttfb": 513,
+        "domContentLoaded": 585
       },
       "overflow": {
         "scrollWidth": 390,
@@ -102,13 +102,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 820.2,
-        "script": 577.5,
-        "stylesheet": 79.5,
+        "total": 825.1,
+        "script": 577.6,
+        "stylesheet": 80.7,
         "image": 2.8,
         "font": 116.6,
-        "document": 42.9,
-        "other": 0.9
+        "document": 43.1,
+        "other": 4.3
       },
       "requestCounts": {
         "script": 15,
@@ -119,10 +119,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 268,
+        "lcp": 256,
         "cls": 0,
-        "ttfb": 113,
-        "domContentLoaded": 213
+        "ttfb": 120,
+        "domContentLoaded": 168
       },
       "overflow": {
         "scrollWidth": 390,
@@ -145,13 +145,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 846.4,
-        "script": 582.8,
-        "stylesheet": 79.5,
+        "total": 838.4,
+        "script": 582.9,
+        "stylesheet": 80.7,
         "image": 2.8,
         "font": 116.6,
-        "document": 54.4,
-        "other": 10.2
+        "document": 54.6,
+        "other": 0.9
       },
       "requestCounts": {
         "script": 15,
@@ -164,8 +164,8 @@
       "vitals": {
         "lcp": 680,
         "cls": 0,
-        "ttfb": 503,
-        "domContentLoaded": 610
+        "ttfb": 517,
+        "domContentLoaded": 626
       },
       "overflow": {
         "scrollWidth": 390,
@@ -188,13 +188,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1003.7,
-        "script": 701.6,
-        "stylesheet": 79.5,
+        "total": 1010.8,
+        "script": 701.7,
+        "stylesheet": 80.7,
         "image": 2.8,
         "font": 116.6,
-        "document": 102.3,
-        "other": 0.9
+        "document": 102.4,
+        "other": 6.7
       },
       "requestCounts": {
         "script": 16,
@@ -205,10 +205,10 @@
         "other": 9
       },
       "vitals": {
-        "lcp": 152,
+        "lcp": 156,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 61
+        "ttfb": 9,
+        "domContentLoaded": 108
       },
       "overflow": {
         "scrollWidth": 390,
@@ -233,13 +233,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 862.3,
-        "script": 611.5,
-        "stylesheet": 79.5,
+        "total": 864.3,
+        "script": 612,
+        "stylesheet": 80.7,
         "image": 8.9,
         "font": 116.6,
-        "document": 44.7,
-        "other": 1
+        "document": 45,
+        "other": 1.1
       },
       "requestCounts": {
         "script": 20,
@@ -250,10 +250,10 @@
         "other": 21
       },
       "vitals": {
-        "lcp": 136,
+        "lcp": 140,
         "cls": 0,
-        "ttfb": 6,
-        "domContentLoaded": 93
+        "ttfb": 7,
+        "domContentLoaded": 94
       },
       "overflow": {
         "scrollWidth": 390,
@@ -278,13 +278,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 825.4,
+        "total": 826,
         "script": 570.7,
-        "stylesheet": 79.5,
+        "stylesheet": 80.7,
         "image": 8.9,
         "font": 116.6,
-        "document": 48.7,
-        "other": 0.9
+        "document": 48.8,
+        "other": 0.2
       },
       "requestCounts": {
         "script": 14,
@@ -295,10 +295,10 @@
         "other": 13
       },
       "vitals": {
-        "lcp": 112,
+        "lcp": 128,
         "cls": 0,
-        "ttfb": 8,
-        "domContentLoaded": 82
+        "ttfb": 21,
+        "domContentLoaded": 100
       },
       "overflow": {
         "scrollWidth": 390,
@@ -321,13 +321,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 954.1,
-        "script": 590.6,
-        "stylesheet": 79.5,
+        "total": 952,
+        "script": 589.3,
+        "stylesheet": 80.7,
         "image": 120.2,
         "font": 116.6,
-        "document": 42.5,
-        "other": 4.8
+        "document": 42.6,
+        "other": 2.6
       },
       "requestCounts": {
         "script": 14,
@@ -338,10 +338,10 @@
         "other": 9
       },
       "vitals": {
-        "lcp": 328,
+        "lcp": 380,
         "cls": 0,
-        "ttfb": 7,
-        "domContentLoaded": 78
+        "ttfb": 11,
+        "domContentLoaded": 103
       },
       "overflow": {
         "scrollWidth": 390,
@@ -364,13 +364,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1673.8,
-        "script": 1187,
-        "stylesheet": 159.1,
+        "total": 1677.2,
+        "script": 1187.6,
+        "stylesheet": 161.3,
         "image": 11.7,
         "font": 233.2,
-        "document": 80.9,
-        "other": 1.9
+        "document": 81.2,
+        "other": 2.1
       },
       "requestCounts": {
         "script": 34,
@@ -378,13 +378,13 @@
         "image": 3,
         "font": 8,
         "document": 2,
-        "other": 29
+        "other": 30
       },
       "vitals": {
-        "lcp": 212,
+        "lcp": 200,
         "cls": 0,
-        "ttfb": 26,
-        "domContentLoaded": 141
+        "ttfb": 21,
+        "domContentLoaded": 137
       },
       "overflow": {
         "scrollWidth": 390,
@@ -409,13 +409,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1186,
-        "script": 570.7,
-        "stylesheet": 79.5,
+        "total": 1182.8,
+        "script": 570.8,
+        "stylesheet": 80.7,
         "image": 268.6,
         "font": 116.6,
-        "document": 139.4,
-        "other": 11.1
+        "document": 139.5,
+        "other": 6.7
       },
       "requestCounts": {
         "script": 14,
@@ -426,10 +426,10 @@
         "other": 12
       },
       "vitals": {
-        "lcp": 216,
+        "lcp": 228,
         "cls": 0,
-        "ttfb": 11,
-        "domContentLoaded": 100
+        "ttfb": 10,
+        "domContentLoaded": 104
       },
       "overflow": {
         "scrollWidth": 390,
@@ -452,13 +452,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1165.7,
+        "total": 1165.9,
         "script": 580.2,
-        "stylesheet": 79.5,
+        "stylesheet": 80.7,
         "image": 326.6,
         "font": 116.6,
-        "document": 61.5,
-        "other": 1.3
+        "document": 61.6,
+        "other": 0.2
       },
       "requestCounts": {
         "script": 15,
@@ -469,10 +469,10 @@
         "other": 13
       },
       "vitals": {
-        "lcp": 640,
+        "lcp": 632,
         "cls": 0,
-        "ttfb": 11,
-        "domContentLoaded": 169
+        "ttfb": 12,
+        "domContentLoaded": 175
       },
       "overflow": {
         "scrollWidth": 390,
@@ -495,13 +495,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1169,
+        "total": 1175,
         "script": 576.3,
-        "stylesheet": 79.5,
+        "stylesheet": 80.7,
         "image": 326.6,
         "font": 116.6,
-        "document": 69.8,
-        "other": 0.2
+        "document": 69.9,
+        "other": 4.9
       },
       "requestCounts": {
         "script": 15,
@@ -512,10 +512,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 460,
+        "lcp": 452,
         "cls": 0,
-        "ttfb": 21,
-        "domContentLoaded": 191
+        "ttfb": 8,
+        "domContentLoaded": 166
       },
       "overflow": {
         "scrollWidth": 390,
@@ -540,13 +540,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1161.1,
-        "script": 570.7,
-        "stylesheet": 79.5,
+        "total": 1150.2,
+        "script": 570.8,
+        "stylesheet": 80.7,
         "image": 292.8,
         "font": 116.6,
-        "document": 89,
-        "other": 12.4
+        "document": 89.1,
+        "other": 0.2
       },
       "requestCounts": {
         "script": 14,
@@ -559,8 +559,8 @@
       "vitals": {
         "lcp": 152,
         "cls": 0,
-        "ttfb": 10,
-        "domContentLoaded": 95
+        "ttfb": 7,
+        "domContentLoaded": 88
       },
       "overflow": {
         "scrollWidth": 390,
@@ -584,13 +584,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1673.9,
-        "script": 1180.4,
-        "stylesheet": 159.1,
+        "total": 1670,
+        "script": 1181.1,
+        "stylesheet": 161.3,
         "image": 11.7,
         "font": 233.2,
-        "document": 81.5,
-        "other": 7.9
+        "document": 81.9,
+        "other": 0.8
       },
       "requestCounts": {
         "script": 34,
@@ -601,10 +601,10 @@
         "other": 29
       },
       "vitals": {
-        "lcp": 176,
+        "lcp": 192,
         "cls": 0,
-        "ttfb": 17,
-        "domContentLoaded": 116
+        "ttfb": 18,
+        "domContentLoaded": 126
       },
       "overflow": {
         "scrollWidth": 390,
@@ -629,13 +629,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1068.5,
-        "script": 570.7,
-        "stylesheet": 79.5,
+        "total": 1069.1,
+        "script": 570.8,
+        "stylesheet": 80.7,
         "image": 209.2,
         "font": 116.6,
-        "document": 91.5,
-        "other": 0.9
+        "document": 91.6,
+        "other": 0.2
       },
       "requestCounts": {
         "script": 14,
@@ -646,10 +646,10 @@
         "other": 12
       },
       "vitals": {
-        "lcp": 352,
+        "lcp": 344,
         "cls": 0,
         "ttfb": 8,
-        "domContentLoaded": 88
+        "domContentLoaded": 46
       },
       "overflow": {
         "scrollWidth": 390,
@@ -672,13 +672,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1024.4,
-        "script": 586.6,
-        "stylesheet": 79.5,
+        "total": 1017.4,
+        "script": 586.7,
+        "stylesheet": 80.7,
         "image": 150.8,
         "font": 116.6,
-        "document": 81.7,
-        "other": 9.1
+        "document": 81.8,
+        "other": 0.9
       },
       "requestCounts": {
         "script": 15,
@@ -689,10 +689,10 @@
         "other": 14
       },
       "vitals": {
-        "lcp": 464,
+        "lcp": 452,
         "cls": 0,
-        "ttfb": 22,
-        "domContentLoaded": 176
+        "ttfb": 9,
+        "domContentLoaded": 168
       },
       "overflow": {
         "scrollWidth": 390,
@@ -717,13 +717,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1089.3,
-        "script": 570.7,
-        "stylesheet": 79.5,
+        "total": 1091.3,
+        "script": 570.8,
+        "stylesheet": 80.7,
         "image": 239.8,
         "font": 116.6,
-        "document": 82.5,
-        "other": 0.2
+        "document": 82.6,
+        "other": 0.9
       },
       "requestCounts": {
         "script": 14,
@@ -734,10 +734,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 304,
+        "lcp": 280,
         "cls": 0,
-        "ttfb": 10,
-        "domContentLoaded": 74
+        "ttfb": 8,
+        "domContentLoaded": 91
       },
       "overflow": {
         "scrollWidth": 390,
@@ -760,13 +760,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1185.2,
+        "total": 1186.8,
         "script": 591,
-        "stylesheet": 79.5,
+        "stylesheet": 80.7,
         "image": 326.6,
         "font": 116.6,
-        "document": 62.4,
-        "other": 9.1
+        "document": 62.5,
+        "other": 9.4
       },
       "requestCounts": {
         "script": 15,
@@ -777,10 +777,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 172,
+        "lcp": 148,
         "cls": 0,
-        "ttfb": 23,
-        "domContentLoaded": 112
+        "ttfb": 7,
+        "domContentLoaded": 89
       },
       "overflow": {
         "scrollWidth": 390,
@@ -803,13 +803,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 991.3,
-        "script": 570.7,
-        "stylesheet": 79.5,
+        "total": 994.6,
+        "script": 570.8,
+        "stylesheet": 80.7,
         "image": 128.8,
         "font": 116.6,
-        "document": 94.7,
-        "other": 0.9
+        "document": 94.8,
+        "other": 2.9
       },
       "requestCounts": {
         "script": 14,
@@ -822,8 +822,8 @@
       "vitals": {
         "lcp": 144,
         "cls": 0,
-        "ttfb": 11,
-        "domContentLoaded": 66
+        "ttfb": 9,
+        "domContentLoaded": 95
       },
       "overflow": {
         "scrollWidth": 390,
@@ -846,13 +846,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1669.2,
-        "script": 1181.8,
-        "stylesheet": 159.1,
+        "total": 1671.7,
+        "script": 1182.4,
+        "stylesheet": 161.3,
         "image": 11.7,
         "font": 233.2,
-        "document": 81.6,
-        "other": 1.9
+        "document": 81.9,
+        "other": 1.1
       },
       "requestCounts": {
         "script": 34,
@@ -860,13 +860,13 @@
         "image": 3,
         "font": 8,
         "document": 2,
-        "other": 29
+        "other": 30
       },
       "vitals": {
-        "lcp": 192,
+        "lcp": 184,
         "cls": 0,
-        "ttfb": 19,
-        "domContentLoaded": 121
+        "ttfb": 21,
+        "domContentLoaded": 122
       },
       "overflow": {
         "scrollWidth": 390,
@@ -891,13 +891,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1670,
-        "script": 1182.8,
-        "stylesheet": 159.1,
+        "total": 1672.7,
+        "script": 1183.5,
+        "stylesheet": 161.3,
         "image": 11.7,
         "font": 233.2,
-        "document": 81.5,
-        "other": 1.6
+        "document": 81.8,
+        "other": 1.1
       },
       "requestCounts": {
         "script": 34,
@@ -905,13 +905,13 @@
         "image": 3,
         "font": 8,
         "document": 2,
-        "other": 25
+        "other": 29
       },
       "vitals": {
         "lcp": 184,
         "cls": 0,
-        "ttfb": 18,
-        "domContentLoaded": 120
+        "ttfb": 17,
+        "domContentLoaded": 119
       },
       "overflow": {
         "scrollWidth": 390,
@@ -936,13 +936,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 994.5,
+        "total": 987.1,
         "script": 570.7,
-        "stylesheet": 79.5,
+        "stylesheet": 80.7,
         "image": 133.2,
         "font": 116.6,
-        "document": 85.2,
-        "other": 9.3
+        "document": 85.3,
+        "other": 0.6
       },
       "requestCounts": {
         "script": 14,
@@ -953,10 +953,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 148,
+        "lcp": 144,
         "cls": 0,
         "ttfb": 8,
-        "domContentLoaded": 93
+        "domContentLoaded": 95
       },
       "overflow": {
         "scrollWidth": 390,
@@ -979,13 +979,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1107.1,
+        "total": 1115.8,
         "script": 567.8,
-        "stylesheet": 79.5,
+        "stylesheet": 80.7,
         "image": 246.5,
         "font": 116.6,
-        "document": 95.8,
-        "other": 0.9
+        "document": 95.9,
+        "other": 8.3
       },
       "requestCounts": {
         "script": 13,
@@ -996,10 +996,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 200,
+        "lcp": 156,
         "cls": 0,
-        "ttfb": 19,
-        "domContentLoaded": 77
+        "ttfb": 9,
+        "domContentLoaded": 95
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1023,13 +1023,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 915.6,
-        "script": 581.6,
-        "stylesheet": 79.5,
+        "total": 924.5,
+        "script": 581.7,
+        "stylesheet": 80.7,
         "image": 86.4,
         "font": 116.6,
-        "document": 50.5,
-        "other": 0.9
+        "document": 50.6,
+        "other": 8.5
       },
       "requestCounts": {
         "script": 14,
@@ -1040,10 +1040,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 140,
+        "lcp": 144,
         "cls": 0,
         "ttfb": 7,
-        "domContentLoaded": 59
+        "domContentLoaded": 92
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1062,13 +1062,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1120.5,
+        "total": 1120.9,
         "script": 567.8,
-        "stylesheet": 79.5,
+        "stylesheet": 80.7,
         "image": 280.1,
         "font": 116.6,
-        "document": 75.6,
-        "other": 0.9
+        "document": 75.7,
+        "other": 0
       },
       "requestCounts": {
         "script": 13,
@@ -1079,10 +1079,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 184,
+        "lcp": 156,
         "cls": 0,
-        "ttfb": 20,
-        "domContentLoaded": 109
+        "ttfb": 8,
+        "domContentLoaded": 93
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1107,13 +1107,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 1084.5,
+        "total": 1089.9,
         "script": 567.8,
-        "stylesheet": 79.5,
+        "stylesheet": 80.7,
         "image": 233.8,
         "font": 116.6,
-        "document": 83.8,
-        "other": 3.1
+        "document": 83.9,
+        "other": 7.2
       },
       "requestCounts": {
         "script": 13,
@@ -1124,10 +1124,10 @@
         "other": 12
       },
       "vitals": {
-        "lcp": 536,
+        "lcp": 564,
         "cls": 0,
-        "ttfb": 11,
-        "domContentLoaded": 92
+        "ttfb": 19,
+        "domContentLoaded": 102
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1150,13 +1150,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 837.7,
-        "script": 582.9,
-        "stylesheet": 79.5,
+        "total": 837.1,
+        "script": 583,
+        "stylesheet": 80.7,
         "image": 2.8,
         "font": 116.6,
         "document": 54,
-        "other": 2
+        "other": 0
       },
       "requestCounts": {
         "script": 14,
@@ -1167,10 +1167,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 420,
+        "lcp": 416,
         "cls": 0,
-        "ttfb": 9,
-        "domContentLoaded": 337
+        "ttfb": 10,
+        "domContentLoaded": 347
       },
       "overflow": {
         "scrollWidth": 390,
@@ -1189,13 +1189,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 844.6,
-        "script": 582.9,
-        "stylesheet": 79.5,
+        "total": 843.3,
+        "script": 583,
+        "stylesheet": 80.7,
         "image": 2.8,
         "font": 116.6,
         "document": 60,
-        "other": 2.9
+        "other": 0.2
       },
       "requestCounts": {
         "script": 14,
@@ -1206,7 +1206,7 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 436,
+        "lcp": 428,
         "cls": 0,
         "ttfb": 8,
         "domContentLoaded": 134
@@ -1228,13 +1228,13 @@
       "status": 200,
       "error": null,
       "transferKb": {
-        "total": 838.8,
-        "script": 582.9,
-        "stylesheet": 79.5,
+        "total": 849.9,
+        "script": 583,
+        "stylesheet": 80.7,
         "image": 2.8,
         "font": 116.6,
-        "document": 56.5,
-        "other": 0.4
+        "document": 56.6,
+        "other": 10.3
       },
       "requestCounts": {
         "script": 14,
@@ -1245,10 +1245,10 @@
         "other": 10
       },
       "vitals": {
-        "lcp": 432,
+        "lcp": 436,
         "cls": 0,
-        "ttfb": 10,
-        "domContentLoaded": 133
+        "ttfb": 7,
+        "domContentLoaded": 123
       },
       "overflow": {
         "scrollWidth": 390,

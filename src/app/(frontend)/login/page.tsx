@@ -32,8 +32,15 @@ function isUnder18(dob: string): boolean {
 
 type PolicyVersions = { termsVersion: string; privacyVersion: string; guardianConsentVersion: string };
 
+/*
+ * `form-control` (globals.css) carries the mobile rules: a 16px minimum so iOS
+ * Safari does not zoom the whole page when the field is focused and leave the user
+ * scrolling sideways, and a 48px minimum height so it can be hit one handed. The
+ * text-sm that used to be here is removed on purpose, because 14px is precisely
+ * what triggers that zoom.
+ */
 const inputCls =
-  "w-full bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-sm text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors";
+  "form-control bg-cmba-black-surface border border-white/12 px-3 py-2.5 text-cmba-grey-light placeholder:text-cmba-grey-dark focus:border-cmba-red focus:outline-none transition-colors";
 
 function Checkbox({
   checked, onChange, children,
@@ -318,14 +325,14 @@ export default function LoginPage() {
               <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Email</label>
               <div className="relative">
                 <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cmba-grey-mid" />
-                <input type="email" required value={siEmail} onChange={(e) => setSiEmail(e.target.value)} placeholder="your@email.com" className={`${inputCls} pl-10`} />
+                <input type="email" required value={siEmail} onChange={(e) => setSiEmail(e.target.value)} placeholder="your@email.com" autoComplete="email" inputMode="email" enterKeyHint="next" className={`${inputCls} pl-10`} />
               </div>
             </div>
             <div>
               <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Password</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-cmba-grey-mid" />
-                <input type="password" required value={siPassword} onChange={(e) => setSiPassword(e.target.value)} placeholder="••••••••" className={`${inputCls} pl-10`} />
+                <input type="password" required value={siPassword} onChange={(e) => setSiPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" enterKeyHint="go" className={`${inputCls} pl-10`} />
               </div>
             </div>
             <button type="submit" disabled={busy} className="w-full bg-cmba-red hover:bg-cmba-hot disabled:opacity-50 text-white font-display font-bold text-sm uppercase tracking-wider py-3 transition-colors flex items-center justify-center gap-2">
@@ -346,7 +353,7 @@ export default function LoginPage() {
                 Enter the participant&apos;s date of birth. If the participant is under 18, a parent or guardian will set up and manage the account.
               </p>
               <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Participant date of birth</label>
-              <input type="date" required value={dob} onChange={(e) => setDob(e.target.value)} className={inputCls} />
+              <input type="date" required value={dob} onChange={(e) => setDob(e.target.value)} autoComplete="bday" className={inputCls} />
             </div>
 
             {dob && (
@@ -357,11 +364,11 @@ export default function LoginPage() {
                     <p className="text-xs text-cmba-grey">
                       You are setting up an account for an athlete under 18. We will confirm your email so we know the account is connected to a guardian.
                     </p>
-                    <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Athlete full name" className={inputCls} />
-                    <input type="text" required value={gName} onChange={(e) => setGName(e.target.value)} placeholder="Guardian name" className={inputCls} />
-                    <input type="email" required value={gEmail} onChange={(e) => setGEmail(e.target.value)} placeholder="Guardian email" className={inputCls} />
-                    <input type="tel" value={gPhone} onChange={(e) => setGPhone(e.target.value)} placeholder="Guardian phone" className={inputCls} />
-                    <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" className={inputCls} />
+                    <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Athlete full name" autoComplete="name" enterKeyHint="next" className={inputCls} />
+                    <input type="text" required value={gName} onChange={(e) => setGName(e.target.value)} placeholder="Guardian name" autoComplete="off" enterKeyHint="next" className={inputCls} />
+                    <input type="email" required value={gEmail} onChange={(e) => setGEmail(e.target.value)} placeholder="Guardian email" autoComplete="off" inputMode="email" enterKeyHint="next" className={inputCls} />
+                    <input type="tel" value={gPhone} onChange={(e) => setGPhone(e.target.value)} placeholder="Guardian phone" autoComplete="off" inputMode="tel" enterKeyHint="next" className={inputCls} />
+                    <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" autoComplete="new-password" enterKeyHint="done" className={inputCls} />
 
                     <div className="space-y-2.5 pt-2">
                       <Checkbox checked={req1} onChange={setReq1}>I am the parent or legal guardian of this athlete.</Checkbox>
@@ -380,9 +387,9 @@ export default function LoginPage() {
                   </div>
                 ) : (
                   <div className="space-y-3 border-t border-white/10 pt-4">
-                    <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" className={inputCls} />
-                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className={inputCls} />
-                    <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" className={inputCls} />
+                    <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" autoComplete="name" enterKeyHint="next" className={inputCls} />
+                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" autoComplete="email" inputMode="email" enterKeyHint="next" className={inputCls} />
+                    <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" autoComplete="new-password" enterKeyHint="done" className={inputCls} />
 
                     <div className="pt-1">
                       <p className="text-xs text-cmba-grey-light mb-2">I am a&hellip; (choose all that apply)</p>
@@ -446,11 +453,11 @@ export default function LoginPage() {
           </p>
           <div className="flex flex-wrap gap-2">
             <a href={REGISTER.player} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-mono text-xs text-cmba-red hover:text-white border border-cmba-red/30 hover:border-cmba-red px-3 py-1.5 transition-colors">
+              className="inline-flex items-center gap-1.5 min-h-[44px] font-mono text-xs text-cmba-red hover:text-white border border-cmba-red/30 hover:border-cmba-red px-3 py-1.5 transition-colors">
               Player Registration <ExternalLink size={12} />
             </a>
             <a href={REGISTER.coach} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-mono text-xs text-cmba-red hover:text-white border border-cmba-red/30 hover:border-cmba-red px-3 py-1.5 transition-colors">
+              className="inline-flex items-center gap-1.5 min-h-[44px] font-mono text-xs text-cmba-red hover:text-white border border-cmba-red/30 hover:border-cmba-red px-3 py-1.5 transition-colors">
               Coach Registration <ExternalLink size={12} />
             </a>
           </div>

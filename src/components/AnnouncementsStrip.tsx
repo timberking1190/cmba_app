@@ -50,14 +50,23 @@ export function AnnouncementsStrip() {
           <span className="text-white font-medium">{a.title}</span>
           {a.body ? <span className="text-cmba-grey"> — {a.body}</span> : null}
         </p>
+        {/*
+          tap-target on both controls below, rather than min-h/min-w.
+
+          This strip is client fetched and inserted above the hero, so ANY change
+          to its height shifts the whole homepage down and shows up directly in
+          CLS. tap-target (globals.css) grows the hit area with a pseudo element
+          and leaves the layout box alone, which is what WCAG 2.5.8 measures
+          anyway. Same 44px target, no extra shift.
+        */}
         {a.link ? (
-          <Link href={a.link} className="ml-auto shrink-0 font-display font-bold text-xs uppercase tracking-wider text-cmba-red hover:text-white transition-colors">
+          <Link href={a.link} className="tap-target ml-auto shrink-0 inline-flex items-center justify-center px-2 font-display font-bold text-xs uppercase tracking-wider text-cmba-red hover:text-white transition-colors">
             More
           </Link>
         ) : (
           <span className="ml-auto" />
         )}
-        <button onClick={() => setDismissed(true)} aria-label="Dismiss" className="shrink-0 text-cmba-grey-mid hover:text-white transition-colors">
+        <button onClick={() => setDismissed(true)} aria-label="Dismiss" className="tap-target shrink-0 text-cmba-grey-mid hover:text-white transition-colors">
           <X size={14} />
         </button>
       </div>

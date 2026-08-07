@@ -1548,3 +1548,93 @@ not claimed as one.
   resolves to a boundary, not by observing a real server error.
 - Error copy is written but unreviewed by anyone who is not an engineer. Worth a read by someone who
   talks to parents.
+
+## Mobile Phase 2: mobile fundamentals
+
+**Gate: viewport hardening, the one real 100vh bug, safe areas, 44/48px targets, all 93 form
+controls audited, 200 percent text scaling.**
+
+### What changed
+
+| Finding | Fix |
+|---|---|
+| Viewport had no `viewportFit` | `viewportFit: "cover"` in the frontend layout. Until this landed, every `env(safe-area-inset-*)` rule in the stylesheet returned 0 and was dead code. `maximumScale` stays at 5 and `userScalable` is still unset, both now asserted by a test |
+| `.story-stage { height: 100vh }` | `@supports` ladder to `100svh` then `100dvh`. `min-h-screen` elsewhere deliberately left alone: a too-large minimum is invisible, so rewriting it would be churn |
+| 2 safe-area usages in the whole tree | `.safe-bottom`, `.safe-top`, `.safe-x`, `.safe-bottom-offset`, and `.pb-mobile-nav` |
+| `<main>` reserved a flat 64px for a 65px nav | `.pb-mobile-nav` derives the reservation from the nav's own numbers plus the home indicator inset, so the two cannot drift |
+| No touch target minimum anywhere | 44px floor on controls under `pointer: coarse`, plus `min-width`, which is the half usually forgotten. `.tap-target` for controls that must stay visually small |
+| 93 form controls, 2 `inputMode`, 5 `autoComplete`, 0 `enterKeyHint` | `.form-control` class carrying the 16px and 48px rules, plus per field `type`, `inputMode`, `autoComplete` and `enterKeyHint` on the login and game report forms |
+
+### Touch targets found by measuring, not reading
+
+Every one of these was found by measuring the real rendered box, and each was under 44px:
+
+| Element | Before | Where |
+|---|---|---|
+| Header logo link | 90x36 | `Header.tsx` |
+| Header search and menu buttons | 40x44, 36x44 | `Header.tsx` |
+| Role card links, four stacked per card | 303x20, 14px apart | `page.tsx` |
+| Card "Enter Hub" links | 76x17 | `page.tsx` |
+| "All news" link | 87x16 | `page.tsx` |
+| TeamLinkt actions | 319x40 to 319x42 | `TeamLinktActions.tsx` |
+| "View on TeamLinkt" | 140x17 | `calendar/page.tsx` |
+| "Open" on the embed | 48x17 | `TeamLinktEmbed.tsx` |
+| Registration links | 150x30, 151x30 | `login/page.tsx` |
+| Announcements "More" | 39x16 | `AnnouncementsStrip.tsx` |
+
+The role card links are the one worth calling out: four links 20px tall and 14px apart, inside a
+card, is how a parent aiming for "Skill Drills" lands on "Rules of the Game".
+
+### Three things this phase got wrong before getting right
+
+**1. A CSS rule that reads correctly can still lose.** The first version of the 16px rule was
+`input, select, textarea { font-size: max(16px, 1rem) }`. Element selectors lose to Tailwind's
+`.text-sm` on specificity, so it did nothing. `!important` would have been worse: `1rem` is the ROOT
+font size, so it would have shrunk any control deliberately larger than 16px. The fix is the
+`.form-control` class applied at each control, a narrow net that names the small utilities, and a
+browser test that reads the computed value, because only `getComputedStyle` actually knows.
+
+**2. A 44px control made CLS worse.** The announcements strip is client fetched and inserted above
+the hero, so anything that makes it taller shifts the whole homepage down. Growing its dismiss
+button to 44px moved homepage CLS from 0.046 to 0.074, which the gate caught. `.tap-target` grows
+the hit area with a pseudo element and leaves the layout box alone, which is what WCAG 2.5.8
+measures anyway. CLS is back to 0.046.
+
+**3. A silently failing build made two measurements meaningless.** A JSX comment was placed as a
+second child inside a ternary branch, which does not parse. The build command was piped into `grep`,
+which swallowed the error and returned the grep's exit code, so `npm start` happily served the
+PREVIOUS build and two consecutive Lighthouse runs measured code that was not the code under test.
+Both readings said CLS 0.074 and were used to reject a fix that had in fact worked. Build exit codes
+are now checked explicitly. Worth recording because it is a failure mode that makes a green
+measurement lie.
+
+### Gate result
+
+| Check | Result |
+|---|---|
+| `npm run lint` | pass |
+| `npx tsc --noEmit` | pass |
+| `npm test` | pass, 68 files, 740 tests |
+| `e2e/mobile.spec.ts` | pass, 109 of 109 |
+| Full `mobile-chrome` project | pass, 171 of 171 |
+| Lighthouse vs baseline | **pass, no regression**, CLS back to 0.046 |
+
+Coverage the mobile suite now holds: no horizontal overflow at 360x640, 390x844 and 768x1024 across
+29 routes; no text control under 16px or 44px tall on the five form routes; no button or standalone
+link under 44x44 on the four highest traffic routes; no sideways scroll at 200 percent text; pinch
+zoom not blocked; `viewport-fit=cover` present; the bottom nav never covering content.
+
+### Residual risk
+
+- **Touch targets are enforced on four routes, not all 49.** `/`, `/schedule`, `/standings` and
+  `/login`. The admin console and the scanner are unaudited for target size and are exactly where
+  dense controls live. Extending the sweep needs a signed in session, which is an operator task.
+- The 200 percent scaling test doubles the root font size, which is close to a phone's text size
+  setting but not identical to browser page zoom. Real device confirmation is on the operator list.
+- `.tap-target` expands the hit area with a centred pseudo element. Where two such controls sit
+  within 44px of each other their hit areas overlap and the later one in paint order wins. Only the
+  announcements strip uses it today and its two controls are far apart, but it is a real constraint
+  on wider use.
+- The announcements strip still causes the remaining 0.046 of homepage CLS, because it client
+  fetches and inserts itself above the hero. That is pre-existing, not introduced here. Fixing it
+  properly means server rendering the strip, which is carried into Phase 3.

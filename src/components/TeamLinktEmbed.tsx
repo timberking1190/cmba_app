@@ -27,7 +27,7 @@ export function TeamLinktEmbed({
           href={openUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 font-mono text-[11px] text-cmba-red hover:text-white uppercase tracking-wider transition-colors shrink-0"
+          className="inline-flex items-center gap-1 min-h-[44px] font-mono text-[11px] text-cmba-red hover:text-white uppercase tracking-wider transition-colors shrink-0"
         >
           Open <ExternalLink size={11} />
         </a>

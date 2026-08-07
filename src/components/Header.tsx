@@ -140,14 +140,24 @@ export function Header({ user: serverUser = null }: { user?: AuthUser }) {
 
       {/* Main nav */}
       <header className="sticky top-0 z-50 bg-cmba-black/75 backdrop-blur-xl border-b border-cmba-red/60">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 flex items-center justify-between h-14 lg:h-16">
+        {/*
+          min-h rather than a fixed h, and the logo can shrink.
+
+          At 200 percent text the row used to overflow: everything in it is sized
+          in rem, so the logo, the gaps and the icon padding all doubled, and
+          `shrink-0` on the logo meant nothing could give. Measured 449px of
+          content in a 393px viewport, which is a horizontal scrollbar on every
+          page for anyone using large text. min-w-0 plus truncate lets the wordmark
+          give way instead, and min-h lets the bar grow rather than clip.
+        */}
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 flex items-center justify-between gap-2 min-h-14 lg:min-h-16 py-1">
           {/* Logo + editorial wordmark */}
-          <Link href="/" className="flex items-center gap-3 shrink-0">
+          <Link href="/" className="flex items-center gap-3 min-w-0 min-h-[44px]">
             <Image src="/cmba-logo-sm.png" alt="CMBA" width={120} height={48}
-              className="h-9 lg:h-10 w-auto" priority />
-            <div className="hidden sm:block leading-none">
+              className="h-9 lg:h-10 w-auto shrink-0" priority />
+            <div className="hidden sm:block leading-none min-w-0">
               <Wordmark className="font-display font-black text-white text-2xl uppercase tracking-tight" />
-              <div className="font-mono text-[9px] text-cmba-grey tracking-[0.28em] uppercase mt-0.5">
+              <div className="font-mono text-[9px] text-cmba-grey tracking-[0.28em] uppercase mt-0.5 truncate">
                 Calgary Minor Basketball
               </div>
             </div>

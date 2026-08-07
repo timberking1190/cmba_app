@@ -60,7 +60,14 @@ test.describe('accessibility, phone viewport', () => {
    * actually looks like when someone reads it, and exactly what a reduced motion
    * user sees the whole time.
    */
-  test.use({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
+  test.use({
+    viewport: { width: 390, height: 844 },
+    // Under contextOptions, not at the top level: `use: { reducedMotion }` is not
+    // a recognised option in this Playwright version, so it was accepted at
+    // runtime and silently did nothing while the baseline script was applying it.
+    // The two only agreed by luck until this was fixed.
+    contextOptions: { reducedMotion: 'reduce' },
+  })
 
   for (const route of PUBLIC_ROUTES) {
     test(`axe finds no new violations on ${route}`, async ({ page }) => {

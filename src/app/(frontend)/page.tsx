@@ -179,7 +179,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline justify-between mb-6">
             <h3 className="label-sm text-cmba-grey">Latest from CMBA</h3>
-            <Link href="/calendar" className="font-mono text-xs text-cmba-red tracking-[0.1em] uppercase hover:text-white transition-colors">All news →</Link>
+            <Link href="/calendar" className="inline-flex items-center min-h-[44px] font-mono text-xs text-cmba-red tracking-[0.1em] uppercase hover:text-white transition-colors">All news →</Link>
           </div>
           <div className="grid md:grid-cols-2 gap-px bg-white/12 border border-white/12">
             {announcements.map((a) => (
@@ -230,12 +230,20 @@ export default function HomePage() {
                 <h3 className="font-display font-black text-lg text-white uppercase tracking-tight flex items-center gap-2">
                   <col.icon size={20} className="text-cmba-red" />{col.title}
                 </h3>
-                <Link href={col.cta.href} className="font-mono text-[11px] text-cmba-red uppercase tracking-[0.14em] hover:text-white transition-colors">{col.cta.label}</Link>
+                <Link href={col.cta.href} className="inline-flex items-center min-h-[44px] font-mono text-[11px] text-cmba-red uppercase tracking-[0.14em] hover:text-white transition-colors">{col.cta.label}</Link>
               </div>
-              <div className="p-6 space-y-3.5">
+              {/*
+                These were 20px tall rows 14px apart: four stacked links inside a
+                thumb's width of each other, which is how a parent taps "Skill
+                Drills" and lands on "Rules of the Game". min-h-[44px] with the
+                gap reduced to 8px keeps the same visual rhythm while giving each
+                link a real target. Height, not padding, so 200 percent text
+                scaling grows the row rather than clipping it.
+              */}
+              <div className="p-6 space-y-2">
                 {col.links.map((l) => (
-                  <Link key={l.label} href={l.href} className="flex items-center gap-3 text-sm text-cmba-grey hover:text-white transition-colors">
-                    <l.icon size={16} className="text-cmba-red/60" />{l.label}
+                  <Link key={l.label} href={l.href} className="flex items-center gap-3 min-h-[44px] text-sm text-cmba-grey hover:text-white transition-colors">
+                    <l.icon size={16} className="text-cmba-red/60 shrink-0" />{l.label}
                   </Link>
                 ))}
               </div>

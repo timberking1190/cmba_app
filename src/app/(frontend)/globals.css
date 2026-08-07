@@ -145,10 +145,153 @@ body {
 .accent-line:hover::after { width: 100%; }
 .card-hover { transition: transform 0.2s ease, border-color 0.2s ease; }
 .card-hover:hover { transform: translateY(-2px); border-color: var(--red); }
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+/* ── Safe areas ───────────────────────────────────────────────────────────
+   These only return non-zero once the viewport meta carries viewport-fit=cover,
+   which layout.tsx now sets. Before that every rule here was dead code.
+
+   env() with a fallback of 0px is safe on every engine, so the @supports guard
+   the file used to carry is not needed and the fallback is written inline.
+   ─────────────────────────────────────────────────────────────────────── */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.safe-top    { padding-top: env(safe-area-inset-top, 0px); }
+.safe-x      { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+/* For a fixed element that must clear the home indicator AND keep its own padding. */
+.safe-bottom-offset { bottom: env(safe-area-inset-bottom, 0px); }
+
+/*
+ * Room at the end of the page for the fixed bottom nav.
+ *
+ * <main> used to carry a flat `pb-16`, which is 64px, against a nav that is 64px
+ * tall PLUS a 1px top border PLUS the home indicator inset on a notched phone.
+ * Measured 65px of nav over 64px of padding, so the last row of the schedule sat
+ * under the nav border, and on a real iPhone it sits under the home indicator
+ * too. Deriving the reservation from the same numbers the nav is built from means
+ * the two cannot drift apart again.
+ */
+.pb-mobile-nav { padding-bottom: calc(4rem + 1px + env(safe-area-inset-bottom, 0px)); }
+@media (min-width: 1024px) { .pb-mobile-nav { padding-bottom: 0; } }
+
+/* ── Touch targets ────────────────────────────────────────────────────────
+   WCAG 2.2 SC 2.5.8 asks for 24x24 CSS px minimum. Apple asks for 44x44 and
+   Android for 48x48, and this app is used one handed, standing, in a gym, so it
+   builds to the larger of those rather than the accessible minimum.
+
+   `.tap-target` is the opt-in for anything that cannot simply be made bigger:
+   it keeps the visual size and grows the HIT AREA with a pseudo element, so a
+   14px icon button still gets a 44px target without a 44px box in the layout.
+   ─────────────────────────────────────────────────────────────────────── */
+.tap-target { position: relative; }
+.tap-target::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%; height: 100%;
+  min-width: 44px; min-height: 44px;
+}
+@media (pointer: coarse) {
+  /*
+   * On a touch device, give every interactive control the Android 48px floor.
+   * Scoped to pointer:coarse so desktop density is untouched, and to the
+   * elements that are actually tapped rather than every element on the page.
+   *
+   * `min-height` rather than `height` so a control that is already taller, or
+   * that grows with 200 percent text scaling, is never clamped.
+   */
+  /*
+   * `.tap-target` opts out. That class means "I grow my hit area with a pseudo
+   * element and keep my layout box small", so also forcing a 44px layout box
+   * would defeat the point. This is not hypothetical: the announcements strip is
+   * client fetched and inserted above the hero, so anything that makes it taller
+   * shifts the whole homepage down. Growing its dismiss button to 44px moved
+   * homepage CLS from 0.046 to 0.074 on its own.
+   */
+  button:not(.tap-target),
+  [role="button"]:not(.tap-target),
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  select,
+  summary {
+    min-height: 44px;
+  }
+  /*
+   * min-width matters as much as min-height and is the half people forget. The
+   * header's search and menu buttons are a 20px icon in p-2 padding: 36 to 40px
+   * wide and 44px tall once the rule above lands, so they still miss. Measured on
+   * the real page, not guessed.
+   */
+  button:not(.tap-target),
+  [role="button"]:not(.tap-target) {
+    min-width: 44px;
+  }
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  textarea {
+    min-height: 44px;
+  }
+  /* Checkboxes and radios are drawn by the UA at ~13px. Scale the box itself. */
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 24px;
+    min-height: 24px;
+  }
 }
 @layer utilities { .text-balance { text-wrap: balance; } }
+
+/* ── The 16px rule for form controls ──────────────────────────────────────
+   iOS Safari auto zooms the page when a control with a font-size under 16px
+   receives focus, and it does NOT zoom back out afterwards. The user is left on
+   a page that is too wide, scrolling sideways to find the next field. It is the
+   most common mobile web defect there is, and it is invisible on desktop.
+
+   This is a SAFETY NET, not the fix. The fix is the `.form-control` class below,
+   applied at each of the 93 controls. This net exists because a future control
+   pasted in with `text-sm` should not silently reintroduce the bug.
+
+   It targets the small type utilities by name rather than every control. A blunt
+   `input { font-size: 16px }` loses to Tailwind's classes on specificity, and
+   forcing it with !important would shrink a control that is deliberately LARGER
+   than 16px, since CSS cannot express "the larger of 16px and whatever this
+   element already computes to". Naming the small classes is precise and cannot
+   make anything smaller than it already was.
+
+   e2e/mobile.spec.ts measures the real computed size of every control on every
+   route, which is what actually guarantees this, rather than any rule here.
+   ─────────────────────────────────────────────────────────────────────── */
+@media (pointer: coarse) {
+  input.text-xs, input.text-sm,
+  select.text-xs, select.text-sm,
+  textarea.text-xs, textarea.text-sm {
+    font-size: 1rem;
+  }
+}
+
+/* ── Form controls ────────────────────────────────────────────────────────
+   One class for every text entry control in the app, so the mobile rules live in
+   one place instead of being retyped 93 times.
+
+   16px minimum (see above), a 48px minimum height for the Android target size,
+   and enough horizontal padding that the text is not against the border. The
+   size stays at 1rem rather than a fixed 16px so that a user at 200 percent text
+   scaling gets a bigger control, not a clipped one.
+   ─────────────────────────────────────────────────────────────────────── */
+.form-control {
+  font-size: 1rem;
+  min-height: 48px;
+  width: 100%;
+}
+/* Selects need room for the UA's own dropdown arrow on the right. */
+select.form-control { padding-right: 2rem; }
+textarea.form-control { min-height: 96px; }
 
 /* ── Labels / eyebrows ────────────────────────────────────────────────── */
 .label-xs {
@@ -353,7 +496,27 @@ body {
 /* ═══════════════════════════════════════════════════════════════════════
    DYNAMIC STORYTELLING  (sticky narrative scroll)
    ═══════════════════════════════════════════════════════════════════════ */
+/*
+ * height was 100vh, which is the one genuine viewport-unit bug in this app.
+ *
+ * On iOS Safari and Chrome Android, 100vh means the viewport with the browser
+ * chrome HIDDEN. While the address bar is still showing, which is the entire time
+ * someone is scrolling down a page, 100vh is taller than what they can see, so the
+ * bottom of a sticky full height stage is cut off. dvh is the dynamic viewport
+ * height and tracks the chrome as it collapses.
+ *
+ * svh is the fallback rather than 100vh because svh is the SMALL viewport height,
+ * chrome visible: on the browsers that support svh but not dvh it is the safe
+ * choice, and on anything older 100vh is the last resort. Ordered so each later
+ * rule overrides the one before it where supported.
+ *
+ * Note: min-h-screen elsewhere in the app is left alone on purpose. min-height
+ * does not exhibit this bug (a too-large minimum is invisible), so rewriting those
+ * would be churn with no user visible effect.
+ */
 .story-stage { position: sticky; top: 0; height: 100vh; display: grid; place-items: center; overflow: hidden; }
+@supports (height: 100svh) { .story-stage { height: 100svh; } }
+@supports (height: 100dvh) { .story-stage { height: 100dvh; } }
 .story-step { transition: opacity .5s ease, transform .6s cubic-bezier(.16,1,.3,1); }
 .story-num { -webkit-text-stroke: 2px var(--line); color: rgba(8,8,10,.55); transition: -webkit-text-stroke .5s, color .5s; }
 .story-step.active .story-num { -webkit-text-stroke: 2px var(--red); }

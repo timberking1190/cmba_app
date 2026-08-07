@@ -29,7 +29,7 @@ export function TeamLinktActions({
             href={a.href}
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex items-center gap-2 font-display font-bold text-sm uppercase tracking-wider px-4 py-2.5 transition-colors ${
+            className={`inline-flex items-center justify-center gap-2 min-h-[44px] font-display font-bold text-sm uppercase tracking-wider px-4 py-2.5 transition-colors ${
               i === 0
                 ? "bg-cmba-red hover:bg-cmba-hot text-white"
                 : "border border-white/15 text-cmba-grey-light hover:border-cmba-red hover:text-white"
