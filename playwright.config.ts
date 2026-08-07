@@ -21,7 +21,27 @@ export default defineConfig({
       args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
     },
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    /*
+     * Desktop project for the pre-existing suites (the arcade needs a GL context
+     * and the scheduler console is a desktop admin screen).
+     */
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      testIgnore: ['a11y.spec.ts', 'mobile.spec.ts', 'resilience.spec.ts', 'cache-privacy.spec.ts'],
+    },
+    /*
+     * Mobile project for the audit suites. Pixel 5 is a reasonable stand in for
+     * the mid range Android this app is actually used on. hasTouch matters: some
+     * assertions depend on the touch code path, not the mouse one.
+     */
+    {
+      name: 'mobile-chrome',
+      use: { ...devices['Pixel 5'] },
+      testMatch: ['a11y.spec.ts', 'mobile.spec.ts', 'resilience.spec.ts', 'cache-privacy.spec.ts'],
+    },
+  ],
   webServer: {
     command: process.env.PW_WEBSERVER || 'npm run dev',
     url: process.env.PW_BASE_URL || 'http://localhost:3000',

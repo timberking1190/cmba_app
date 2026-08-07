@@ -1,4 +1,12 @@
 import { withPayload } from '@payloadcms/next/withPayload'
+import bundleAnalyzer from '@next/bundle-analyzer'
+
+// Bundle analysis is opt-in so normal builds and Vercel deploys are unaffected.
+// Run `ANALYZE=true npm run build` to emit the treemaps under .next/analyze/.
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+  openAnalyzer: false,
+})
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -18,4 +26,4 @@ const nextConfig = {
 
 // withPayload resolves the `@payload-config` alias to src/payload.config.ts and
 // transpiles Payload's server packages for the Next build.
-export default withPayload(nextConfig, { devBundleServerPackages: false })
+export default withBundleAnalyzer(withPayload(nextConfig, { devBundleServerPackages: false }))

@@ -10,6 +10,10 @@
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "analyze": "cross-env ANALYZE=true next build",
+    "audit:baseline": "node scripts/audit/capture-baseline.mjs",
+    "audit:lighthouse": "lhci collect --config=lighthouserc.json && node scripts/audit/summarize-lighthouse.mjs --baseline",
+    "audit:lighthouse:check": "lhci collect --config=lighthouserc.json && node scripts/audit/summarize-lighthouse.mjs --check",
     "payload": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts payload",
     "generate:types": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts payload generate:types",
     "generate:importmap": "cross-env PAYLOAD_CONFIG_PATH=src/payload.config.ts payload generate:importmap",
@@ -61,6 +65,9 @@
     "three": "^0.180.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@lhci/cli": "^0.15.1",
+    "@next/bundle-analyzer": "^16.3.0",
     "@playwright/test": "^1.61.1",
     "@swc-node/register": "^1.11.1",
     "@swc/core": "^1.15.41",

@@ -12,6 +12,11 @@
 /playwright-report/
 /playwright/.cache/
 
+# audit tooling raw output. The committed baselines under docs/audit/ are the
+# durable artefacts; these are the noisy per-run reports that produced them.
+/.lighthouseci/
+/.next/analyze/
+
 # local build-prompt / spec working directory (not app code)
 /cmba-backend-build/
 

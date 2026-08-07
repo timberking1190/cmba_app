@@ -1351,3 +1351,101 @@ worse rather than better:
 - A conflict check appeared not to fire when a game was moved to 08:00. The game
   already started at 08:00, so there was no change and correctly nothing to
   report. Changing the app to report a clash there would have broken it.
+
+---
+---
+
+# Mobile audit and optimization (branch `feat/mobile-audit`, 2026-08-07)
+
+A separate work stream from the backend phases above, with its own numbering. One entry per phase,
+recording what was gated, before and after numbers against `docs/audit/BASELINE.md`, and the
+residual risk accepted rather than fixed.
+
+Standing gate for every phase in this stream:
+
+1. `npm run lint`, `npx tsc --noEmit`, `npm test` clean, with the 65 pre-existing unit test files
+   still green.
+2. New tests for the phase pass.
+3. axe and Lighthouse compared against the committed baseline. A regression fails the gate even when
+   the absolute number still looks acceptable.
+
+## Mobile Phase 0: baseline and tooling
+
+**Gate: baseline committed, tools run successfully. No product change.**
+
+### What was added
+
+| | |
+|---|---|
+| `@axe-core/playwright` | accessibility scanning in Playwright |
+| `@lhci/cli` | Lighthouse CI, mobile emulation with simulated throttling |
+| `@next/bundle-analyzer` | opt in via `ANALYZE=true`, wired in `next.config.mjs` |
+| `lighthouserc.json` | 3 runs per route, Pixel sized mobile emulation, slow 4G, 4x CPU slowdown |
+| `scripts/audit/capture-baseline.mjs` | per route transfer weight, self reported vitals, overflow check, axe scan |
+| `scripts/audit/summarize-lighthouse.mjs` | median of N runs, writes and checks the baseline, with noise tolerances |
+| `e2e/routes.ts` | the shared route inventory every audit suite walks |
+| `e2e/a11y.spec.ts` | axe over 29 public routes at a phone viewport, baseline aware |
+| `playwright.config.ts` | added a `mobile-chrome` project (Pixel 5, touch) alongside the existing desktop one |
+
+New scripts: `npm run analyze`, `audit:baseline`, `audit:lighthouse`, `audit:lighthouse:check`.
+
+### Baseline captured
+
+Committed to `docs/audit/BASELINE.md`, `docs/audit/baseline.json`,
+`docs/audit/lighthouse-baseline.json`, `docs/audit/axe-baseline.json`.
+
+Headline numbers, lab, mobile throttled, median of 3:
+
+| Route | LCP | TBT | CLS | Perf |
+|---|---|---|---|---|
+| `/` | 3365ms | 230ms | 0.046 | 86 |
+| `/schedule` | 3284ms | 27ms | 0.002 | 90 |
+| `/standings` | 3146ms | 20ms | 0.002 | 91 |
+| `/rules` | 3288ms | 20ms | 0.002 | 91 |
+| `/login` | 4081ms | 35ms | 0.002 | 85 |
+
+Every route misses the 2500ms LCP target. CLS passes everywhere. TBT passes everywhere but the
+homepage.
+
+Script transfer is flat at 557 to 688 kB per route. axe finds exactly two violation types,
+`color-contrast` on 15 routes and `heading-order` on 10. Zero routes overflow horizontally at 393px.
+
+### Findings that changed the plan
+
+- **three.js needs no decision.** Measured: it does not load on `/` or `/schedule` at all, only on
+  `/arcade`. The brief asked for options with numbers before deciding; the numbers say there is
+  nothing to decide. Detail in `docs/audit/BASELINE.md`.
+- **The intro overlay and reveal animations are not the LCP cause.** A control Lighthouse run with
+  `--force-prefers-reduced-motion`, which skips both, measured LCP 3630ms against the 3365ms
+  baseline. No improvement. Recorded so Phase 3 does not chase it.
+- **LCP is render delay, not network.** Server response is 13 to 491ms and the LCP element is text
+  with 0ms load time on all five routes. 73 to 90 percent of LCP is render delay.
+
+### Gate result
+
+| Check | Result |
+|---|---|
+| `npm run lint` | pass |
+| `npx tsc --noEmit` | pass |
+| `npm test` | pass, 65 files, 613 tests |
+| Baseline committed | yes |
+| Tools run successfully | yes, Lighthouse 3x5 routes and axe over 29 routes |
+
+One test failed once during a run that overlapped the Lighthouse capture and passed on three
+consecutive clean runs afterwards. Load induced, not a code defect, and noted rather than hidden.
+
+### Residual risk
+
+- The baseline was captured against a **local production build reading the live ca-central-1
+  database**, read only, public routes only. It is representative of production data volume, which is
+  the point, but it is not the production edge. Vercel numbers will differ.
+- **Signed in routes are unmeasured.** `/account`, `/manage`, `/rep` and `/compliance` redirect to
+  `/login` without a session, so an unauthenticated run would have silently measured the wrong page.
+  Measuring them needs a test account and is an operator task.
+- Lighthouse variance is real. The summarizer takes the median of 3 and allows the larger of 250ms
+  or 10 percent on LCP before failing, so a genuine slide is caught and normal noise is not.
+- **RUM is proposed, not installed.** `docs/audit/RUM-OPTIONS.md` sets out four options and
+  recommends a first party `web-vitals` endpoint on residency grounds. No field metric claim is made
+  anywhere in this work.
+- Pre-existing and out of scope: `scripts/audit-ci.mjs` fails on the clean tree at the branch point
+  on `undici` GHSA-4cwx-7wf7-3272. Verified pre-existing by running the gate on a stashed checkout.

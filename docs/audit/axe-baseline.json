@@ -1,0 +1,69 @@
+{
+  "/": [
+    "color-contrast"
+  ],
+  "/schedule": [
+    "color-contrast"
+  ],
+  "/calendar": [
+    "color-contrast"
+  ],
+  "/rules": [
+    "color-contrast",
+    "heading-order"
+  ],
+  "/login": [
+    "heading-order"
+  ],
+  "/game-report": [
+    "heading-order"
+  ],
+  "/scan": [
+    "heading-order"
+  ],
+  "/coach": [
+    "color-contrast"
+  ],
+  "/coach/pathway": [
+    "color-contrast"
+  ],
+  "/coach/courses": [
+    "color-contrast",
+    "heading-order"
+  ],
+  "/coach/clinics": [
+    "color-contrast"
+  ],
+  "/coach/challenges": [
+    "heading-order"
+  ],
+  "/coach/managing-the-moment": [
+    "color-contrast"
+  ],
+  "/ref": [
+    "color-contrast",
+    "heading-order"
+  ],
+  "/athlete": [
+    "color-contrast"
+  ],
+  "/athlete/challenges": [
+    "heading-order"
+  ],
+  "/athlete/quiz": [
+    "heading-order"
+  ],
+  "/parent": [
+    "color-contrast"
+  ],
+  "/resources": [
+    "color-contrast"
+  ],
+  "/contact": [
+    "color-contrast",
+    "heading-order"
+  ],
+  "/leadership": [
+    "color-contrast"
+  ]
+}

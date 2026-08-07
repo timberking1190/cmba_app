@@ -1,0 +1,80 @@
+{
+  "capturedAt": "2026-08-07T20:10:12.491Z",
+  "note": "Median of 3 Lighthouse runs per route, mobile emulation with simulated slow 4G and 4x CPU slowdown, against a local production build. LAB numbers. Not field data.",
+  "budget": {
+    "lcp": {
+      "target": 2500,
+      "alert": 2000
+    },
+    "tbt": {
+      "target": 300,
+      "alert": 160
+    },
+    "cls": {
+      "target": 0.1,
+      "alert": 0.08
+    }
+  },
+  "routes": {
+    "/": {
+      "runs": 3,
+      "perf": 86,
+      "a11y": 96,
+      "bestPractices": 100,
+      "seo": 91,
+      "lcp": 3365,
+      "fcp": 1222,
+      "tbt": 230,
+      "cls": 0.046,
+      "speedIndex": 4201
+    },
+    "/schedule": {
+      "runs": 3,
+      "perf": 90,
+      "a11y": 96,
+      "bestPractices": 100,
+      "seo": 100,
+      "lcp": 3284,
+      "fcp": 946,
+      "tbt": 27,
+      "cls": 0.002,
+      "speedIndex": 4618
+    },
+    "/standings": {
+      "runs": 3,
+      "perf": 91,
+      "a11y": 100,
+      "bestPractices": 93,
+      "seo": 100,
+      "lcp": 3146,
+      "fcp": 923,
+      "tbt": 20,
+      "cls": 0.002,
+      "speedIndex": 4571
+    },
+    "/rules": {
+      "runs": 3,
+      "perf": 91,
+      "a11y": 94,
+      "bestPractices": 100,
+      "seo": 100,
+      "lcp": 3288,
+      "fcp": 1078,
+      "tbt": 20,
+      "cls": 0.002,
+      "speedIndex": 3689
+    },
+    "/login": {
+      "runs": 3,
+      "perf": 85,
+      "a11y": 98,
+      "bestPractices": 100,
+      "seo": 100,
+      "lcp": 4081,
+      "fcp": 929,
+      "tbt": 35,
+      "cls": 0.002,
+      "speedIndex": 3762
+    }
+  }
+}
