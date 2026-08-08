@@ -1,39 +1,44 @@
 {
-  "note": "Lighthouse with --throttling-method=devtools: OBSERVED metrics from a real throttled browser, rather than the Lantern simulator that lighthouserc.json uses. Kept as a second data point because the simulator charges LCP for the JS dependency graph even when the paint does not depend on it, which made every route look like it failed. Still a lab number. Still not field data.",
+  "note": "Lighthouse with --throttling-method=devtools: OBSERVED metrics from a real throttled browser, not the Lantern simulator that lighthouserc.json uses. The simulator charges LCP for the JS dependency graph even when the paint does not depend on it, which made every route look like it failed and hid the one that genuinely did (/login, 5266ms). Still a lab number, still not field data.",
   "capturedAt": "2026-08-07",
   "budget": {
     "lcp": 2500
   },
   "routes": {
     "/": {
-      "lcp": 2336,
+      "lcp": 2343,
       "cls": 0.002,
-      "tbt": 142,
-      "perf": 90
-    },
-    "/login": {
-      "lcp": 2249,
-      "cls": 0.002,
-      "tbt": 23,
-      "perf": 91
-    },
-    "/rules": {
-      "lcp": 2236,
-      "cls": 0.002,
-      "tbt": 51,
-      "perf": 92
+      "tbt": 137,
+      "perf": 89,
+      "a11y": 96
     },
     "/schedule": {
-      "lcp": 2212,
+      "lcp": 2225,
       "cls": 0.002,
-      "tbt": 13,
-      "perf": 91
+      "tbt": 15,
+      "perf": 91,
+      "a11y": 96
     },
     "/standings": {
-      "lcp": 2204,
+      "lcp": 2224,
       "cls": 0.002,
-      "tbt": 19,
-      "perf": 91
+      "tbt": 18,
+      "perf": 91,
+      "a11y": 100
+    },
+    "/rules": {
+      "lcp": 2379,
+      "cls": 0.002,
+      "tbt": 110,
+      "perf": 89,
+      "a11y": 96
+    },
+    "/login": {
+      "lcp": 2404,
+      "cls": 0.002,
+      "tbt": 118,
+      "perf": 89,
+      "a11y": 100
     }
   }
 }

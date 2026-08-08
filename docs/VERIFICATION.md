@@ -1990,3 +1990,89 @@ rather than nudging a timeout.
   the trade-off written down.
 - The sitemap lists CMS pages read with public permissions. If a page is published but access
   controlled in some future way, it would need re-checking.
+
+## Definition of done
+
+Final state of the branch, measured on a clean build.
+
+### Gate
+
+| Check | Result |
+|---|---|
+| `npm run lint` | pass |
+| `npx tsc --noEmit` | pass |
+| `npm test` | pass, **68 files, 744 tests**, up from 65 and 613 |
+| Full `mobile-chrome` e2e | pass, **190 of 190**, 4 skipped (service worker off by design) |
+| Cache privacy, worker enabled | pass, 9 of 9, adversarially verified |
+| `npm run build` | pass |
+| Lighthouse vs committed baseline | **no regression** |
+
+The 65 pre-existing unit test files are all still green. No existing test assertion was changed.
+
+### Core Web Vitals, observed throttling, against where this started
+
+| Route | LCP start | LCP now | Change | 2500ms target |
+|---|---|---|---|---|
+| `/` | 2299ms | 2343ms | +44ms | pass |
+| `/schedule` | 2234ms | 2225ms | -9ms | pass |
+| `/standings` | 2222ms | 2224ms | +2ms | pass |
+| `/rules` | 2247ms | 2379ms | +132ms | pass |
+| `/login` | **5266ms** | **2404ms** | **-2862ms** | pass |
+
+CLS is 0.002 on every route, down from 0.046 on the homepage. TBT is 15 to 137ms against a 300ms
+target. **Every route passes every Core Web Vitals target under observed lab throttling.**
+
+These remain **lab numbers**. This app has no real user monitoring, so no claim is made about the
+75th percentile of real users, and the CI gate uses the more pessimistic simulated numbers on
+purpose. `docs/audit/RUM-OPTIONS.md` proposes a way to get field data and is awaiting a decision.
+
+### Every finding in the brief, and what happened to it
+
+| # | Finding | Outcome |
+|---|---|---|
+| 1 | No route error, loading or empty states across 49 routes | Fixed. Global error boundary, catch-all, 404, 25 route-level error boundaries, 29 loading boundaries. Coverage enforced by a test |
+| 2 | No offline capability | Addressed with a deliberately narrow scope, shipped **off**. Page documents cannot be cached here without caching a member's identity |
+| 3 | No accessibility or performance testing | Fixed. axe over 30 routes, Lighthouse CI against a committed baseline, both in a CI workflow |
+| 4 | No enforced touch target minimum | Fixed. 44px floor under `pointer: coarse` plus `min-width`, `.tap-target` for controls that must stay small, 10 real violations found by measuring |
+| 5 | Form controls likely trigger iOS zoom | Fixed. All 93 audited, `.form-control` carries the 16px and 48px rules, verified by reading computed values in a browser |
+| 6 | Thin safe area handling | Fixed. `viewport-fit=cover` (without which every existing safe-area rule was dead code), plus five utilities and a nav reservation derived from the nav's own size |
+| 7 | Viewport lacks mobile hardening | Fixed. `viewportFit: cover`, zoom preserved and asserted by a test |
+| 8 | One genuine 100vh bug | Fixed. `@supports` ladder to `svh` then `dvh`. `min-h-screen` left alone, as the brief said |
+| 9 | Weak keyboard and autofill hints | Fixed on the priority forms. `type`, `inputMode`, `autoComplete`, `enterKeyHint` per field |
+| 10 | Incomplete manifest | Fixed. 192 and 512 `any`, padded 512 `maskable`, shortcuts, real screenshots |
+| 11 | No robots.txt or sitemap | Fixed. Both generated, both verified by fetching them |
+| 12 | Raw img tags | Fixed with explicit dimensions, deliberately **not** `next/image`: three are member photos and the optimizer would cache personal data server side |
+| 13 | Heavy client payload, unmeasured | Measured. three.js does not load on `/` or `/schedule` at all. Script transfer is still flat at ~570kB and is the untouched next lever |
+
+### What was brought back rather than decided
+
+- **three.js.** Measured: it loads only on `/arcade`. No decision needed, and none of the brief's
+  mitigations would have helped the parent audience.
+- **RUM.** Four options costed, one recommended, nothing installed. It touches user data.
+- **The service worker.** Built, tested, documented, shipped off, with the trade-off written down.
+
+### Plain language: what changed for a parent on a phone
+
+- **The sign in page loads in about 2.4 seconds instead of 5.3.** It was the slowest page on the
+  site by a factor of two, because the form was invisible until the phone finished running the
+  page's code.
+- **Pages no longer jump around while loading.** The announcements bar used to appear a moment late
+  and shove everything down, usually just as you were reaching for a link.
+- **Buttons and links are big enough to hit one handed.** Sixteen of them were too small, including
+  four stacked links inside each hub card that were 20 pixels tall and 14 pixels apart.
+- **Tapping a form field no longer zooms the page in** on an iPhone and leaves you scrolling
+  sideways to find the next box.
+- **The right keyboard appears** for email and phone fields, and your password manager can fill your
+  password.
+- **If a page fails, it says so and offers to try again** instead of showing a blank screen. That
+  was the single most common thing that could go wrong on gym wifi, and there was nothing handling
+  it on any of the 49 pages.
+- **The site is readable in light mode.** The main red buttons had near-black text on red, which is
+  hard to read in bright light. Anyone whose phone is set to light mode was getting that.
+- **You can pinch to zoom anywhere**, and the site still works with text turned up to double size.
+- **There is now a page that tells you what does not work yet** at `/accessibility`, rather than
+  claiming everything is fine.
+
+The things a parent will not see, but that keep the above true: 131 new tests, a performance and
+accessibility budget checked on every change against a committed baseline, and a documented way to
+switch the service worker off from a single environment variable.
