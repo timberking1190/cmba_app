@@ -153,6 +153,42 @@ un-triaged advisory still fails CI.
   security headers (S0), CORS/CSRF lockdown, and the fact that the app has no public
   accounts yet.
 
+### Triage 2026-08-10 (weekly re-scan)
+
+The scheduled Security run on 2026-08-10 failed the `audit-ci` gate on three newly
+disclosed high advisories. Note that the prose above predates the Next 16 upgrade and
+is retained for history; `.audit-allowlist.json` is the authoritative list.
+
+| Advisory | Module | Disposition |
+| --- | --- | --- |
+| GHSA-2v37-7h3g-55p8 | nanoid | **FIXED.** Patched in 3.3.17. Added `overrides.nanoid: ^3.3.17`; the tree now resolves 3.3.18. Lockfile diff is exactly one package. |
+| GHSA-w3rx-r6r6-pgpr | image-size | **ACCEPTED**, tracked. ICNS parser infinite loop. |
+| GHSA-5p2g-fcmc-qvqq | image-size | **ACCEPTED**, tracked. JXL and HEIF parser infinite loops. |
+
+Why image-size is accepted rather than fixed. There is no patched release: the latest
+published version is 2.0.2 and both advisories cover `<=2.0.2`. It reaches the tree
+only through `payload@3.85.1`. The upstream fix is `payload@3.87.1`, which drops the
+dependency entirely, but taking it forces a full lockfile regeneration because every
+`@payloadcms/*` package peer-pins its exact sibling version. That regeneration was
+measured on 2026-08-10: 338 packages change, 162 are added and 113 removed, including
+`nodemailer` 8.0.11 to 9.0.5 (a major bump on the SES path that is already the
+critical-path launch blocker), `next` 16.2.12 to 16.3.0, and `lucide-react` 1.7.0 to
+1.31.0. Taking that 21 days before launch trades a bounded availability risk for a
+broad and largely untested one.
+
+Exposure, stated plainly. Impact is denial of service only; there is no data exposure
+and no path to personal data. It is reachable by authenticated users, because
+`Media.access.create` is `authenticated` and `upload.mimeTypes` is `image/*`, so any
+signed-in member can submit a crafted file. Note that narrowing `mimeTypes` would not
+be a true mitigation, since image-size dispatches on magic bytes rather than on the
+declared content type. The practical bound is that these run in Vercel serverless
+functions, so a parser that loops is terminated at the function timeout rather than
+hanging a shared server.
+
+Remediation owner and date: engineering, during the Aug 11 to Aug 31 soak window, as a
+standalone Payload 3.85.1 to 3.87.1 upgrade with a full test and build verification of
+its own. Re-run `node scripts/audit-ci.mjs` afterwards and delete both entries.
+
 ## S1 — Identity and authentication (in progress, incremental)
 
 | Control | Requirement | Implementation | Tested by |

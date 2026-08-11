@@ -21,7 +21,21 @@
       "severity": "high",
       "module": "undici",
       "title": "undici vulnerable to cross-origin request routing via SOCKS5 proxy pool reuse"
+    },
+    "GHSA-w3rx-r6r6-pgpr": {
+      "severity": "high",
+      "module": "image-size",
+      "title": "image-size: ICNS parser allows denial of service through an infinite loop",
+      "added": "2026-08-10",
+      "note": "Framework-transitive via payload 3.85.1. No patched release exists: latest published image-size is 2.0.2 and the advisory covers <=2.0.2. Fix requires payload 3.87.1, which regenerates the lockfile and floats 338 packages including a nodemailer 8->9 major on the SES path. Deferred as a controlled upgrade during the soak window. DoS only, no data exposure."
+    },
+    "GHSA-5p2g-fcmc-qvqq": {
+      "severity": "high",
+      "module": "image-size",
+      "title": "image-size: JXL and HEIF parsers allow denial of service through infinite loops",
+      "added": "2026-08-10",
+      "note": "Same root cause, same remediation path as GHSA-w3rx-r6r6-pgpr."
     }
   },
-  "_reviewed": "2026-08-01"
+  "_reviewed": "2026-08-10"
 }
