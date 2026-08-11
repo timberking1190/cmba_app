@@ -2,6 +2,7 @@ import type { CollectionBeforeValidateHook } from 'payload'
 import { APIError } from 'payload'
 
 import { checkRateLimit } from '../../lib/rateLimit'
+import { registrationGlobalLimit, registrationIpLimit } from '../../lib/registration/limits'
 import { publicRegistrationAllowed } from '../../lib/registration/policy'
 import {
   getClientIp,
@@ -20,7 +21,7 @@ const ONE_HOUR = 60 * 60 * 1000
  * PUBLIC self-registration it enforces:
  *  - the registration mode (REGISTRATION_MODE=closed -> admin-created only),
  *  - a honeypot,
- *  - per-IP (hashed) + global rate limiting,
+ *  - per-IP (hashed) + global rate limiting (tunable, see lib/registration/limits.ts),
  *  - Cloudflare Turnstile when configured.
  * Default mode is 'open', Turnstile is off, and the honeypot/limits do not affect a
  * normal signup, so current behavior is unchanged until the operator tightens it.
@@ -40,8 +41,8 @@ export const registrationGate: CollectionBeforeValidateHook = async ({ operation
   }
 
   const ip = getClientIp(headers)
-  const perIp = await checkRateLimit(req.payload, { bucket: 'register:ip', subject: hashIp(ip), limit: 5, windowMs: ONE_HOUR })
-  const global = await checkRateLimit(req.payload, { bucket: 'register:global', subject: 'all', limit: 50, windowMs: ONE_HOUR })
+  const perIp = await checkRateLimit(req.payload, { bucket: 'register:ip', subject: hashIp(ip), limit: registrationIpLimit(), windowMs: ONE_HOUR })
+  const global = await checkRateLimit(req.payload, { bucket: 'register:global', subject: 'all', limit: registrationGlobalLimit(), windowMs: ONE_HOUR })
   if (!perIp.ok || !global.ok) {
     throw new APIError('Too many sign-ups from this connection. Please wait and try again.', 429, undefined, true)
   }
