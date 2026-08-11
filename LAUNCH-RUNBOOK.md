@@ -119,7 +119,35 @@ operation as the Sept 1 launch flip, in reverse.
 **Verification once done.** Confirm `/signup` still renders, that an anonymous create
 attempt is refused with 403, and that sign in for an existing user is unaffected.
 
-Status: awaiting OPERATOR.
+**Status: DONE 2026-08-10.** OPERATOR set the variable and redeployed; production is
+served by `dpl_5mCriQrw3PWzqKfZZTJyy7EAkp1t`.
+
+Verified:
+
+```
+POST /api/users  ->  403
+{"errors":[{"message":"Public sign-up is currently closed. Please contact CMBA to be added."}]}
+```
+
+`/`, `/login`, `/signup`, `/schedule`, `/standings` all still 200, and
+`POST /api/users/login` still answers 400 on an empty body rather than 403, which
+confirms sign in for existing users is untouched. Runtime errors in the hour after the
+change: none. The 403 log payload carries `"data": null`, and the login validation error
+logs a field name rather than a field value, so no personal data reaches the logs.
+
+**The standing probe.** This is the check for the gate in either direction, and it
+creates nothing, because the honeypot and the mode check both reject before any write:
+
+```
+curl -s -X POST "https://cmbaplatform.vercel.app/api/users" \
+  -H "Content-Type: application/json" -H "x-cmba-hp: probe" -d '{}'
+
+closed -> 403 "Public sign-up is currently closed. Please contact CMBA to be added."
+open   -> 400 "Sign-up rejected."   (the honeypot firing, which means the mode check passed)
+```
+
+Note that a plain POST without the honeypot header, when registration is open, gets as
+far as the rate limiter and writes a `RateLimitHits` row. Use the honeypot form.
 
 ### Action 4: commit the launch artefacts
 
@@ -135,9 +163,17 @@ uncommitted `docs/CUTLINE_SEPT1.md`, on branch `docs/launch-artifacts`.
 1. **`feat/mobile-audit` merge decision.** 28 conflicts against `main`, because it
    reimplemented work `main` already has. Recommendation is to cherry pick the
    accessibility fixes rather than merge. See D-005.
-2. **Two Vercel projects build this repository.** `cmba_platform` serves production;
-   what `cmba_app` is for, and whether it holds environment variables or a database
-   connection, is unverified.
+2. **A second Vercel project, `cmba_app`, builds this repository and is publicly
+   reachable while broken.** `prj_rfb8gdshzTFHjOsPmfkSMz9IfwEO`, domain
+   `cmbaapp.vercel.app`, which answered **HTTP 500** to an anonymous request on
+   2026-08-10. OPERATOR has confirmed everything should live on `cmba_platform`, so
+   this is cruft. It builds on every push and on every pull request, which means a
+   second copy of a youth data application is being deployed on every change with an
+   unknown environment. It is currently failing rather than serving data, but a 500 is
+   not a security control. Recommended action, needs OPERATOR approval because it is
+   destructive: disconnect its Git integration and delete the project. Confirm first
+   that it holds no environment variables or database connection worth auditing before
+   deleting, since deletion destroys that evidence.
 3. **The Playwright, axe and Lighthouse CI job is a false green.** It finishes in about
    six seconds because `E2E_BASE_URL` is unset. Activating it needs Protection Bypass
    for Automation, because previews sit behind Vercel SSO. See
