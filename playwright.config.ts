@@ -31,6 +31,36 @@ import { defineConfig, devices } from '@playwright/test'
  */
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || process.env.PW_BASE_URL || 'http://localhost:3000'
 
+/*
+ * Vercel deployment protection. Preview deployments sit behind Vercel SSO
+ * (all_except_custom_domains), so an anonymous browser is answered with a 302 to
+ * vercel.com/sso-api and EVERY spec fails on a redirect rather than on anything real.
+ * Protection Bypass for Automation is the supported way through: generate the secret
+ * in the Vercel project's Deployment Protection settings and expose it to CI as
+ * VERCEL_AUTOMATION_BYPASS_SECRET.
+ *
+ * The headers attach only when the secret is present, so a local run against
+ * localhost is unaffected. x-vercel-set-bypass-cookie makes the bypass stick across
+ * in-browser navigations; without it only the first request is let through and the
+ * suite fails in a way that looks like a broken app.
+ *
+ * The warning below exists because the failure mode is otherwise baffling. Pointing
+ * at a protected preview with no secret produces dozens of redirect failures that
+ * look like application bugs, so say so once, loudly, up front.
+ */
+const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+const bypassHeaders = bypassSecret
+  ? { 'x-vercel-protection-bypass': bypassSecret, 'x-vercel-set-bypass-cookie': 'true' }
+  : undefined
+
+if (!bypassSecret && /vercel\.app/.test(baseURL)) {
+  console.warn(
+    '[playwright] Targeting a vercel.app URL with no VERCEL_AUTOMATION_BYPASS_SECRET.\n' +
+      '            If that deployment is protected, every spec fails on an SSO redirect\n' +
+      '            rather than on a real assertion. See e2e/README.md.',
+  )
+}
+
 export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.spec.ts',
@@ -43,6 +73,7 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   use: {
     baseURL,
+    ...(bypassHeaders ? { extraHTTPHeaders: bypassHeaders } : {}),
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     launchOptions: {

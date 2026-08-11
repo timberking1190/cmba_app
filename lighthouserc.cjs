@@ -11,11 +11,21 @@
  */
 const base = (process.env.LHCI_BASE_URL || 'http://localhost:3000').replace(/\/$/, '')
 
+/*
+ * Same Vercel deployment-protection problem the Playwright config solves: without the
+ * bypass header Lighthouse measures the SSO interstitial rather than the app, and
+ * happily reports a great score for a login redirect. Attach the header only when the
+ * secret is present so local runs are unaffected.
+ */
+const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+const extraHeaders = bypassSecret ? { 'x-vercel-protection-bypass': bypassSecret } : undefined
+
 module.exports = {
   ci: {
     collect: {
       url: [`${base}/`, `${base}/schedule`, `${base}/standings`],
       numberOfRuns: 2,
+      ...(extraHeaders ? { settings: { extraHeaders } } : {}),
     },
     assert: {
       assertions: {
@@ -33,8 +43,19 @@ module.exports = {
         'interactive': ['warn', { maxNumericValue: 6000 }],
       },
     },
+    /*
+     * Reports are kept on the runner and uploaded as a CI artifact, NOT published.
+     *
+     * This was 'temporary-public-storage', which posts the report to a public URL. A
+     * Lighthouse report embeds a full-page screenshot and the final DOM of every page
+     * it visits. Once this gate points at a preview of a platform that renders member
+     * and minors' data, that would publish pictures of children's personal information
+     * to an unauthenticated link. The gate was inert until now, so this was latent
+     * rather than live, but it must not be switched on as it stood.
+     */
     upload: {
-      target: 'temporary-public-storage',
+      target: 'filesystem',
+      outputDir: './.lighthouseci',
     },
   },
 }
