@@ -20,6 +20,19 @@ and Vercel (and confirming each one's sub-processors are Canada-resident) is a
 launch blocker, called out in `docs/SECURITY.md` under "Required external
 assurance" and in the data residency document.
 
+Two updates as of 2026-08-04, and the difference between them is the point:
+
+- **The board decision is now made.** Using US-headquartered processors, on the basis
+  of Canadian residency rather than full sovereignty, is accepted and recorded in
+  `docs/adr/0004-accept-us-headquartered-processors.md`. That ADR also accepts Sentry
+  for non-personal diagnostics only, and lists the conditions the acceptance depends
+  on. This closes the "board decision on US-headquartered processors" item.
+- **The DPAs are still not signed.** Deciding to use a processor and having a data
+  processing agreement in force with it are different things, and only the first one
+  happened. Every DPA status in the table below is still accurate as written. The
+  per-vendor mechanics for actually executing them are in
+  `docs/launch-blockers/DPA_EXECUTION.md`.
+
 ## Register
 
 | Processor | Purpose | Data categories | Region / residency | DPA status | Sub-processors | Notes |
