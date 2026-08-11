@@ -5,6 +5,10 @@ name: E2E, accessibility, performance
 # the app here. Set the repo variable E2E_BASE_URL to a Vercel preview (or run the
 # workflow manually with a URL) to turn the gate on. Until then the job is a no-op so
 # it never blocks unrelated PRs. See e2e/README.md and docs/OPERATOR_ACTIONS.md.
+#
+# Setting E2E_BASE_URL alone is NOT enough. Preview deployments sit behind Vercel SSO,
+# so the repo secret VERCEL_AUTOMATION_BYPASS_SECRET must also be set or every spec
+# fails on a redirect rather than on anything real.
 
 on:
   pull_request:
@@ -61,16 +65,22 @@ jobs:
           PLAYWRIGHT_BASE_URL: ${{ steps.target.outputs.url }}
           E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
           E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+          # Previews are behind Vercel SSO. Without this every spec fails on a
+          # redirect to vercel.com/sso-api rather than on a real assertion.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: npm run test:e2e
       - name: Lighthouse mobile budget
         if: steps.target.outputs.url != ''
         env:
           LHCI_BASE_URL: ${{ steps.target.outputs.url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: npm run lhci
       - name: Upload Playwright report
         if: steps.target.outputs.url != '' && always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: playwright-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            .lighthouseci/
           retention-days: 14
