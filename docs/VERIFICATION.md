@@ -2054,3 +2054,33 @@ and every internal link target resolving to a real page rather than the 404 body
 7. **Local verification ran against an empty database.** Layout, visibility, overflow, and
    link integrity do not depend on row counts, but the populated-schedule rendering path
    was exercised only against production, read only.
+
+## Final state, re-run after the last commit
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | clean |
+| `npm run lint` | clean, 0 warnings |
+| `npm test` | 654 passed, 71 files |
+| `npm run build` | compiles |
+| `e2e/first-paint.spec.ts` on desktop-chromium, mobile-chrome, mobile-safari | **57 passed**, exit 0 |
+| Route sweep, 29 routes | headings painted, no overflow, 0 dead links |
+
+Two late findings, both from re-reading computed styles rather than trusting a
+screenshot:
+
+- The TeamLinkt frame's backdrop used the `bg-white` utility, which resolves through
+  the flipping `--c-white` token, so it painted near-black in the light theme and a
+  white slab in the dark one. Now a literal `#ffffff`, applied only once loaded. The
+  page looked fine only because TeamLinkt's own content paints over it on arrival.
+- The `/standings` heading wraps to two lines on a phone and its font bounding boxes
+  overlap by 15.2px at leading 0.84. That is ascent and descent metrics, not ink: both
+  lines are all caps with no descenders, leaving roughly 6px of real clearance.
+  Screenshots at 390px and at desktop confirm the glyphs are complete and do not
+  collide. Deliberately left as designed.
+
+One process note worth recording. A mid-run suite failure on the desktop homepage
+(`page.goto` exceeding 60s) was **not** a defect: several ad hoc browser scripts were
+hitting the single-worker local server at the same time as the suite. On a clean
+server the same routes answer in 0.02s to 0.33s and the suite passes 57 of 57. Worth
+remembering before chasing a timeout as a performance regression.
