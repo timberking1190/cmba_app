@@ -101,13 +101,23 @@ export function TeamLinktEmbed({
               Loading the TeamLinkt view
             </p>
           )}
+          {/*
+            * The backdrop is a literal white, not the `bg-white` utility. That
+            * utility resolves to rgb(var(--c-white)), and the light theme remaps
+            * that token to near-black so text-white reads correctly on flipped
+            * cards. Behind this frame the flip is exactly backwards: TeamLinkt's
+            * page is light in both themes, so the utility would paint a dark slab
+            * under it in light mode and a white one in dark mode, which is the
+            * blank-slab look this component exists to avoid. Applied only once the
+            * frame has loaded, so nothing flashes while it is still empty.
+            */}
           <iframe
             ref={frame}
             src={src}
             title={`CMBA ${page} on TeamLinkt`}
             onLoad={() => setState("ok")}
-            className={`w-full block ${state === "ok" ? "bg-white" : "bg-transparent"}`}
-            style={{ minHeight: 720, border: 0 }}
+            className="w-full block"
+            style={{ minHeight: 720, border: 0, backgroundColor: state === "ok" ? "#ffffff" : "transparent" }}
           />
         </div>
       )}
