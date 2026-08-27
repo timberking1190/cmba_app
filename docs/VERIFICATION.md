@@ -1781,3 +1781,276 @@ OPERATOR_ACTIONS.md, DECISIONS.md, and the processor register):
   Ed25519 PEM and re-set `MEMBERCARD_SIGNING_*` so eligible coaches get a working QR.
 
 <!-- 2026-08-05: signing key rotated to a fresh PKCS8 Ed25519 keypair; this line forces a production redeploy so the new MEMBERCARD_SIGNING_* env vars take effect. -->
+
+---
+
+# Live browser bugfix, branch feat/live-bugfix (2026-08-27)
+
+Fixes for defects found by a human directed browser session against production,
+plus what that session could not reach. Baseline for every "before" measurement is
+`origin/main` at 30190d3, which is what was deployed at the time.
+
+## Note on where the defects actually lived
+
+The brief warned that the local checkout might lag production. It did, in both
+directions, and that mattered:
+
+- Local `main` was 22 commits behind `origin/main`, so the source that appeared to
+  be deployed was not. Confirmed by fetching the live stylesheet and matching
+  `.reveal{opacity:0}` against each candidate tree.
+- A local branch `feat/mobile-audit` already contained a fix for defect 1, unpushed,
+  on top of that stale `main`. This branch starts from `origin/main` and ports only
+  the reveal fix, on the operator's decision.
+
+## Environment used for verification
+
+No Postgres or Docker was present, and `.env` pointed `DATABASE_URL` at the
+production ca-central-1 project. Booting the app against production to run a browser
+suite would have written rate limit and client event rows to live data, so it was not
+done. Instead a throwaway PostgreSQL 16 instance was started on port 55432, and the
+Payload migrations were applied to it. All local measurements below therefore come
+from a production build (`next build && next start`) against an empty but real
+database. Where the empty database changes what a page shows, it is called out.
+
+An earlier attempt to run against a deliberately unreachable database was abandoned:
+Payload raised unhandled rejections that destabilised the server to the point where
+it began answering static assets with 500, which silently produced a page with no CSS
+and a full set of meaningless "passing" measurements.
+
+## P0 defect 1: above the fold content invisible until scroll
+
+**Before.** `globals.css` set `.reveal { opacity: 0 }` and a `GlobalFX`
+IntersectionObserver added `.in`. Everything wearing `.reveal` was hidden from the
+moment the HTML arrived until React had hydrated and the effect had run. On `/login`
+that is the whole sign in form.
+
+**Why the existing suite missed it.** `e2e/public.spec.ts` asserted
+`expect(h1).toBeVisible()`, and Playwright's visibility check tests layout, not
+paint. An element at opacity 0 still has a box and still counts as visible. That
+assertion passed against the broken build.
+
+**After.** `.reveal` is an inert marker with no visual effect. The hidden state moved
+to `.reveal-armed`, applied only by JavaScript and only to elements more than 120px
+below the fold. Content renders visible with no script at all; elements already on
+screen are never hidden; `prefers-reduced-motion` skips arming entirely; and the
+effect cleanup un-arms anything that never reached `.in`, so nothing can be stranded.
+
+**Evidence** (`e2e/first-paint.spec.ts`, mobile-chrome):
+
+| Target | Production (before) | This branch (after) |
+|---|---|---|
+| `/login` heading and email field painted above the fold | FAIL | PASS |
+| `/login` renders with HTML and CSS alone | FAIL | PASS |
+| `/standings` heading and first control painted above the fold | FAIL | PASS |
+| `/standings` renders with HTML and CSS alone | FAIL | PASS |
+| Whole file, all six routes | 4 failed / 15 passed | 19 passed |
+
+The 120px arming margin came from a measurement, not a guess: an element sitting
+exactly on the fold was armed by the layout read at mount and then found
+intersecting a moment later once fonts settled, and was caught mid transition at
+effective opacity **0.899**.
+
+## P0 defect 2: standings TeamLinkt embed rendered as a grey slab
+
+**The reported hypothesis was wrong.** The iframe had a well formed `src`:
+`https://leagues.teamlinkt.com/calgaryminorbasketballassociation/Standings?iframe`.
+
+**Actual root cause, proved with curl.** TeamLinkt truncates the league slug to 32
+characters, so the real slug ends `associatio` with no trailing `n`. Ours carried the
+extra character. An unknown slug is answered with a 302 to TeamLinkt's marketing site
+rather than a 404:
+
+```
+leagues.teamlinkt.com/calgaryminorbasketballassociation/Standings?iframe
+  -> 302 https://www.teamlinkt.com/our-leagues/      (matches *.teamlinkt.com, allowed)
+  -> 308 https://teamlinkt.com/our-leagues/          (APEX: not matched by the wildcard)
+  -> 200 https://teamlinkt.com/solutions/for-clubs-and-associations
+```
+
+A CSP host wildcard matches subdomains but not the apex, so `frame-src
+https://*.teamlinkt.com` blocked the final hop, with nothing in the console pointing
+at the cause. Every slug tested, including nonsense ones, produced the same redirect,
+which is what confirmed the host no longer serves that URL shape at all.
+
+**Also stale: the season id.** `TEAMLINKT_SEASON_ID` was `50938`, the "2026 Spring
+League", which finished on 10 June 2026. The current season is `58270`, "26-27 Calgary
+Club Premier League".
+
+**After.** Slug corrected to `calgaryminorbasketballassociatio` and season to `58270`,
+both with comments explaining why they look wrong. The apex added to `frame-src` so an
+apex redirect can never be silently blocked again, which does not widen anything
+meaningfully since the wildcard already covered the domain. The embed now detects that
+it never loaded (a CSP refusal never fires `load`) and swaps in a plain explanation
+plus a working link, no longer paints a white slab while loading, and is no longer
+lazy, because in the fallback path it is the page's main content and a frame never
+scrolled to would never fire `load` for the timeout to read.
+
+**Evidence.**
+
+```
+before: curl -sSI ".../calgaryminorbasketballassociation/Standings"  -> 302
+after:  curl -sSI ".../calgaryminorbasketballassociatio/Standings"   -> 200
+```
+
+`src/lib/__tests__/teamlinktConfig.test.ts` guards this offline: 3 of its 4
+assertions fail when `src/lib/teamlinkt.ts` is reverted to the `origin/main` version,
+and all 4 pass on this branch.
+
+## P0 defect 3: schedule shows zero games. This is a DATA problem
+
+Diagnosed before changing behaviour, as instructed. It is not a query, filter,
+timezone, or publish state bug.
+
+**Evidence.**
+
+1. Production reads its own database, not TeamLinkt. The live page says "Live
+   schedule data from CMBA Connect" and its division filter offers exactly one
+   division, `U13 Boys A`, which is seed data rather than a real season.
+2. TeamLinkt's own feed for the association returns 298 events, and every one of them
+   is in the past: earliest `2026-04-11`, latest `2026-06-10`, with **0** on or after
+   today (2026-08-27). Distribution: April 148, May 100, June 50.
+3. The current season does exist in TeamLinkt, with divisions, teams, and venues
+   configured, but **no games**. `POST leagues/getAllEvents/34176` with
+   `season_id=58270` returns `recordsTotal: 0`.
+4. Standings for that season are empty as well: `getStandings/34176/58270` returns `[]`.
+
+**Conclusion.** The 2025-26 season ended on 10 June 2026. The 2026-27 schedule has not
+been published in TeamLinkt, and no season has been imported into CMBA Connect. There
+is genuinely nothing to show and nothing to import today. **This needs the operator,
+not a code change.**
+
+**What changed anyway.** The empty state no longer reads like a broken page. It now
+gives the date of the last recorded game, says the next schedule is not published yet,
+and offers last season's results and the TeamLinkt schedule. The date is derived from
+the data rather than written into the copy, so it cannot go stale. Filtering to an
+empty division is handled separately and offers a way back to all divisions.
+
+## P1 defects
+
+**4. Hero display type clipped.** `leading-[0.84]` is deliberate and worth keeping, but
+a line box under 1em cannot contain the glyph box, and the `overflow: hidden` masking
+the rise animation cut the tops and bottoms off. The mask now clears the glyph box with
+a matching negative margin so nothing moves, and the animation start goes to 130%.
+Measured mask clearance after the fix: **17.0px desktop, 4.1px mobile**, against an em
+box overflow of 0.08em. Confirmed visually at both breakpoints.
+
+**5. Two schedule routes.** Every nav surface was labelled SCHEDULE and pointed at
+`/calendar`, while `/schedule` served identical content by re-export. `/schedule` is now
+the real page and `/calendar` 308s to it. Verified: `curl /calendar -> 308 /schedule`.
+Header, MobileNav, FloatingNav, Footer, the homepage, program pages, the assistant
+prompt, the sitemap, and the service worker offline list all updated.
+
+**6. Contradictory data story.** Settled as split by job rather than by plumbing: look
+things up in CMBA Connect, do things in TeamLinkt. True regardless of which side the
+data is read from, so it survives the season import. The "Managed in TeamLinkt" panel,
+which never said managed how, became "Do this in TeamLinkt". The real source is still
+stated, as a footnote.
+
+**7. Interior heroes.** Tightened on small screens only. Measured on iPhone 13
+(390x664): `/game-report` heading at 97px and the Concern button at 434px, both on the
+first screen.
+
+## Additional defects found while verifying, not in the brief
+
+**Sign in form below the fold on a phone.** Measured at **835px on an iPhone 13**,
+171px past the 664px fold, and at opacity 0 because the reveal correctly armed it. A
+member arriving to sign in read two explanatory cards and four hub links, then had to
+scroll. The orientation blocks now sit below the form they explain. Email field now at
+**332px**. The distinction between a CMBA Connect training account and TeamLinkt
+registration, which is the best thing about this page, is untouched.
+
+**Red buttons failed WCAG AA in the light theme, at 3.13:1.** Light theme remaps
+`--c-white` to near-black so `text-white` reads correctly once dark cards turn white,
+but CMBA red does not flip, so white on red became near-black on red for the primary
+button on every page, Sign In included. Pre-existing and present on production. It was
+invisible to axe on `/login` and `/standings` only because the reveal bug and the broken
+embed hid those buttons from the scan, so fixing the P0 defects is what exposed it.
+Red surfaces now restore the token locally, correcting every descendant at once.
+
+axe serious and critical violations, Pixel 5, local build:
+
+| Route | Before this fix | After |
+|---|---|---|
+| `/login` | 2 | **0** |
+| `/schedule` | 3 | **0** |
+| `/standings` | 2 | 1 (inside TeamLinkt's own iframe) |
+| `/rules` | 13 | **0** |
+| `/` | 8 | 7 |
+
+The `/rules` count was an artefact: those nodes were sampled mid animation. With a
+4 second settle instead of 1.2 they resolve to zero. Recorded because it would
+otherwise look like a regression.
+
+**Five CMS pages linked but never published.** `src/content/programPages.ts` defines
+key dates, meeting minutes, spring league, summer camps, and women in coaching.
+That file is seed data, and none of the five were ever seeded. `src/lib/cmbaLinks.ts`
+links all five from the homepage, schedule, resources, parent hub, and coach clinics.
+**All five return the 404 page on production**, verified directly. The site's busiest
+pages each carried a card leading to a dead end.
+
+This survived every previous check because the app answers unknown URLs with the
+branded 404 body under an HTTP **200**, so any link checker trusting status codes
+reports the site as clean. `src/lib/cmsPages.ts` now asks, in one cached query, which
+of the five are published, and each link is hidden until its page exists. They will
+reappear on their own once seeded.
+
+**`upgrade-insecure-requests` broke local WebKit testing.** The directive keys off
+`NODE_ENV`, and `next start` is production, so a build served over plain http told the
+browser to rewrite every asset to `https://localhost`, where nothing listens. Chromium
+hides this by exempting localhost; WebKit obeys it, so the entire stylesheet failed and
+the mobile Safari project rendered unstyled HTML while still reporting confident
+numbers. Now scoped to loopback hosts, along with HSTS, which should never pin
+localhost. Production is provably unaffected: a real deployment is never loopback.
+
+## Full route sweep
+
+All 29 public routes on an iPhone 13 viewport: HTTP status, primary heading present
+and painted at full opacity, no horizontal overflow, no faded first screen content,
+and every internal link target resolving to a real page rather than the 404 body.
+
+```
+29/29 routes: heading painted, no overflow, no faded first-screen content
+26 internal link targets checked: no dead internal links
+```
+
+## Gate results
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | clean |
+| `npm run lint` | clean, 0 warnings |
+| `npm test` (vitest) | 654 passed, 71 files (650 before, +4 new guards) |
+| `npm run build` | compiles |
+| `e2e/first-paint.spec.ts`, 3 device projects | 57 passed |
+| Route sweep | 29 routes clean, 0 dead links |
+
+## Residual risks and what still needs a decision
+
+1. **The schedule is empty and no code can fix it.** CMBA has not published the 2026-27
+   schedule in TeamLinkt, and no season is imported into CMBA Connect. Operator action.
+2. **Five CMS pages are unpublished.** Their links are now hidden rather than dead, but
+   the content is written and unused, and the key dates copy describes Spring 2026, which
+   has passed. Seed or author them, then refresh the dates.
+3. **Verify the Vercel environment.** If `TEAMLINKT_LEAGUE_SLUG` or `TEAMLINKT_SEASON_ID`
+   are set as project env vars, they override the corrected code defaults and the embed
+   stays broken. Confirm they are absent or updated to
+   `calgaryminorbasketballassociatio` and `58270`.
+4. **Unknown URLs return HTTP 200.** The 404 body renders correctly, but the status code
+   is 200, so search engines can index every bogus URL as a real page and link checkers
+   cannot detect dead links. Not fixed here: it stems from streaming a dynamically
+   rendered page, where the status is committed before `notFound()` is reached. Worth a
+   dedicated change.
+5. **Homepage still has 7 axe violations**, all pre-existing: decorative numerals at
+   `text-cmba-red/25` (1.55:1), chips at `bg-cmba-red/15` (4.09:1, just under the 4.5
+   threshold), and a `bg-white` block that inverts to near-black in the light theme.
+   Outside this brief, but `e2e/public.spec.ts` will stay red on `/` until they are dealt
+   with. That spec was already failing on production before this branch.
+6. **No JavaScript testing has a caveat.** The root layout reads the CSP nonce, forcing
+   dynamic streaming, so with script disabled Next never assembles `<main>` on any route,
+   on any branch. The test assembles the page once with script on, strips the classes the
+   observer added, and replays that markup with JavaScript disabled against the real
+   stylesheet. It genuinely tests whether CSS hides content; it does not test Next's
+   streaming fallback, which has no script-free path by design.
+7. **Local verification ran against an empty database.** Layout, visibility, overflow, and
+   link integrity do not depend on row counts, but the populated-schedule rendering path
+   was exercised only against production, read only.

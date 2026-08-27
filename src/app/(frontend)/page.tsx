@@ -9,6 +9,7 @@ import { AnnouncementsStrip } from "@/components/AnnouncementsStrip";
 import { BentoGrid } from "@/components/home/BentoGrid";
 import { StoryScroll } from "@/components/home/StoryScroll";
 import { REGISTER, DOCS, COURSES } from "@/lib/cmbaLinks";
+import { livePageFilter } from "@/lib/cmsPages";
 
 const hubs = [
   { num: "01", title: "Athlete Hub", meta: "Development · Guides · Drills", href: "/athlete" },
@@ -42,7 +43,10 @@ const divisions = [
   { label: "U18", href: "/rules?division=U18" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Seed-only CMS pages are not published, so do not link to them. See lib/cmsPages.
+  const isLive = await livePageFilter();
+  const liveAnnouncements = announcements.filter((a) => isLive(a.href));
   return (
     <div>
       <AnnouncementsStrip />
@@ -182,7 +186,7 @@ export default function HomePage() {
             <Link href="/schedule" className="font-mono text-xs text-cmba-red tracking-[0.1em] uppercase hover:text-white transition-colors">All news →</Link>
           </div>
           <div className="grid md:grid-cols-2 gap-px bg-white/12 border border-white/12">
-            {announcements.map((a) => (
+            {liveAnnouncements.map((a) => (
               <a key={a.title} href={a.href} target="_blank" rel="noopener noreferrer" className="bg-cmba-black/80 backdrop-blur-sm p-6 group block">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="font-mono text-[10px] tracking-[0.14em] uppercase bg-cmba-red/15 text-cmba-red px-2 py-1">{a.tag}</span>

@@ -8,6 +8,7 @@ import { PhotoHero } from "@/components/media/PhotoHero";
 import { PhotoBand } from "@/components/media/PhotoBand";
 import { CourtLines } from "@/components/graphics/CourtLines";
 import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
+import { livePageFilter } from "@/lib/cmsPages";
 
 const groups = [
   {
@@ -59,7 +60,10 @@ const quick = [
   { label: "Fees Document", href: DOCS.fees, icon: FileText },
 ];
 
-export default function OperationsPage() {
+export default async function OperationsPage() {
+  // Seed-only CMS pages are not published, so do not link to them. See lib/cmsPages.
+  const isLive = await livePageFilter();
+  const showCalendar = isLive(DOCS.officialCalendar);
   return (
     <div>
       {/* Hero */}
@@ -71,10 +75,12 @@ export default function OperationsPage() {
         subtitle="Governance, conduct, and operations resources for CMBA executives, directors, and committees. League management runs on RAMP and TeamLinkt — the links below jump straight to the live tools."
       >
         <div className="flex flex-wrap gap-3">
-          <a href={DOCS.officialCalendar} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors">
-            <CalendarDays size={16} /> Official Calendar
-          </a>
+          {showCalendar && (
+            <a href={DOCS.officialCalendar} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors">
+              <CalendarDays size={16} /> Official Calendar
+            </a>
+          )}
           <a href={DOCS.leadership} target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 border border-white/30 text-white hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors backdrop-blur-sm">
             <Gavel size={16} /> CMBA Leadership
@@ -120,7 +126,7 @@ export default function OperationsPage() {
                     <h3 className="font-display font-bold text-base text-white uppercase tracking-wider leading-tight">{g.title}</h3>
                   </div>
                   <div className="flex-1 divide-y divide-white/10 -mb-1">
-                    {g.links.map((l) => (
+                    {g.links.filter((l) => isLive(l.href)).map((l) => (
                       <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer"
                         className="flex items-center justify-between gap-4 py-2.5 group/link">
                         <div className="min-w-0">

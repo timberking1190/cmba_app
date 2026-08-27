@@ -1,4 +1,5 @@
 import { ExternalLink, Info } from "lucide-react";
+import { livePageFilter } from "@/lib/cmsPages";
 import { getEventsWithSource, getTeamLinktConfig, serializeGame } from "@/lib/cmbaSchedule";
 import { ScheduleView } from "@/components/ScheduleView";
 import { TeamLinktActions } from "@/components/TeamLinktActions";
@@ -45,6 +46,9 @@ function OfficialCalendarLink() {
 
 export default async function SchedulePage() {
   const { games, source } = await getEventsWithSource();
+  // Seed-only CMS pages are not published, so do not link to them. See lib/cmsPages.
+  const isLive = await livePageFilter();
+  const showCalendarCard = isLive(DOCS.officialCalendar);
   const { appUrl, leagueUrl } = getTeamLinktConfig();
   const serial = games.map(serializeGame);
   const now = Date.now();
@@ -107,7 +111,7 @@ export default async function SchedulePage() {
             </div>
             <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
               <ManagedCallout appUrl={appUrl} />
-              <OfficialCalendarLink />
+              {showCalendarCard && <OfficialCalendarLink />}
               <a href={`${leagueUrl}/Schedule`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-mono text-[11px] text-cmba-red hover:text-white uppercase tracking-wider transition-colors">
                 View on TeamLinkt <ExternalLink size={11} />
               </a>
@@ -119,7 +123,7 @@ export default async function SchedulePage() {
             <TeamLinktEmbed page="Schedule" leagueUrl={leagueUrl} />
             <div className="grid sm:grid-cols-2 gap-4">
               <ManagedCallout appUrl={appUrl} />
-              <OfficialCalendarLink />
+              {showCalendarCard && <OfficialCalendarLink />}
             </div>
             <p className="font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider flex items-center gap-1.5">
               <Info size={11} /> {sourceNote}
