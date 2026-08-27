@@ -80,9 +80,18 @@ export default defineConfig({
       args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
     },
   },
+  /*
+   * Real device descriptors, not a resized desktop window. The primary audience for
+   * this site is a parent on a phone in a gym, and a browser window dragged narrow
+   * does not reproduce a phone: it keeps the desktop user agent, the desktop device
+   * pixel ratio, and mouse rather than touch input. Both phone projects therefore
+   * carry the full descriptor, which is what makes the overflow and above the fold
+   * assertions in first-paint.spec.ts mean anything.
+   */
   projects: [
     { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
+    { name: 'mobile-safari', use: { ...devices['iPhone 13'] } },
   ],
   ...(process.env.PW_WEBSERVER
     ? {

@@ -120,12 +120,19 @@ export function GlobalFX() {
       { threshold: 0.12 },
     );
 
-    const viewportHeight = window.innerHeight;
+    /*
+     * Arm only what is COMFORTABLY below the fold. An element sitting right on the
+     * boundary would otherwise be armed by the layout we measure here and then
+     * found intersecting by the observer a moment later, once fonts and images had
+     * settled the layout, producing a pointless fade on content the user was
+     * already looking at. The margin buys enough slack to make that race harmless.
+     */
+    const revealLine = window.innerHeight + 120;
     const armed: HTMLElement[] = [];
     for (const el of els) {
       if (el.classList.contains("in") || el.classList.contains("reveal-armed")) continue;
       // One deliberate layout read per element on mount, never per scroll frame.
-      if (el.getBoundingClientRect().top > viewportHeight) {
+      if (el.getBoundingClientRect().top > revealLine) {
         el.classList.add("reveal-armed");
         armed.push(el);
         io.observe(el);

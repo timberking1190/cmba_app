@@ -248,50 +248,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-[80vh] flex items-center justify-center px-4 py-12 overflow-hidden">
+    <div className="relative min-h-[80vh] flex items-center justify-center px-4 py-8 sm:py-12 overflow-hidden">
       <CalgarySkyline className="pointer-events-none absolute bottom-0 left-0 w-full h-24 text-white/5" />
       <div className="relative w-full max-w-md">
-        <div className="reveal text-center mb-6">
-          <Image src="/cmba-logo-md.png" alt="CMBA" width={200} height={80} className="h-16 w-auto mx-auto mb-4" priority />
+        <div className="text-center mb-6">
+          <Image src="/cmba-logo-md.png" alt="CMBA" width={200} height={80} className="h-12 sm:h-16 w-auto mx-auto mb-3 sm:mb-4" priority />
           <h1 className="font-display font-black text-3xl text-white uppercase tracking-tight">
             <Wordmark /> Account
           </h1>
           <p className="text-xs text-cmba-grey-mid mt-1 font-mono uppercase tracking-[0.18em]">Training, courses &amp; resources</p>
         </div>
 
-        {/* Cross-link to the TeamLinkt score-report login */}
-        <Link href="/score-login"
-          className="reveal flex items-center gap-3 bg-cmba-black-card border border-white/12 hover:border-cmba-red/50 p-3 mb-6 transition-colors group">
-          <ClipboardList size={18} className="text-cmba-red shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="font-display font-bold text-xs text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">Reporting a game score?</div>
-            <div className="text-[11px] text-cmba-grey">Use the TeamLinkt Score Report Login</div>
-          </div>
-          <ArrowRight size={16} className="text-cmba-grey-dark shrink-0 group-hover:text-cmba-red transition-colors" />
-        </Link>
-
-        {/* Training-only clarification */}
-        <div className="reveal bg-cmba-red/10 border border-cmba-red/30 p-4 mb-6 flex items-start gap-3">
-          <Info size={18} className="text-cmba-red shrink-0 mt-0.5" />
-          <p className="text-xs text-cmba-grey-light leading-relaxed">
-            <span className="font-display font-bold text-white uppercase tracking-wider">For training and education only.</span>{" "}
-            A CMBA Connect account is how you reach your role&apos;s training, courses, and resources. It is <span className="text-white font-medium">not</span> your league registration. To register to play or coach, use TeamLinkt below.
-          </p>
-        </div>
-
-        {/* Quick hub access (public discovery, signed out) */}
-        <div className="grid grid-cols-2 gap-2 mb-6">
-          {hubCards.map((h, i) => (
-            <Link key={h.role} href={h.href} style={{ transitionDelay: `${i * 60}ms` }}
-              className="reveal rv-scale bg-cmba-black-card border border-white/12 hover:border-cmba-red/50 p-3 transition-colors group">
-              <div className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">{h.label}</div>
-              <div className="text-[11px] text-cmba-grey leading-snug mt-0.5">{h.desc}</div>
-            </Link>
-          ))}
-        </div>
-
         {/* Toggle */}
-        <div className="reveal flex bg-cmba-black-card border border-white/12 mb-4">
+        <div className="flex bg-cmba-black-card border border-white/12 mb-4">
           <button onClick={() => { setMode("signin"); setError(null); }}
             className={`flex-1 py-2.5 font-display font-bold text-sm uppercase tracking-wider transition-colors ${mode === "signin" ? "bg-cmba-red text-white" : "text-cmba-grey hover:text-white"}`}>
             Sign In
@@ -307,13 +276,13 @@ export default function LoginPage() {
         )}
 
         {pendingMsg ? (
-          <div className="reveal rv-scale bg-cmba-black-card border border-cmba-red/30 p-6 text-center">
+          <div className="bg-cmba-black-card border border-cmba-red/30 p-6 text-center">
             <CheckCircle2 size={36} className="text-cmba-red mx-auto mb-3" />
             <h2 className="font-display font-bold text-white uppercase tracking-wide mb-2">Almost done</h2>
             <p className="text-sm text-cmba-grey-light leading-relaxed">{pendingMsg}</p>
           </div>
         ) : mode === "signin" ? (
-          <form onSubmit={handleSignIn} className="reveal bg-cmba-black-card border border-white/12 p-6 space-y-4">
+          <form onSubmit={handleSignIn} className="bg-cmba-black-card border border-white/12 p-6 space-y-4">
             <div>
               <label className="block font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider mb-1">Email</label>
               <div className="relative">
@@ -333,7 +302,7 @@ export default function LoginPage() {
             </button>
           </form>
         ) : (
-          <form onSubmit={handleRegister} className="reveal bg-cmba-black-card border border-white/12 p-6 space-y-4">
+          <form onSubmit={handleRegister} className="bg-cmba-black-card border border-white/12 p-6 space-y-4">
             {/* Honeypot: hidden from people, tempting to naive bots. */}
             <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden">
               <label htmlFor="reg-website">Website</label>
@@ -437,6 +406,46 @@ export default function LoginPage() {
             )}
           </form>
         )}
+
+        {/*
+          * Order matters more than it looks here. These three orientation blocks used
+          * to sit ABOVE the form, which pushed the email field to 835px on an iPhone
+          * 13, well past the 664px fold. A member arriving to sign in had to read two
+          * explanatory cards and four hub links, then scroll, before reaching the one
+          * control they came for. The disambiguation between a CMBA Connect training
+          * account and TeamLinkt league registration is genuinely useful, so it stays,
+          * just below the form it explains rather than in front of it.
+          */}
+        {/* Cross-link to the TeamLinkt score-report login */}
+        <Link href="/score-login"
+          className="reveal flex items-center gap-3 bg-cmba-black-card border border-white/12 hover:border-cmba-red/50 p-3 mb-6 transition-colors group">
+          <ClipboardList size={18} className="text-cmba-red shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="font-display font-bold text-xs text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">Reporting a game score?</div>
+            <div className="text-[11px] text-cmba-grey">Use the TeamLinkt Score Report Login</div>
+          </div>
+          <ArrowRight size={16} className="text-cmba-grey-dark shrink-0 group-hover:text-cmba-red transition-colors" />
+        </Link>
+
+        {/* Training-only clarification */}
+        <div className="reveal bg-cmba-red/10 border border-cmba-red/30 p-4 mb-6 flex items-start gap-3">
+          <Info size={18} className="text-cmba-red shrink-0 mt-0.5" />
+          <p className="text-xs text-cmba-grey-light leading-relaxed">
+            <span className="font-display font-bold text-white uppercase tracking-wider">For training and education only.</span>{" "}
+            A CMBA Connect account is how you reach your role&apos;s training, courses, and resources. It is <span className="text-white font-medium">not</span> your league registration. To register to play or coach, use TeamLinkt below.
+          </p>
+        </div>
+
+        {/* Quick hub access (public discovery, signed out) */}
+        <div className="grid grid-cols-2 gap-2 mb-6">
+          {hubCards.map((h, i) => (
+            <Link key={h.role} href={h.href} style={{ transitionDelay: `${i * 60}ms` }}
+              className="reveal rv-scale bg-cmba-black-card border border-white/12 hover:border-cmba-red/50 p-3 transition-colors group">
+              <div className="font-display font-bold text-sm text-white uppercase tracking-wider group-hover:text-cmba-red transition-colors">{h.label}</div>
+              <div className="text-[11px] text-cmba-grey leading-snug mt-0.5">{h.desc}</div>
+            </Link>
+          ))}
+        </div>
 
         {/* Official CMBA registration */}
         <div className="reveal mt-6 bg-cmba-black-card border border-white/12 p-4">
