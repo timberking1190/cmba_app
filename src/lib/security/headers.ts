@@ -22,6 +22,10 @@
 // Cross-origin frame embeds the public site legitimately loads.
 const FRAME_SRC = [
   "'self'",
+  // A CSP host wildcard matches subdomains but NOT the apex, so *.teamlinkt.com
+  // alone silently blocks any redirect that lands on bare teamlinkt.com. That is
+  // what turned a stale league slug into an unexplained empty embed on /standings.
+  'https://teamlinkt.com',
   'https://*.teamlinkt.com',
   'https://www.youtube.com',
   'https://www.youtube-nocookie.com',

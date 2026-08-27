@@ -1,13 +1,32 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { ExternalLink } from "lucide-react";
 
 /*
- * Graceful fallback: when our native JSON parse returns nothing (endpoint changed
- * or empty), we embed TeamLinkt's official page so users never see a blank screen.
+ * Graceful fallback: when our own data returns nothing, we embed TeamLinkt's
+ * official page so users never see a blank screen.
+ *
  * NOTE: this iframe is cross-origin TeamLinkt content and CANNOT be restyled to
- * match Off+Brand; we only frame it in our own card/header.
+ * match Off+Brand; we only frame it in our own card and header.
+ *
+ * The embed is not allowed to fail silently any more. It shipped pointing at a
+ * league slug TeamLinkt no longer serves, which redirected to the apex host our
+ * CSP does not allow in frame-src, and the result was a 720px empty slab with a
+ * broken image icon on every visit to /standings. We cannot read a cross-origin
+ * frame to check what it rendered, but we can tell whether it ever loaded at all:
+ *
+ *   - `load` fires  -> the embed is up, show it.
+ *   - `load` never fires within LOAD_TIMEOUT_MS -> it was blocked (a CSP refusal
+ *     never fires load), so swap in a plain explanation and a working link.
+ *
+ * The frame is deliberately NOT lazy. In the fallback path it is the main content
+ * of the page, and a lazy frame that is never scrolled to would never fire load,
+ * which the timeout would then misread as a failure.
  */
+
+const LOAD_TIMEOUT_MS = 8000;
+
 export function TeamLinktEmbed({
   page,
   leagueUrl,
@@ -17,6 +36,27 @@ export function TeamLinktEmbed({
 }) {
   const src = `${leagueUrl}/${page}?iframe`;
   const openUrl = `${leagueUrl}/${page}`;
+  const [state, setState] = useState<"loading" | "ok" | "failed">("loading");
+  const frame = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    // A frame that is already complete before hydration will not fire load again.
+    if (frame.current?.contentWindow) {
+      try {
+        if (frame.current.contentDocument?.readyState === "complete") {
+          setState("ok");
+          return;
+        }
+      } catch {
+        // Cross-origin read threw, which means a real document is there.
+        setState("ok");
+        return;
+      }
+    }
+    const t = setTimeout(() => setState((s) => (s === "loading" ? "failed" : s)), LOAD_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12">
       <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-white/10">
@@ -27,18 +67,51 @@ export function TeamLinktEmbed({
           href={openUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 font-mono text-[11px] text-cmba-red hover:text-white uppercase tracking-wider transition-colors shrink-0"
+          className="inline-flex items-center gap-1 min-h-[44px] font-mono text-[11px] text-cmba-red hover:text-white uppercase tracking-wider transition-colors shrink-0"
         >
           Open <ExternalLink size={11} />
         </a>
       </div>
-      <iframe
-        src={src}
-        title={`CMBA ${page} on TeamLinkt`}
-        loading="lazy"
-        className="w-full block bg-white"
-        style={{ minHeight: 720, border: 0 }}
-      />
+
+      {state === "failed" ? (
+        <div className="px-5 py-10 text-center">
+          <h3 className="font-display font-black text-lg text-white uppercase tracking-tight mb-2">
+            The TeamLinkt view will not load here
+          </h3>
+          <p className="text-sm text-cmba-grey leading-relaxed max-w-md mx-auto mb-6">
+            TeamLinkt is not letting us show this page inside CMBA Connect right now. The information is
+            still there, so open it directly and it will work.
+          </p>
+          <a
+            href={openUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 min-h-[44px] px-5 py-3 bg-cmba-red text-white font-display font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-cmba-black transition-colors"
+          >
+            View {page.toLowerCase()} on TeamLinkt <ExternalLink size={14} />
+          </a>
+        </div>
+      ) : (
+        <div className="relative">
+          {state === "loading" && (
+            <p
+              role="status"
+              className="absolute inset-x-0 top-0 px-5 py-3 font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider"
+            >
+              Loading the TeamLinkt view
+            </p>
+          )}
+          <iframe
+            ref={frame}
+            src={src}
+            title={`CMBA ${page} on TeamLinkt`}
+            onLoad={() => setState("ok")}
+            className={`w-full block ${state === "ok" ? "bg-white" : "bg-transparent"}`}
+            style={{ minHeight: 720, border: 0 }}
+          />
+        </div>
+      )}
+
       <p className="px-5 py-2 border-t border-white/10 font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider">
         Displayed from TeamLinkt
       </p>

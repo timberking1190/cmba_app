@@ -79,18 +79,65 @@ export function GlobalFX() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /*
+   * Reveal on scroll, arranged so it can never be the reason content is missing.
+   *
+   * The stylesheet no longer hides anything. `.reveal` is an inert marker, and the
+   * hidden state (`.reveal-armed`) is applied HERE, only to elements that are below
+   * the fold at mount. So:
+   *
+   *   - No JavaScript, failed hydration, or thrown effect: nothing is ever hidden.
+   *   - Already on screen at first paint: left alone. It paints with the document
+   *     and does not animate, which is correct for a SCROLL reveal. There was no
+   *     scroll.
+   *   - Below the fold: armed (invisible to the user, so no flash) and revealed
+   *     when it scrolls into view.
+   *
+   * The previous version hid every `.reveal` in the stylesheet and waited for this
+   * observer to add `.in`. That made first-screen content invisible from the moment
+   * the HTML arrived until React had hydrated, which on /login meant an apparently
+   * empty page until the user scrolled.
+   */
   useEffect(() => {
     const els = Array.from(document.querySelectorAll(".reveal")) as HTMLElement[];
-    if (!("IntersectionObserver" in window) || els.length === 0) {
-      els.forEach((e) => e.classList.add("in"));
-      return;
-    }
+    if (els.length === 0) return;
+
+    // Reduced motion: never arm anything. Everything is already visible, which is
+    // the entire requirement, and skipping the animation is the point.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    // No observer support means no scroll reveal. Content is visible regardless.
+    if (!("IntersectionObserver" in window)) return;
+
     const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in"); }),
-      { threshold: 0.12 }
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("in");
+            io.unobserve(e.target);
+          }
+        }),
+      { threshold: 0.12 },
     );
-    els.forEach((e) => io.observe(e));
-    return () => io.disconnect();
+
+    const viewportHeight = window.innerHeight;
+    const armed: HTMLElement[] = [];
+    for (const el of els) {
+      if (el.classList.contains("in") || el.classList.contains("reveal-armed")) continue;
+      // One deliberate layout read per element on mount, never per scroll frame.
+      if (el.getBoundingClientRect().top > viewportHeight) {
+        el.classList.add("reveal-armed");
+        armed.push(el);
+        io.observe(el);
+      }
+    }
+
+    return () => {
+      io.disconnect();
+      // Safety net: an element that was armed but never reached (route change,
+      // re-render) must not be left hidden with no observer watching it.
+      armed.forEach((e) => { if (!e.classList.contains("in")) e.classList.remove("reveal-armed"); });
+    };
   }, [pathname]);
 
   return (
