@@ -17,7 +17,7 @@ const hubs = [
   { num: "04", title: "Parent Hub", meta: "Spectator training · Support", href: "/parent" },
   { num: "05", title: "Rules & Info", meta: "Rulebook · AI Q&A", href: "/rules" },
   { num: "06", title: "Game Report", meta: "Concerns · Compliments", href: "/game-report" },
-  { num: "07", title: "Season Calendar", meta: "Clinics · Key dates", href: "/calendar" },
+  { num: "07", title: "Season Calendar", meta: "Clinics · Key dates", href: "/schedule" },
 ];
 
 const announcements = [
@@ -179,7 +179,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline justify-between mb-6">
             <h3 className="label-sm text-cmba-grey">Latest from CMBA</h3>
-            <Link href="/calendar" className="font-mono text-xs text-cmba-red tracking-[0.1em] uppercase hover:text-white transition-colors">All news →</Link>
+            <Link href="/schedule" className="font-mono text-xs text-cmba-red tracking-[0.1em] uppercase hover:text-white transition-colors">All news →</Link>
           </div>
           <div className="grid md:grid-cols-2 gap-px bg-white/12 border border-white/12">
             {announcements.map((a) => (

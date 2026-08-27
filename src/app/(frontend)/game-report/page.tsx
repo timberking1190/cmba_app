@@ -88,7 +88,7 @@ export default function GameReportPage() {
     <div>
       <section className="relative overflow-hidden bg-hero-gradient border-b-2 border-cmba-red">
         <CourtLines className="pointer-events-none absolute -top-4 right-0 w-72 text-cmba-red/[0.06] hidden lg:block" />
-        <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-10 lg:py-14">
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-6 lg:py-14">
           <h1 className="font-display font-black text-4xl lg:text-5xl text-white uppercase tracking-tight leading-[0.95]">
             GAME <span className="text-cmba-red">REPORT</span>
           </h1>
@@ -98,7 +98,7 @@ export default function GameReportPage() {
         </div>
       </section>
 
-      <div className="max-w-3xl mx-auto px-4 lg:px-6 py-8 lg:py-12">
+      <div className="max-w-3xl mx-auto px-4 lg:px-6 py-6 lg:py-12">
         {/* Native intake note */}
         <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-4 mb-8">
           <p className="text-sm text-cmba-grey">

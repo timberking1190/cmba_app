@@ -7,7 +7,7 @@ const footerSections = [
     title: "CMBA+",
     links: [
       { label: "Rules & Info", href: "/rules" },
-      { label: "Schedule", href: "/calendar" },
+      { label: "Schedule", href: "/schedule" },
       { label: "Standings", href: "/standings" },
       { label: "FAQ", href: "/faq" },
       { label: "Contact Directory", href: "/contact" },

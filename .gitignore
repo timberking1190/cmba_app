@@ -47,3 +47,6 @@ next-env.d.ts
 /playwright-report/
 /playwright/.cache/
 /.lighthouseci/
+
+# local verification screenshots (evidence lives in docs/VERIFICATION.md as measurements)
+shots/

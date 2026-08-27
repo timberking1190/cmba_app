@@ -44,9 +44,12 @@ function makeNonce(): string {
 
 export function proxy(req: NextRequest) {
   const isDev = process.env.NODE_ENV !== 'production'
+  // A production build served over plain http for local testing. See buildCsp.
+  const host = req.nextUrl.hostname
+  const isLoopback = host === 'localhost' || host === '127.0.0.1' || host === '::1'
   const reportOnly = process.env.CSP_REPORT_ONLY === 'true'
   const nonce = makeNonce()
-  const csp = buildCsp(nonce, isDev)
+  const csp = buildCsp(nonce, isDev, isLoopback)
   const pathname = req.nextUrl.pathname
 
   // Private-area presence gate. Redirects do not need a CSP.
@@ -70,7 +73,7 @@ export function proxy(req: NextRequest) {
 
   const res = NextResponse.next({ request: { headers: requestHeaders } })
 
-  for (const [k, v] of Object.entries(staticSecurityHeaders(isDev))) {
+  for (const [k, v] of Object.entries(staticSecurityHeaders(isDev, isLoopback))) {
     res.headers.set(k, v)
   }
   res.headers.set(reportOnly ? CSP_REPORT_ONLY_HEADER : CSP_HEADER, csp)

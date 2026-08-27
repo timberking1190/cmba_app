@@ -14,15 +14,21 @@ export default async function StandingsPage() {
   const { appUrl, leagueUrl } = getTeamLinktConfig();
   const hasData = rows.length > 0;
   const isOwn = source === "own";
-  const lede = isOwn
-    ? "Standings are calculated right here in CMBA Connect from confirmed game results. Where a division has no recorded results yet, its teams show with no games played."
-    : "Standings come straight from TeamLinkt. Where a division has no recorded results yet, the official TeamLinkt view is shown instead.";
-  const sourceNote = isOwn ? "Live standings data from CMBA Connect" : "Live standings data via TeamLinkt";
+  /*
+   * Same one story as /schedule: look things up here, do things in TeamLinkt. The
+   * second sentence changes with the state of the data rather than with which
+   * system it came from, because "no results recorded yet" is the thing a reader
+   * actually needs explained when this page looks empty.
+   */
+  const lede = hasData
+    ? "Check the league table here. Registration, team management, and score reporting happen in TeamLinkt."
+    : "No results have been recorded yet this season, so the official TeamLinkt view is shown below. Registration, team management, and score reporting happen in TeamLinkt.";
+  const sourceNote = isOwn ? "Standings data from CMBA Connect" : "Standings data from TeamLinkt";
 
   return (
     <div>
       {/* Editorial header */}
-      <section className="relative px-4 md:px-10 lg:px-14 pt-12 lg:pt-20 pb-8 overflow-hidden">
+      <section className="relative px-4 md:px-10 lg:px-14 pt-6 md:pt-12 lg:pt-20 pb-6 lg:pb-8 overflow-hidden">
         <CourtLines className="pointer-events-none absolute top-4 right-0 w-72 text-cmba-red/[0.06] hidden lg:block" />
         <div className="relative max-w-7xl mx-auto">
           <div className="label-xs text-cmba-grey mb-4">2025-26 Season</div>
@@ -56,10 +62,10 @@ export default async function StandingsPage() {
             <aside className="lg:sticky lg:top-24 lg:self-start">
               <div className="reveal rv-right bg-cmba-black-card/80 backdrop-blur-sm border border-cmba-red/30 p-5">
                 <h2 className="font-display font-black text-lg text-white uppercase tracking-tight mb-1">
-                  Managed in <span className="text-cmba-red">TeamLinkt</span>
+                  Do this in <span className="text-cmba-red">TeamLinkt</span>
                 </h2>
                 <p className="text-xs text-cmba-grey leading-relaxed mb-4">
-                  Sign in to TeamLinkt to report a score or manage your team and account.
+                  Registration, team management, and score reporting happen in TeamLinkt.
                 </p>
                 <TeamLinktActions appUrl={appUrl} layout="stack" />
               </div>
@@ -74,16 +80,16 @@ export default async function StandingsPage() {
             <div className="reveal max-w-md">
               <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-cmba-red/30 p-5">
                 <h2 className="font-display font-black text-lg text-white uppercase tracking-tight mb-1">
-                  Managed in <span className="text-cmba-red">TeamLinkt</span>
+                  Do this in <span className="text-cmba-red">TeamLinkt</span>
                 </h2>
                 <p className="text-xs text-cmba-grey leading-relaxed mb-4">
-                  Sign in to TeamLinkt to report a score or manage your team and account.
+                  Registration, team management, and score reporting happen in TeamLinkt.
                 </p>
                 <TeamLinktActions appUrl={appUrl} layout="row" />
               </div>
             </div>
             <p className="font-mono text-[10px] text-cmba-grey-mid uppercase tracking-wider flex items-center gap-1.5">
-              <Info size={11} /> Live standings data via TeamLinkt
+              <Info size={11} /> {sourceNote}
             </p>
           </div>
         )}

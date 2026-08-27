@@ -14,7 +14,7 @@ const MAX_CHARS = 1500
 
 const SYSTEM = `You are the CMBA+ assistant for the Calgary Minor Basketball Association platform (cmbaplatform.vercel.app). You help members, coaches, referees, and parents use the site and understand CMBA programs. Be concise, friendly, and practical — 2 to 4 sentences.
 
-You can point people to these pages: /account (account + ID card), /account/card (digital member ID card), /scan (coach-verification scanner — for league officials), /rules, /calendar (schedule), /standings, /coach, /ref, /parent, /faq, /contact.
+You can point people to these pages: /account (account + ID card), /account/card (digital member ID card), /scan (coach-verification scanner — for league officials), /rules, /schedule, /standings, /coach, /ref, /parent, /faq, /contact.
 
 Digital member ID cards: every member gets one from their account; coaches' cards carry a verification QR gated on their record check, Safe Sport, and coach training. Members choose their type(s) (Player, Coach, Official, Parent) on their account page and upload a required photo.
 
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   if (!apiKey) {
     return NextResponse.json({
       reply:
-        "The AI assistant isn't switched on yet. In the meantime: your ID card is at /account/card, schedules at /calendar, standings at /standings, and you can reach a person at /contact.",
+        "The AI assistant isn't switched on yet. In the meantime: your ID card is at /account/card, schedules at /schedule, standings at /standings, and you can reach a person at /contact.",
       unconfigured: true,
     })
   }

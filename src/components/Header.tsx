@@ -46,7 +46,7 @@ const navLinks = [
     ],
   },
   { label: "PARENTS", href: "/parent", icon: Users },
-  { label: "SCHEDULE", href: "/calendar", icon: Calendar },
+  { label: "SCHEDULE", href: "/schedule", icon: Calendar },
   { label: "STANDINGS", href: "/standings", icon: BarChart3 },
 ];
 
