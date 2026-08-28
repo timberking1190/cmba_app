@@ -2318,3 +2318,92 @@ Findings the review pass caught in the built component and fixed:
    which cannot be avoided there because that content is inside the streamed region.
    It carries the same blind spot this branch fixed in test 4: it would not catch a
    component that hard-codes `reveal-armed` in its own markup.
+
+---
+
+# INCIDENT: production down 16 hours after the 2026-08-27 merge
+
+**Status: resolved by rollback. Deploys from `main` are BLOCKED until the sharp
+issue below is fixed.**
+
+## Timeline
+
+| Time (UTC) | Event |
+|---|---|
+| 2026-08-28 03:11 | PR #65 merged, `d9d54f9` deployed to production |
+| 03:20 | First 500s recorded. Every route affected |
+| 19:16 | `deec90f` deployed, pinning `npm ci --include=optional`. Did NOT fix it |
+| 19:2x | Root cause identified from build log comparison |
+| 19:3x | Instant rollback to `dpl_D6hN8N4GeHch57LYdvuZWTJpQDsn` (commit `30190d3`). Service restored |
+
+Roughly 16 hours of total outage. Every public route returned HTTP 500.
+
+## Root cause: a Vercel build CLI change, not application code
+
+Every server render died on:
+
+```
+Could not load the "sharp" module using the linux-x64 runtime
+ERR_DLOPEN_FAILED: libvips-cpp.so.8.18.3: cannot open shared object file
+```
+
+`src/payload.config.ts` imports sharp, so this took down every page rather than
+just image handling.
+
+The decisive evidence is the build logs either side of the failure:
+
+| | Last working build (`30190d3`) | Both failing builds |
+|---|---|---|
+| Vercel CLI | **58.1.0** | **59.3.0** |
+| Install step | `up to date in 2s` | `removed 6 packages in 2s` |
+| Build cache | restored | restored |
+
+`package-lock.json` is byte identical across all three builds. It was never
+touched by the merged work, and `@img/sharp-linux-x64@0.35.3` and
+`@img/sharp-libvips-linux-x64@1.3.2` are both present with correct `os` and `cpu`.
+Same lockfile, same platform, same code path, different Vercel CLI, different
+result.
+
+**This would have hit any deploy after the CLI rolled forward, including a plain
+redeploy of the old commit.** The merge did not cause it, it only triggered the
+first rebuild after the platform changed.
+
+Forcing `npm ci --include=optional` (commit `deec90f`) did not fix it, which rules
+out the install pruning as the whole story: the packages are installed and the
+runtime still cannot find the `.so`. That points at file tracing, the step that
+decides which files get bundled into the serverless function, rather than at
+installation.
+
+## Current state, and why deploys are blocked
+
+- Production serves `dpl_D6hN8N4GeHch57LYdvuZWTJpQDsn`, built from `30190d3`.
+  That is the **pre merge** code: the invisible `/login`, the broken standings
+  embed and the dead CMS links are all back, and the league bar is not live.
+- `main` is at `deec90f` and contains all of the merged work.
+- **`main` and production are deliberately out of sync.** Any new deployment from
+  `main` will rebuild under the new CLI and fail the same way, taking the site
+  down again. Do not deploy until the sharp fix is proven on a preview.
+
+## Next step, to be proven on a preview and not on production
+
+The likely fix is forcing sharp's native binary into the traced output, for
+example `outputFileTracingIncludes` in `next.config.mjs` covering
+`node_modules/@img/sharp-libvips-linux-x64/lib/*.so*` and
+`node_modules/@img/sharp-linux-x64/lib/*.node`, or adding `sharp` to
+`serverExternalPackages`. Either must be verified on a preview deployment before
+it goes near `main`.
+
+## What this incident should change about how we deploy
+
+1. **Never merge to `main` without verifying a real deployment first.** Preview
+   deployments exist on every PR and were sitting on #65, but both were behind
+   Vercel SSO and unreachable anonymously, so production became the first real
+   test. That is the single biggest process failure here.
+2. **Set `VERCEL_AUTOMATION_BYPASS_SECRET`** as a repo secret and
+   `E2E_BASE_URL` as a repo variable. The e2e workflow already supports both and
+   is currently a no op that can never fail, which is a green check that means
+   nothing. With them set, the browser suite would run against the PR's own
+   preview and this class of failure gets caught before merge.
+3. **A green CI is not a green deploy.** Lint, typecheck and unit tests all
+   passed on the commit that took the site down. Nothing in CI builds or boots
+   the app the way Vercel does.
