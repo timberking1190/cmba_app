@@ -2407,3 +2407,44 @@ it goes near `main`.
 3. **A green CI is not a green deploy.** Lint, typecheck and unit tests all
    passed on the commit that took the site down. Nothing in CI builds or boots
    the app the way Vercel does.
+
+## Incident resolved 2026-08-28
+
+Fixed by `outputFileTracingIncludes` in `next.config.mjs` (PR #66), which states
+sharp's native library dependency explicitly instead of leaving it to the tracer's
+heuristics.
+
+**Proven before merge, under the exact conditions that caused the outage.** The
+verification preview built with Vercel CLI **59.3.0** and restored its cache from
+`AwW3Lak92niUNzWxzVPqS56SgVkB`, the deployment that was returning 500. Same CLI,
+same poisoned cache, same install command, and it worked.
+
+Restoring service took an extra step worth recording. An Instant Rollback **pins**
+production: after it, merging to `main` produced no deployment at all, and a later
+`vercel deploy --prod` built successfully but the domain kept serving the rolled
+back build. The pin is only released by promoting a deployment
+(`vercel promote <url>`), which is what finally shipped it.
+
+Final state, verified against the live domain:
+
+| Check | Result |
+|---|---|
+| All public routes | 200, no error shell |
+| `e2e/teamlinkt-bar.spec.ts`, 3 device projects | **57 passed** |
+| `e2e/first-paint.spec.ts`, 3 device projects | **57 passed** |
+| League bar | live on every route |
+| TeamLinkt slug | `calgaryminorbasketballassociatio`, upstream answers 200 |
+| `/calendar` | 308 to `/schedule` |
+| Standings embed | points at a URL that returns 200 |
+| Schedule empty state | explains itself with the real last-game date |
+
+This also settles an open question from PR #65: there is **no** Vercel environment
+variable overriding `TEAMLINKT_LEAGUE_SLUG` or `TEAMLINKT_SEASON_ID`. The corrected
+code defaults are what production serves.
+
+### Still worth doing
+
+Set `VERCEL_AUTOMATION_BYPASS_SECRET` (repo secret) and `E2E_BASE_URL` (repo
+variable). The e2e workflow already supports both and is currently a check that
+can never fail. With them set it would run the browser suite against each PR's own
+preview, which is exactly the gap that let a broken build reach production.
