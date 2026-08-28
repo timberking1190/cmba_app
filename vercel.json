@@ -1,6 +1,9 @@
 {
   "framework": "nextjs",
-  "regions": ["yul1"],
+  "installCommand": "npm ci --include=optional",
+  "regions": [
+    "yul1"
+  ],
   "crons": [
     {
       "path": "/api/cron/certification-reminders",
