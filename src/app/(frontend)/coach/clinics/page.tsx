@@ -3,6 +3,7 @@ import { COURSES, COACH, DEV_GUIDES, DOCS } from "@/lib/cmbaLinks";
 import { PhotoHero } from "@/components/media/PhotoHero";
 import { PhotoBand } from "@/components/media/PhotoBand";
 import { CourtLines } from "@/components/graphics/CourtLines";
+import { livePageFilter } from "@/lib/cmsPages";
 
 const required = [
   { title: "CMBA Coach Training (Mandatory)", desc: "Required online training for all CMBA coaches. Register and complete before the season.", href: COURSES.coachTrainingRegister },
@@ -36,7 +37,10 @@ const resources = [
   { title: "Women in Coaching", href: COACH.womenInCoaching },
 ];
 
-export default function ClinicsPage() {
+export default async function ClinicsPage() {
+  // Seed-only CMS pages are not published, so do not link to them. See lib/cmsPages.
+  const isLive = await livePageFilter();
+  const showCalendar = isLive(DOCS.officialCalendar);
   return (
     <div>
       {/* Hero */}
@@ -52,10 +56,12 @@ export default function ClinicsPage() {
             className="inline-flex items-center gap-2 bg-cmba-red hover:bg-cmba-hot text-white font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors">
             <ExternalLink size={16} /> Start Mandatory Training
           </a>
-          <a href={DOCS.officialCalendar} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 border border-white/30 text-white hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors backdrop-blur-sm">
-            <Calendar size={16} /> In-Person Clinic Dates
-          </a>
+          {showCalendar && (
+            <a href={DOCS.officialCalendar} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-white/30 text-white hover:border-cmba-red hover:text-cmba-red font-display font-bold text-sm uppercase tracking-wider px-5 py-3 transition-colors backdrop-blur-sm">
+              <Calendar size={16} /> In-Person Clinic Dates
+            </a>
+          )}
         </div>
       </PhotoHero>
 
@@ -134,7 +140,7 @@ export default function ClinicsPage() {
         <div>
           <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight mb-6">Coaching Resources</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {resources.map((r, i) => (
+            {resources.filter((r) => isLive(r.href)).map((r, i) => (
               <a key={r.title} href={r.href} target="_blank" rel="noopener noreferrer" style={{ transitionDelay: `${i * 50}ms` }}
                 className="reveal rv-right flex items-center gap-2 bg-cmba-black/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/40 p-3 transition-colors group">
                 <ArrowRight size={14} className="text-cmba-red shrink-0" />

@@ -18,7 +18,12 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   oxc: { jsx: { runtime: 'automatic' } },
   resolve: {
-    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // See src/test/serverOnlyStub.ts: without this, importing any server module
+      // from a test throws before the first assertion.
+      'server-only': fileURLToPath(new URL('./src/test/serverOnlyStub.ts', import.meta.url)),
+    },
   },
   test: {
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],

@@ -28,9 +28,11 @@ const TABS: { id: Tab; label: string }[] = [
 export function ScheduleView({
   games: serial,
   now,
+  leagueUrl,
 }: {
   games: SerialGame[];
   now: number;
+  leagueUrl: string;
 }) {
   const all = useMemo(() => serial.map(deserializeGame), [serial]);
   const divs = useMemo(() => divisionsFrom(all), [all]);
@@ -43,6 +45,27 @@ export function ScheduleView({
   }, [all, tab, division, now]);
 
   const groups = useMemo(() => groupByDate(filtered), [filtered]);
+
+  /*
+   * An empty Upcoming tab is the single most likely thing a parent sees on this
+   * site, and "No upcoming games right now." reads like a broken page. It is not:
+   * as of this writing the 2025-26 season finished on 10 June 2026 and the next
+   * schedule has not been published yet, so there is genuinely nothing to show.
+   *
+   * The distinction that matters to a reader is between "the season is over or has
+   * not started" and "the division you picked has nothing". The date is derived
+   * from the data rather than written into the copy, so it stays true on its own.
+   */
+  const lastPlayed = useMemo(() => {
+    const past = all
+      .map((g) => g.start)
+      .filter((d): d is Date => !!d && d.getTime() < now)
+      .sort((a, b) => b.getTime() - a.getTime());
+    return past[0] ?? null;
+  }, [all, now]);
+
+  const seasonIsOver =
+    tab === "upcoming" && filterUpcoming(all, now).length === 0 && lastPlayed !== null;
 
   return (
     <div>
@@ -87,9 +110,56 @@ export function ScheduleView({
 
       {groups.length === 0 ? (
         <div className="bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 p-8 text-center">
-          <p className="text-sm text-cmba-grey">
-            No {tab === "upcoming" ? "upcoming games" : "results"}{division !== "all" ? ` for ${division}` : ""} right now.
-          </p>
+          {seasonIsOver ? (
+            <>
+              <h3 className="font-display font-black text-lg text-white uppercase tracking-tight mb-2">
+                No games scheduled yet
+              </h3>
+              <p className="text-sm text-cmba-grey leading-relaxed max-w-md mx-auto mb-1">
+                The last game on record was {lastPlayed!.toLocaleDateString("en-CA", {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                  timeZone: "America/Edmonton",
+                })}. The next season&apos;s schedule has not been published yet.
+              </p>
+              <p className="text-sm text-cmba-grey leading-relaxed max-w-md mx-auto mb-6">
+                Games appear here as soon as they are published. Past games are under Results.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={() => setTab("results")}
+                  className="inline-flex items-center gap-2 min-h-[44px] px-5 py-3 bg-cmba-red text-white font-display font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-cmba-black transition-colors"
+                >
+                  See last season&apos;s results
+                </button>
+                <a
+                  href={`${leagueUrl}/Schedule`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-5 py-3 border border-white/15 hover:border-cmba-red/50 text-cmba-grey-light hover:text-white font-mono text-xs uppercase tracking-wider transition-colors"
+                >
+                  Check TeamLinkt <ExternalLink size={12} />
+                </a>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-cmba-grey">
+                No {tab === "upcoming" ? "upcoming games" : "results"}
+                {division !== "all" ? ` for ${division}` : ""} right now.
+              </p>
+              {division !== "all" && (
+                <button
+                  onClick={() => setDivision("all")}
+                  className="mt-4 inline-flex items-center min-h-[44px] px-4 font-mono text-xs uppercase tracking-wider text-cmba-red hover:text-white transition-colors"
+                >
+                  Show all divisions
+                </button>
+              )}
+            </>
+          )}
         </div>
       ) : (
         <div className="space-y-10">

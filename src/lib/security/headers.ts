@@ -22,6 +22,10 @@
 // Cross-origin frame embeds the public site legitimately loads.
 const FRAME_SRC = [
   "'self'",
+  // A CSP host wildcard matches subdomains but NOT the apex, so *.teamlinkt.com
+  // alone silently blocks any redirect that lands on bare teamlinkt.com. That is
+  // what turned a stale league slug into an unexplained empty embed on /standings.
+  'https://teamlinkt.com',
   'https://*.teamlinkt.com',
   'https://www.youtube.com',
   'https://www.youtube-nocookie.com',
@@ -58,7 +62,18 @@ export function cspScriptStrategy(): 'strict-nonce' | 'compatible' {
   return process.env.CSP_COMPAT_SCRIPTS === 'true' ? 'compatible' : 'strict-nonce'
 }
 
-export function buildCsp(nonce: string, isDev: boolean): string {
+/*
+ * `isLoopback` means the request arrived on localhost / 127.0.0.1 / ::1, which is
+ * almost always a production build being served over plain http for testing.
+ * It is deliberately separate from `isDev`: `next start` sets NODE_ENV=production,
+ * so a local production run looked exactly like the real deployment and got
+ * upgrade-insecure-requests, which rewrites every asset URL to https://localhost
+ * where nothing is listening. Chromium hides this by exempting localhost from the
+ * upgrade; WebKit obeys it, so the whole stylesheet failed to load and the mobile
+ * Safari project rendered unstyled HTML. Scoping to loopback means production
+ * behaviour is untouched: a real deployment is never loopback.
+ */
+export function buildCsp(nonce: string, isDev: boolean, isLoopback = false): string {
   // Cloudflare Turnstile (bot challenge) only ships when a site key is set; allow
   // its script + frame origin in that case, and not before (no unused origins).
   const turnstileOn = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
@@ -105,7 +120,7 @@ export function buildCsp(nonce: string, isDev: boolean): string {
     'manifest-src': ["'self'"],
     'report-uri': ['/api/csp-report'],
     // Valueless directive (force https on http subresources). Skip in dev (http).
-    'upgrade-insecure-requests': isDev ? null : [],
+    'upgrade-insecure-requests': isDev || isLoopback ? null : [],
   }
 
   return Object.entries(directives)
@@ -119,7 +134,7 @@ export function buildCsp(nonce: string, isDev: boolean): string {
  * https; it is harmless on localhost http (browsers ignore it) but we still emit a
  * conservative value only in production.
  */
-export function staticSecurityHeaders(isDev: boolean): Record<string, string> {
+export function staticSecurityHeaders(isDev: boolean, isLoopback = false): Record<string, string> {
   const headers: Record<string, string> = {
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'SAMEORIGIN',
@@ -145,7 +160,9 @@ export function staticSecurityHeaders(isDev: boolean): Record<string, string> {
       'interest-cohort=()',
     ].join(', '),
   }
-  if (!isDev) {
+  // Never pin loopback to https: the browser would remember it, and every later
+  // plain-http run against localhost would fail before it started.
+  if (!isDev && !isLoopback) {
     headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains; preload'
   }
   return headers

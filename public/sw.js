@@ -1,7 +1,7 @@
 /*
  * CMBA Connect service worker. Purpose: let families check the schedule and
  * standings at the gym on weak or no signal. Conservative by design:
- *   - Navigations to /schedule, /calendar, and /standings use network-first, and the
+ *   - Navigations to /schedule and /standings use network-first, and the
  *     last good response is cached and served when offline.
  *   - Same-origin static assets (Next build output, images, fonts) use
  *     stale-while-revalidate.
@@ -12,7 +12,7 @@
  * Copy rule: no em or en dashes anywhere.
  */
 const CACHE = 'cmba-v1'
-const OFFLINE_PATHS = ['/schedule', '/calendar', '/standings']
+const OFFLINE_PATHS = ['/schedule', '/standings']
 
 self.addEventListener('install', (event) => {
   self.skipWaiting()

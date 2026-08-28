@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'
  * Copy rule: no em or en dashes anywhere.
  */
 const STATIC_PATHS = [
-  '', '/schedule', '/standings', '/calendar', '/rules', '/resources', '/faq',
+  '', '/schedule', '/standings', '/rules', '/resources', '/faq',
   '/contact', '/leadership', '/coach', '/coach/pathway', '/ref', '/parent',
   '/privacy', '/terms',
 ]

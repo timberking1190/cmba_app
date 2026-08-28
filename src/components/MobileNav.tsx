@@ -9,7 +9,7 @@ import { clsx } from "clsx";
 // scores). Role hubs (Coach/Ref) and everything else live in the header menu.
 const tabs = [
   { label: "Home", href: "/", icon: Home },
-  { label: "Schedule", href: "/calendar", icon: CalendarDays },
+  { label: "Schedule", href: "/schedule", icon: CalendarDays },
   { label: "Standings", href: "/standings", icon: BarChart3 },
   { label: "Rules", href: "/rules", icon: BookOpen },
   { label: "Report", href: "/game-report", icon: ClipboardList },

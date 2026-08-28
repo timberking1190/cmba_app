@@ -8,6 +8,7 @@ import { PhotoHero } from "@/components/media/PhotoHero";
 import { PhotoBand } from "@/components/media/PhotoBand";
 import { CourtLines } from "@/components/graphics/CourtLines";
 import { CalgarySkyline } from "@/components/graphics/CalgarySkyline";
+import { livePageFilter } from "@/lib/cmsPages";
 
 // Auth-dependent (shows a signed-in strip), so render per request — never
 // statically generated (which would hit the DB at build).
@@ -33,7 +34,10 @@ const support = [
   { title: "Official Calendar", desc: "Key dates, schedules, and registration deadlines.", href: DOCS.officialCalendar, icon: BookOpen },
 ];
 
-export default function ParentPage() {
+export default async function ParentPage() {
+  // Seed-only CMS pages are not published, so do not link to them. See lib/cmsPages.
+  const isLive = await livePageFilter();
+  const supportLinks = support.filter((s) => isLive(s.href));
   return (
     <div>
       <PersonalizedStrip variant="parent" />
@@ -127,7 +131,7 @@ export default function ParentPage() {
           <h2 className="reveal font-display font-black text-2xl text-white uppercase tracking-tight mb-2">Help & <span className="text-cmba-red">Support</span></h2>
           <p className="reveal text-cmba-grey text-sm mb-6">CMBA and its partners are here for your family.</p>
           <div className="grid sm:grid-cols-3 gap-3">
-            {support.map((s, i) => (
+            {supportLinks.map((s, i) => (
               <a key={s.title} href={s.href} target="_blank" rel="noopener noreferrer" style={{ transitionDelay: `${i * 70}ms` }}
                 className="reveal rv-right flex items-start gap-3 bg-cmba-black-card/80 backdrop-blur-sm border border-white/12 hover:border-cmba-red/40 p-4 transition-colors group">
                 <s.icon size={18} className="text-cmba-red shrink-0 mt-0.5" />

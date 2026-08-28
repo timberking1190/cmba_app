@@ -13,7 +13,7 @@ import { Plus, Home, BookOpen, Calendar, UserCircle, ClipboardList } from "lucid
 const items = [
   { label: "Home", href: "/", icon: Home },
   { label: "Rules", href: "/rules", icon: BookOpen },
-  { label: "Schedule", href: "/calendar", icon: Calendar },
+  { label: "Schedule", href: "/schedule", icon: Calendar },
   { label: "Game Report", href: "/game-report", icon: ClipboardList },
   { label: "Account", href: "/account", icon: UserCircle },
 ];

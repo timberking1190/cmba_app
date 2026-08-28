@@ -123,7 +123,7 @@ June 1-10: Club Weeknight playoffs.
 
 ## Game schedule
 For live game times, standings, and the full season schedule, see the Schedule page.`,
-    cta: { heading: 'See the live schedule', buttonLabel: 'View schedule', buttonHref: '/calendar' },
+    cta: { heading: 'See the live schedule', buttonLabel: 'View schedule', buttonHref: '/schedule' },
   },
   {
     slug: 'meeting-minutes',

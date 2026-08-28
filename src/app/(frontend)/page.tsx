@@ -9,6 +9,7 @@ import { AnnouncementsStrip } from "@/components/AnnouncementsStrip";
 import { BentoGrid } from "@/components/home/BentoGrid";
 import { StoryScroll } from "@/components/home/StoryScroll";
 import { REGISTER, DOCS, COURSES } from "@/lib/cmbaLinks";
+import { livePageFilter } from "@/lib/cmsPages";
 
 const hubs = [
   { num: "01", title: "Athlete Hub", meta: "Development · Guides · Drills", href: "/athlete" },
@@ -17,7 +18,7 @@ const hubs = [
   { num: "04", title: "Parent Hub", meta: "Spectator training · Support", href: "/parent" },
   { num: "05", title: "Rules & Info", meta: "Rulebook · AI Q&A", href: "/rules" },
   { num: "06", title: "Game Report", meta: "Concerns · Compliments", href: "/game-report" },
-  { num: "07", title: "Season Calendar", meta: "Clinics · Key dates", href: "/calendar" },
+  { num: "07", title: "Season Calendar", meta: "Clinics · Key dates", href: "/schedule" },
 ];
 
 const announcements = [
@@ -42,18 +43,26 @@ const divisions = [
   { label: "U18", href: "/rules?division=U18" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Seed-only CMS pages are not published, so do not link to them. See lib/cmsPages.
+  const isLive = await livePageFilter();
+  const liveAnnouncements = announcements.filter((a) => isLive(a.href));
   return (
     <div>
       <AnnouncementsStrip />
       {/* ── HERO ──────────────────────────────────────────── */}
-      <section className="px-5 md:px-10 lg:px-14 pt-16 lg:pt-24 pb-20 overflow-hidden">
+      {/* The hero's top spacing is tightened on phones to pay for the league bar.
+          The bar is 45px of permanent chrome above this section, and the fixed
+          MobileNav takes the bottom 65px, so without this the primary CTA slid
+          underneath it on an iPhone 13. Desktop spacing is deliberately untouched:
+          it has the room and the editorial scale depends on it. */}
+      <section className="px-5 md:px-10 lg:px-14 pt-6 lg:pt-24 pb-20 overflow-hidden">
         <div className="max-w-7xl mx-auto relative">
           {/* animated centerpiece (desktop only, behind the headline, non-interactive) */}
           <HeroNetwork className="hidden lg:block absolute right-0 xl:-right-6 top-2 z-0 opacity-60" />
 
           <div className="relative z-10">
-            <div className="mb-7 label-xs text-cmba-grey">
+            <div className="mb-4 lg:mb-7 label-xs text-cmba-grey">
               CMBA+ · Calgary Minor Basketball
             </div>
 
@@ -64,7 +73,7 @@ export default function HomePage() {
               <span className="rise-line"><span className="block text-cmba-grey" style={{ animationDelay: ".24s" }}>Every official.</span></span>
             </h1>
 
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-7 mt-10">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 lg:gap-7 mt-6 lg:mt-10">
               <p className="max-w-[44ch] text-cmba-grey-light/90 text-base md:text-lg leading-relaxed">
                 Calgary Minor Basketball is a community of thousands of athletes, parents, coaches,
                 and officials growing the game across the city, one practice, whistle, and final
@@ -179,10 +188,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-baseline justify-between mb-6">
             <h3 className="label-sm text-cmba-grey">Latest from CMBA</h3>
-            <Link href="/calendar" className="font-mono text-xs text-cmba-red tracking-[0.1em] uppercase hover:text-white transition-colors">All news →</Link>
+            <Link href="/schedule" className="font-mono text-xs text-cmba-red tracking-[0.1em] uppercase hover:text-white transition-colors">All news →</Link>
           </div>
           <div className="grid md:grid-cols-2 gap-px bg-white/12 border border-white/12">
-            {announcements.map((a) => (
+            {liveAnnouncements.map((a) => (
               <a key={a.title} href={a.href} target="_blank" rel="noopener noreferrer" className="bg-cmba-black/80 backdrop-blur-sm p-6 group block">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="font-mono text-[10px] tracking-[0.14em] uppercase bg-cmba-red/15 text-cmba-red px-2 py-1">{a.tag}</span>

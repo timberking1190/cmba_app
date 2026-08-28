@@ -86,6 +86,30 @@
 html { background: var(--background); }
 /* The WebGL fluid background + its veil are designed for dark; hide them in light mode
    so the off-white page background shows through. */
+/*
+ * CMBA red is an accent that does NOT flip between themes, but --c-white does:
+ * light theme remaps it to near-black so the pervasive text-white on dark cards
+ * reads correctly once those cards turn white. On a red surface that flip is
+ * wrong, and it produced near-black on red at 3.13:1 for the primary button on
+ * every page, including Sign In. It failed WCAG AA and predates this branch; it
+ * was simply invisible to axe on /login and /standings, because the reveal bug and
+ * the broken embed hid those buttons from the scan entirely.
+ *
+ * Red surfaces therefore restore true white locally. Redefining the token rather
+ * than setting `color` means every descendant using text-white, border-white/X or
+ * bg-white/X inherits the correction, which is how these buttons are built.
+ */
+[data-theme="light"] .bg-cmba-red,
+[data-theme="light"] .bg-cmba-red-dark,
+[data-theme="light"] .bg-cmba-red-deep,
+[data-theme="light"] .bg-cmba-hot,
+[data-theme="light"] .hover\:bg-cmba-red:hover,
+[data-theme="light"] .hover\:bg-cmba-hot:hover {
+  --c-white: 255 255 255;
+  --cmba-white: 255 255 255;
+  --cmba-grey-light: 255 255 255;
+}
+
 [data-theme="light"] .fx-canvas,
 [data-theme="light"] .fx-veil { display: none; }
 
@@ -147,6 +171,10 @@ body {
 .card-hover:hover { transform: translateY(-2px); border-color: var(--red); }
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  /* Horizontal twin of .safe-bottom, for full-bleed bars that must stay clear of
+     the notch and the rounded corners when a phone is held sideways. Applied to
+     the outer element so the inner container keeps its own normal padding. */
+  .safe-x { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
 }
 @layer utilities { .text-balance { text-wrap: balance; } }
 
@@ -163,6 +191,26 @@ body {
 /* ── Focus ────────────────────────────────────────────────────────────── */
 :focus-visible { outline: 2px solid var(--red); outline-offset: 3px; border-radius: 1px; }
 :focus:not(:focus-visible) { outline: none; }
+
+/*
+ * The league bar sits flush beneath the sticky header, and the header paints above
+ * it (z-50 against z-40). The global focus ring uses a 3px OUTWARD offset, so on
+ * the bar's links the top edge of the ring landed underneath the header and was
+ * invisible exactly where keyboard users meet it first. Inset the ring instead:
+ * identical 2px Calgary red, drawn fully inside the target, which a 44px row has
+ * ample room for.
+ */
+.tl-bar a:focus-visible { outline-offset: -3px; }
+
+/*
+ * WCAG 2.2 SC 2.4.11, Focus Not Obscured. The site pins a header at the top, and on
+ * desktop the league bar pins under it, so the permanently covered band is 57px on a
+ * phone and 106px from lg. Anything the browser scrolls to, an in page anchor or a
+ * focused control reached by keyboard, would otherwise land underneath that band.
+ * There was no scroll-padding anywhere in this project before now.
+ */
+html { scroll-padding-top: 57px; }
+@media (min-width: 1024px) { html { scroll-padding-top: 106px; } }
 
 /* ═══════════════════════════════════════════════════════════════════════
    WEBGL FLUID BACKGROUND  (sits behind everything at z-index:-1)
@@ -278,10 +326,37 @@ body {
 }
 
 /* ── Reveal + hero rise ───────────────────────────────────────────────── */
-.reveal { opacity: 0; transform: translateY(40px); transition: opacity .8s ease, transform .8s cubic-bezier(.16,1,.3,1); }
-.reveal.in { opacity: 1; transform: none; }
-.rise-line { display: block; overflow: hidden; }
-.rise-line > span { display: block; transform: translateY(110%); animation: rise .9s cubic-bezier(.16,1,.3,1) forwards; }
+/*
+ * `.reveal` is a MARKER ONLY and carries no visual effect of its own. Anything
+ * wearing it renders fully visible with no JavaScript at all, which is the safe
+ * direction to fail in: a page whose script never runs is still readable.
+ *
+ * The hidden state lives in `.reveal-armed`, applied by GlobalFX at mount and
+ * ONLY to elements that are below the fold at that moment. Arming something the
+ * user cannot see is invisible, so there is no flash, and nothing already on
+ * screen is ever hidden waiting for an observer.
+ *
+ * This replaces `.reveal { opacity: 0 }`, which hid first-screen content from the
+ * moment the HTML arrived until React had hydrated and the observer had run. On
+ * /login that left the sign in form invisible until the user scrolled.
+ */
+.reveal-armed { opacity: 0; transform: translateY(40px); transition: opacity .8s ease, transform .8s cubic-bezier(.16,1,.3,1); }
+.reveal-armed.in { opacity: 1; transform: none; }
+/*
+ * The hero display type is set at leading-[0.84], which is deliberate: the tight
+ * leading is the look. But a line box shorter than 1em cannot contain the glyph
+ * box, so the ascenders and the tops of the caps spilled outside it, and the
+ * overflow:hidden that masks the rise animation sliced them off. The headline
+ * read as visibly clipped along the top and bottom at every breakpoint.
+ *
+ * The mask is now taller than the glyph box, with a matching negative margin so
+ * the line still occupies exactly the space it did before and nothing below it
+ * moves. The start offset goes to 130% because the mask is taller now, and 110%
+ * of the line box would have left the top of the glyphs peeking above the lower
+ * edge before the animation began.
+ */
+.rise-line { display: block; overflow: hidden; padding-block: 0.14em; margin-block: -0.14em; }
+.rise-line > span { display: block; transform: translateY(130%); animation: rise .9s cubic-bezier(.16,1,.3,1) forwards; }
 @keyframes rise { to { transform: translateY(0); } }
 
 /* ── Typing dots + pulse dot (for AI chat / live) ─────────────────────── */
@@ -314,15 +389,16 @@ body {
 @keyframes hn-pulse { 0%, 100% { transform: scale(1); opacity: .38; } 50% { transform: scale(1.14); opacity: .62; } }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   SCROLL-REVEAL VARIANTS  (work with the existing .reveal observer in GlobalFX)
+   SCROLL-REVEAL VARIANTS  (work with the .reveal observer in GlobalFX)
    Add e.g. class="reveal rv-left" + inline style transitionDelay for stagger.
+   The variants hang off .reveal-armed, so they too are inert without JavaScript.
    ═══════════════════════════════════════════════════════════════════════ */
-.reveal.rv-left  { transform: translateX(-48px); }
-.reveal.rv-right { transform: translateX(48px); }
-.reveal.rv-scale { transform: scale(.9); }
-.reveal.rv-blur  { filter: blur(10px); }
-.reveal.rv-clip  { clip-path: inset(0 0 100% 0); transform: none; opacity: 1; transition: clip-path .9s cubic-bezier(.16,1,.3,1); }
-.reveal.in { opacity: 1; transform: none; filter: none; clip-path: inset(0 0 0 0); }
+.reveal-armed.rv-left  { transform: translateX(-48px); }
+.reveal-armed.rv-right { transform: translateX(48px); }
+.reveal-armed.rv-scale { transform: scale(.9); }
+.reveal-armed.rv-blur  { filter: blur(10px); }
+.reveal-armed.rv-clip  { clip-path: inset(0 0 100% 0); transform: none; opacity: 1; transition: clip-path .9s cubic-bezier(.16,1,.3,1); }
+.reveal-armed.in { opacity: 1; transform: none; filter: none; clip-path: inset(0 0 0 0); }
 
 /* ═══════════════════════════════════════════════════════════════════════
    BENTO GRID
@@ -407,7 +483,7 @@ body {
     transition-duration: 0.01ms !important; scroll-behavior: auto !important;
   }
   .marq-track { animation: none !important; }
-  .reveal { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; transition-delay: 0ms !important; }
+  .reveal, .reveal-armed { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; transition-delay: 0ms !important; }
   .rise-line > span { transform: none !important; animation: none !important; }
   .hn-spin, .hn-counter, .hn-aura, .hn-float { animation: none !important; }
 }

@@ -27,12 +27,36 @@ export * from "./scheduleUtils";
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 
+/*
+ * The league slug is TRUNCATED TO 32 CHARACTERS by TeamLinkt, so the real public
+ * slug ends "...associatio" with no final "n". This is not a typo, do not "fix" it.
+ *
+ * Getting it wrong is silent and total. TeamLinkt answers an unknown slug with a
+ * 302 to its own marketing site rather than a 404, and that redirect chain ends on
+ * the APEX host teamlinkt.com. Our frame-src allowlist is https://*.teamlinkt.com,
+ * and a CSP wildcard matches subdomains but NOT the apex, so the browser blocks the
+ * final hop and the embed renders as an empty grey slab with no console error that
+ * points anywhere near the cause. That is exactly how it shipped: /standings showed
+ * a broken box for every visitor.
+ *
+ * Verify with a plain HEAD request before changing any of these values. A correct
+ * slug answers 200; a wrong one answers 302 to www.teamlinkt.com/our-leagues/.
+ */
+const LEAGUE_SLUG = "calgaryminorbasketballassociatio";
+
+/*
+ * Season id, from the season picker on the TeamLinkt league page. 50938 is the
+ * "2026 Spring League", which finished on 10 June 2026; 58270 is the current
+ * "26-27 Calgary Club Premier League". A stale season id reads as an empty league.
+ */
+const SEASON_ID = "58270";
+
 function cfg() {
   return {
     base: process.env.TEAMLINKT_LEAGUE_BASE || "https://leagues.teamlinkt.com",
     assoc: process.env.TEAMLINKT_ASSOC_ID || "34176",
-    season: process.env.TEAMLINKT_SEASON_ID || "50938",
-    slug: process.env.TEAMLINKT_LEAGUE_SLUG || "calgaryminorbasketballassociation",
+    season: process.env.TEAMLINKT_SEASON_ID || SEASON_ID,
+    slug: process.env.TEAMLINKT_LEAGUE_SLUG || LEAGUE_SLUG,
     appUrl: process.env.NEXT_PUBLIC_TEAMLINKT_APP_URL || "https://app.teamlinkt.com",
   };
 }
