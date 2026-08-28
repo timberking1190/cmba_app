@@ -171,6 +171,10 @@ body {
 .card-hover:hover { transform: translateY(-2px); border-color: var(--red); }
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  /* Horizontal twin of .safe-bottom, for full-bleed bars that must stay clear of
+     the notch and the rounded corners when a phone is held sideways. Applied to
+     the outer element so the inner container keeps its own normal padding. */
+  .safe-x { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
 }
 @layer utilities { .text-balance { text-wrap: balance; } }
 
@@ -187,6 +191,26 @@ body {
 /* ── Focus ────────────────────────────────────────────────────────────── */
 :focus-visible { outline: 2px solid var(--red); outline-offset: 3px; border-radius: 1px; }
 :focus:not(:focus-visible) { outline: none; }
+
+/*
+ * The league bar sits flush beneath the sticky header, and the header paints above
+ * it (z-50 against z-40). The global focus ring uses a 3px OUTWARD offset, so on
+ * the bar's links the top edge of the ring landed underneath the header and was
+ * invisible exactly where keyboard users meet it first. Inset the ring instead:
+ * identical 2px Calgary red, drawn fully inside the target, which a 44px row has
+ * ample room for.
+ */
+.tl-bar a:focus-visible { outline-offset: -3px; }
+
+/*
+ * WCAG 2.2 SC 2.4.11, Focus Not Obscured. The site pins a header at the top, and on
+ * desktop the league bar pins under it, so the permanently covered band is 57px on a
+ * phone and 106px from lg. Anything the browser scrolls to, an in page anchor or a
+ * focused control reached by keyboard, would otherwise land underneath that band.
+ * There was no scroll-padding anywhere in this project before now.
+ */
+html { scroll-padding-top: 57px; }
+@media (min-width: 1024px) { html { scroll-padding-top: 106px; } }
 
 /* ═══════════════════════════════════════════════════════════════════════
    WEBGL FLUID BACKGROUND  (sits behind everything at z-index:-1)

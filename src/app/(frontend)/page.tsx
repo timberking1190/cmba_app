@@ -51,13 +51,18 @@ export default async function HomePage() {
     <div>
       <AnnouncementsStrip />
       {/* ── HERO ──────────────────────────────────────────── */}
-      <section className="px-5 md:px-10 lg:px-14 pt-16 lg:pt-24 pb-20 overflow-hidden">
+      {/* The hero's top spacing is tightened on phones to pay for the league bar.
+          The bar is 45px of permanent chrome above this section, and the fixed
+          MobileNav takes the bottom 65px, so without this the primary CTA slid
+          underneath it on an iPhone 13. Desktop spacing is deliberately untouched:
+          it has the room and the editorial scale depends on it. */}
+      <section className="px-5 md:px-10 lg:px-14 pt-6 lg:pt-24 pb-20 overflow-hidden">
         <div className="max-w-7xl mx-auto relative">
           {/* animated centerpiece (desktop only, behind the headline, non-interactive) */}
           <HeroNetwork className="hidden lg:block absolute right-0 xl:-right-6 top-2 z-0 opacity-60" />
 
           <div className="relative z-10">
-            <div className="mb-7 label-xs text-cmba-grey">
+            <div className="mb-4 lg:mb-7 label-xs text-cmba-grey">
               CMBA+ · Calgary Minor Basketball
             </div>
 
@@ -68,7 +73,7 @@ export default async function HomePage() {
               <span className="rise-line"><span className="block text-cmba-grey" style={{ animationDelay: ".24s" }}>Every official.</span></span>
             </h1>
 
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-7 mt-10">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 lg:gap-7 mt-6 lg:mt-10">
               <p className="max-w-[44ch] text-cmba-grey-light/90 text-base md:text-lg leading-relaxed">
                 Calgary Minor Basketball is a community of thousands of athletes, parents, coaches,
                 and officials growing the game across the city, one practice, whistle, and final

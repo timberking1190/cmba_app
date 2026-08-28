@@ -109,7 +109,7 @@ export default async function SchedulePage() {
                 <Info size={11} /> {sourceNote}
               </p>
             </div>
-            <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+            <aside className="space-y-4 lg:sticky lg:top-28 lg:self-start">
               <ManagedCallout appUrl={appUrl} />
               {showCalendarCard && <OfficialCalendarLink />}
               <a href={`${leagueUrl}/Schedule`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-mono text-[11px] text-cmba-red hover:text-white uppercase tracking-wider transition-colors">

@@ -40,15 +40,15 @@ export function AnnouncementsStrip() {
   const a = items[0]
 
   return (
-    <div className="bg-cmba-red/10 border-b border-cmba-red/30">
-      <div className="max-w-7xl mx-auto px-4 lg:px-6 py-2.5 flex items-center gap-3">
+    <div data-testid="announcements-strip" className="bg-cmba-red/10 border-b border-cmba-red/30">
+      <div className="max-w-7xl mx-auto px-4 lg:px-6 py-2 lg:py-2.5 flex items-center gap-3">
         <Megaphone size={16} className="text-cmba-red shrink-0" />
         {a.tag ? (
           <span className="font-mono text-[10px] uppercase tracking-wider bg-cmba-red/15 text-cmba-red px-1.5 py-0.5 shrink-0">{a.tag}</span>
         ) : null}
         <p className="text-sm text-cmba-grey-light min-w-0 truncate">
           <span className="text-white font-medium">{a.title}</span>
-          {a.body ? <span className="text-cmba-grey"> — {a.body}</span> : null}
+          {a.body ? <span className="text-cmba-grey">. {a.body}</span> : null}
         </p>
         {a.link ? (
           <Link href={a.link} className="ml-auto shrink-0 font-display font-bold text-xs uppercase tracking-wider text-cmba-red hover:text-white transition-colors">

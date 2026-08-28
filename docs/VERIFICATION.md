@@ -2084,3 +2084,237 @@ One process note worth recording. A mid-run suite failure on the desktop homepag
 hitting the single-worker local server at the same time as the suite. On a clean
 server the same routes answer in 0.02s to 0.33s and the suite passes 57 of 57. Worth
 remembering before chasing a timeout as a performance regression.
+
+---
+
+# Persistent TeamLinkt league bar, branch feat/teamlinkt-bar (2026-08-27)
+
+A slim always-visible bar under the site header on every frontend route, linking to
+the TeamLinkt Schedule, Standings, and score reporting. Branched from
+feat/live-bugfix at d5f63b9 on the operator's decision, so it inherits the reveal
+fix and the first-paint harness rather than working around them.
+
+## The brief's URLs were dead, and were changed
+
+The brief specified the league slug `calgaryminorbasketballassociation`. Verified
+twice, both league URLs answer **302 to www.teamlinkt.com/our-leagues/**, TeamLinkt's
+marketing page. TeamLinkt truncates the slug to 32 characters, so the working one
+drops the final "n". Shipping the brief literally would have put two of the bar's
+three links on a marketing page on every page of the site, which is the opposite of
+the bar's stated purpose. Confirmed with the operator before changing it.
+
+```
+/calgaryminorbasketballassociation/Schedule    -> 302  (the brief's URL)
+/calgaryminorbasketballassociation/Standings   -> 302  (the brief's URL)
+/calgaryminorbasketballassociatio/Schedule     -> 200  (shipped)
+/calgaryminorbasketballassociatio/Standings    -> 200  (shipped)
+https://app.teamlinkt.com                      -> 200  (shipped)
+```
+
+Guarded by `src/lib/__tests__/teamlinktBarLinks.test.ts`, which pins the slug, its
+length, the paths, the host, and that no destination uses the apex host that the CSP
+frame-src wildcard would not match.
+
+## Sticky decision: desktop only, and why
+
+The bar pins under the header from the lg breakpoint and scrolls away below it.
+
+Vertical space is the scarcest resource on this site on a phone. A 390x844 iPhone 13
+gives Playwright a 664px viewport, of which a sticky header already takes the top
+57px and a fixed MobileNav takes the bottom 65px. That is 18.4 percent gone before
+any content. Pinning a second bar would permanently spend another 45px, about 27
+percent of the screen, on chrome. On desktop that argument does not apply and the
+bar is more useful pinned.
+
+Measured, so the offset is exact rather than approximately right:
+
+| | scroll 0 | scrolled 900px |
+|---|---|---|
+| iPhone 13 | header bottom 57, bar top 57, `position: relative` | bar top -843, scrolled away |
+| Desktop 1280 | header bottom 98, bar top 98, `position: sticky` | header bottom 65, bar top 65, **0.0px gap** |
+
+`lg:top-[65px]` rather than `lg:top-16` (64px) because the header's own 1px bottom
+border makes its pinned edge 65px, and a 1px overlap would eat that border.
+
+Two consequences of pinning were found and fixed rather than left:
+
+- **Sticky asides collided.** `schedule/page.tsx` and `standings/page.tsx` both pin an
+  aside at `lg:top-24` (96px), which is above the bar's new pinned bottom edge of
+  106px, so they would have slid underneath it. Both raised to `lg:top-28`.
+- **WCAG 2.2 SC 2.4.11, Focus Not Obscured.** The pinned band grows from 65px to
+  106px, and the project had no `scroll-padding-top` anywhere, so anything scrolled
+  into view would land under it. Added `scroll-padding-top: 57px`, and 106px from lg.
+
+## Stacking resolution
+
+Order: header, then the league bar, then AnnouncementsStrip, then the page. Measured
+on iPhone 13 with a live announcement rendering:
+
+```
+header  0    -> 57
+bar     57   -> 102   (45px, no border-top)
+strip   102  -> 143
+hero h1 190.3
+```
+
+**No doubled borders.** The header already ends in `border-b border-cmba-red/60`, so
+the bar carries no `border-top`; a border there would composite into a 2px red line.
+The bar's own bottom border is `white/10` rather than red, so the stack reads red,
+neutral, red instead of three red hairlines inside 86px.
+
+**The hero is higher than before, not pushed down.** The bar costs 45px, so the hero
+was tightened on phones only (`pt-16` to `pt-6`, eyebrow `mb-7` to `mb-4`, row `mt-10`
+to `mt-6` and `gap-7` to `gap-5`, strip `py-2.5` to `py-2`), all with `lg:` restoring
+the original desktop spacing. Net effect on the homepage h1: **205.4px on production,
+190.3px with the bar**.
+
+Primary calls to action, iPhone 13, MobileNav pinned at y=599:
+
+| Route | Production (no bar) | With the bar |
+|---|---|---|
+| `/` "Browse the rules" | 527.6 to 587.6, **11.4px clear** | 504.9 to 564.9, **34.1px clear** |
+| `/` "Create account" | 599.6 to 661.6, occluded | 576.9 to 638.9, occluded (moved up 22.7px) |
+| `/login` sign in button | 970 to 1014 | 512 to 556, visible |
+| `/game-report` first choice | 433.6 to 589.6, visible | 438.6 to 594.6, visible |
+
+"Create account" was already occluded on production and stays occluded; it is the
+second of two stacked buttons below the 480px breakpoint. That is a pre-existing
+homepage layout issue, not a regression, and it moved 22.7px closer to visible.
+
+At 360x640 "Browse the rules" is occluded by 7.4px. On production it is occluded by
+31px at that width, so this is a large improvement but not a fix. Recorded honestly:
+that width is still not right, and fixing it means restructuring the two stacked hero
+buttons, which is outside this brief.
+
+## The eight required tests
+
+`e2e/teamlinkt-bar.spec.ts`, run on desktop-chromium, mobile-chrome (Pixel 5), and
+mobile-safari (iPhone 13): **57 passed**.
+
+| # | Requirement | How it is asserted |
+|---|---|---|
+| 1 | Renders on every frontend route | homepage, /schedule, /standings, /rules, /login, and a 404, each asserting the nav and all three links are PAINTED, not merely present |
+| 2 | Not in the Payload admin | `/admin` answers, and the bar's nav landmark has count 0 |
+| 3 | Correct destinations, safe new tab | each href equals the `cmbaLinks` constant, `target="_blank"`, and rel contains both `noopener` and `noreferrer` |
+| 4 | Visible with no JavaScript | the raw server bytes are replayed into a JS-disabled context with the real stylesheet |
+| 5 | Above the fold on first paint | all three links inside the viewport with `scrollY === 0` |
+| 6 | No horizontal overflow | 360x640, 390x844, 834x1112, across `/`, `/schedule`, `/login` |
+| 7 | Touch targets | 44x44 with 8px separation below lg, explicitly re-asserted at 360x640 and 390x844 |
+| 8 | Homepage stacking | strip starts at or below the bar's bottom edge, and the hero heading is still inside the viewport |
+
+Plus two the brief implies but does not list: a keyboard and focus test, and a
+screen-reader-name test asserting every link says both "TeamLinkt" and "new tab".
+
+### Test 4 was wrong at first, and the fix matters
+
+The first version copied the approach used by `first-paint.spec.ts`: render with
+script on, strip the classes an observer might have added, replay with script off.
+That is necessary for page content, which Next streams. But it **stripped
+`reveal-armed`, which is exactly the class that would hide the bar**, so it passed
+against a bar that was permanently invisible. Proven, not theorised: with the bar
+deliberately made reveal-dependent, test 5 failed and test 4 passed.
+
+The bar is rendered by the root layout, so it lands in the document shell before
+`<main>` and before any streaming boundary (verified: the nav is at byte 12255, and
+`<main>` starts at 17614). So the test now replays the **raw server response** with
+no stripping at all, and asserts that ordering so the test fails loudly if the bar
+ever moves inside the streamed region.
+
+### Required proof: tests 4 and 5 fail under the reveal pattern
+
+With `reveal reveal-armed` added to the bar's own markup, rebuilt and re-run:
+
+```
+2 failed
+  bar and all three links are painted with no JavaScript
+  all three links are inside the first screen with no scrolling
+```
+
+Both fail on the effective-opacity assertion. Reverted, both pass.
+
+## Design method
+
+The "Ken King Design Pro" agent is not available in this environment, so both passes
+were done here, as stated up front.
+
+Spec pass: three independent designs (three-across, scrollable rail, utility-bar
+label plus links), each scored by four separate lenses (a parent on a phone in a gym,
+Off+Brand fit, WCAG 2.2 AA, and vertical cost), against a measured recon of the real
+chrome stack. Review pass: the built component measured and screenshotted at 320,
+360, 390, 640, 768, 834, 1024, and 1280, in both themes.
+
+Findings the review pass caught in the built component and fixed:
+
+- **"STANDIN..." truncated on a phone.** Equal-width `flex-1` thirds forced the
+  longest label to clip. Items now size to their own label and spread with
+  `justify-between`, which also puts the outer targets under the thumbs.
+- **Focus ring hidden by the header.** The global ring uses a 3px outward offset, so
+  the top edge of the ring on the bar's links painted underneath the sticky header,
+  invisible exactly where a keyboard user meets it first. Inset for this component.
+- **Desktop right half empty.** Actions moved to the right with the framing line on
+  the left, matching the top hat bar and the header's own left and right split.
+- **No Calgary red on a phone**, because the topic icons drop below sm for width. The
+  external-link glyph is now red there. It doubles as what distinguishes this row
+  from the bottom MobileNav, which carries its own SCHEDULE and STANDINGS pointing at
+  our pages rather than TeamLinkt's.
+- **`role="list"`.** Tailwind preflight sets `list-style: none`, which makes Safari
+  with VoiceOver drop list semantics and the item count.
+- **`truncate` removed.** Clipping a label to an ellipsis is loss of information under
+  WCAG 1.4.10. The type steps down one notch below 360px instead, so every word stays
+  whole. Verified at the 320px reflow threshold: no overflow, no clipped label, all
+  three targets still 44px tall.
+- **`hover:text-white` was dead code.** In the light theme `--c-white` and
+  `--cmba-grey-light` are the same value, so the hover changed nothing. The
+  background wash does the work in both themes.
+- **Header's main nav had no accessible name**, which a second named nav landmark
+  directly beneath makes worse. Given `aria-label="Main"`.
+
+## Accessibility
+
+- Semantic `<nav aria-label="League information on TeamLinkt">` with `role="list"`.
+- Each link's accessible name is "<Destination> on TeamLinkt, opens in a new tab",
+  which starts with the visible label so WCAG 2.5.3 Label in Name holds.
+- Tab order asserted structurally (DOM order, no positive tabindex) rather than by
+  pressing Tab, because WebKit does not tab to links unless full keyboard access is
+  switched on, and driving the key would test a browser preference instead of the
+  component.
+- axe with wcag2a, wcag2aa and wcag22aa scoped to the bar: **0 serious or critical**,
+  in light and dark, on phone and desktop.
+- Page-level axe is unchanged from the documented baseline: `/` 7 (all pre-existing),
+  `/standings` 1 (inside TeamLinkt's own iframe), `/schedule`, `/rules` and `/login` 0.
+
+## Gate results
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | clean |
+| `npm run lint` | clean, 0 warnings |
+| `npm test` | **660 passed** (654 before, +6 link guards) |
+| `npm run build` | compiles |
+| `e2e/teamlinkt-bar.spec.ts`, 3 device projects | **57 passed** |
+| `e2e/first-paint.spec.ts`, 3 device projects | **57 passed**, no regression |
+| Tests 4 and 5 under the reveal pattern | **both fail**, as required |
+
+## Residual risks and things to know
+
+1. **`safe-x` is inert today, and that is fine.** The layout's `viewport` export does
+   not set `viewportFit: "cover"`, so `env(safe-area-inset-*)` resolves to 0. Without
+   `cover` the browser already insets the viewport away from the notch, so nothing is
+   clipped in landscape; the requirement is met by the platform default and the
+   utility is there for the day someone opts into `cover`. Enabling `cover` is a
+   site-wide change affecting the header and every page, so it was not done here.
+2. **360x640 still clips the primary homepage CTA by 7.4px.** Much better than
+   production's 31px, but not fixed. The cause is two stacked hero buttons below the
+   480px breakpoint.
+3. **1024px wide has a pre-existing horizontal overflow** of 178px, from the Header's
+   right-hand action group, not from this bar. Identical on production with and
+   without the bar (`scrollWidth` 1202 in both). Outside the brief's required widths,
+   which all pass.
+4. **AnnouncementsStrip reflows after hydration.** It is a client component that
+   fetches and returns null until data lands, so on first paint the page sits 37px
+   higher and then drops. Pre-existing, and the bar does not change it, but the two
+   are adjacent and it is worth knowing when reading first-paint measurements.
+5. **`first-paint.spec.ts` still uses the class-stripping approach** for page content,
+   which cannot be avoided there because that content is inside the streamed region.
+   It carries the same blind spot this branch fixed in test 4: it would not catch a
+   component that hard-codes `reveal-armed` in its own markup.

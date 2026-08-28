@@ -14,6 +14,7 @@ import { Observability } from "@/components/Observability";
 import { JsonLd } from "@/components/JsonLd";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { siteUrl, SITE_DESCRIPTION } from "@/lib/siteUrl";
+import { TeamLinktBar } from '@/components/TeamLinktBar'
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -131,6 +132,10 @@ export default async function RootLayout({
         <GlobalFX />
 
         <Header user={headerUser} />
+        {/* Permanent league bar. Mounted here so it is on every frontend route.
+            The Payload admin has its own layout under (payload) and never mounts
+            the public chrome, so it is excluded automatically. */}
+        <TeamLinktBar />
         {/* overflow-x-clip on mobile guards against any stray horizontal scroll;
             visible on lg so desktop sticky sidebars are unaffected. */}
         <main className="relative z-10 min-h-screen pb-16 lg:pb-0 overflow-x-clip lg:overflow-x-visible">{children}</main>

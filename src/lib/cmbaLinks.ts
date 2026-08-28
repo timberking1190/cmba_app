@@ -45,6 +45,35 @@ export const REGISTER = {
     "https://leagues.teamlinkt.com/calgaryminorbasketballassociation/390906",
 } as const;
 
+/*
+ * TeamLinkt league destinations for the persistent league bar (TeamLinktBar).
+ *
+ * TeamLinkt is the system of record for league play, so these three are the
+ * reliable route to a game time, a league table, and score reporting no matter
+ * what our own schedule and standings pages are showing.
+ *
+ * THE SLUG IS TRUNCATED TO 32 CHARACTERS BY TEAMLINKT, so it ends "associatio"
+ * with no trailing "n". This is not a typo, do not "fix" it. An unknown slug is
+ * answered with a 302 to TeamLinkt's marketing site rather than a 404, so getting
+ * it wrong silently sends every visitor to a page about league software. Verified
+ * with a plain request: the 32 character slug answers 200, the 33 character one
+ * answers 302 to www.teamlinkt.com/our-leagues/.
+ *
+ *   curl -sSI "https://leagues.teamlinkt.com/calgaryminorbasketballassociatio/Schedule"
+ *
+ * Note the older REGISTER.zonesAndSchedules above still carries the 33 character
+ * slug. It is left alone here because changing it is a separate concern with its
+ * own verification, and it is recorded as a follow up.
+ */
+const TEAMLINKT_LEAGUE = "https://leagues.teamlinkt.com/calgaryminorbasketballassociatio";
+
+export const TEAMLINKT = {
+  schedule: `${TEAMLINKT_LEAGUE}/Schedule`,
+  standings: `${TEAMLINKT_LEAGUE}/Standings`,
+  /* The TeamLinkt app sign in. Verified coaches and officials report scores there. */
+  reportScore: "https://app.teamlinkt.com",
+} as const;
+
 /* CMBA online courses (hosted on reach360). */
 export const COURSES = {
   coachTrainingRegister:
@@ -71,7 +100,7 @@ export const DOCS = {
     "https://cloud.rampinteractive.com/calgaryminorbasketball/files/CMBA%20Rules%20and%20Policies/CMBA%20Concussion%20Policy%20-%20update%20Jan%202023.pdf",
   mercy40:
     "https://docs.google.com/document/d/1Btp1dkS395yFt0bj3P2461OBvzleZlGTRMhCmbBpUWY/edit",
-  forfeit: "/rules", // native — the Forfeit policy is published in the Rules hub
+  forfeit: "/rules", // native: the Forfeit policy is published in the Rules hub
 
   ruleOfTwo: "https://coach.ca/understanding-rule-two",
   u11Mods:
@@ -88,9 +117,9 @@ export const DOCS = {
   boardContacts: "/leadership", // native Leadership & Board page
 
   meetingMinutes: "/meeting-minutes", // native governance page
-  sccCodeOfConduct: "/rules", // native — the SCC Code of Conduct is in the Rules hub
+  sccCodeOfConduct: "/rules", // native: the SCC Code of Conduct is in the Rules hub
 
-  sccReportDatabase: "/rules", // native — SCC code/decisions/appeals are in the Rules hub
+  sccReportDatabase: "/rules", // native: SCC code, decisions and appeals are in the Rules hub
   gameReportForm: "/game-report", // native game-report form (GameReports collection)
   springLeague: "/spring-league", // native program page
   summerCamps: "/summer-camps", // native program page

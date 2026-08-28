@@ -154,7 +154,7 @@ export function Header({ user: serverUser = null }: { user?: AuthUser }) {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-1 mix-blend-difference">
+          <nav aria-label="Main" className="hidden lg:flex items-center gap-1 mix-blend-difference">
             {navLinks.map((link) => (
               <div key={link.href} className="relative group"
                 onMouseEnter={() => link.children && setActiveDropdown(link.label)}

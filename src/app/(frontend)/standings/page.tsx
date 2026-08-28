@@ -59,7 +59,7 @@ export default async function StandingsPage() {
                 </ul>
               </div>
             </div>
-            <aside className="lg:sticky lg:top-24 lg:self-start">
+            <aside className="lg:sticky lg:top-28 lg:self-start">
               <div className="reveal rv-right bg-cmba-black-card/80 backdrop-blur-sm border border-cmba-red/30 p-5">
                 <h2 className="font-display font-black text-lg text-white uppercase tracking-tight mb-1">
                   Do this in <span className="text-cmba-red">TeamLinkt</span>
