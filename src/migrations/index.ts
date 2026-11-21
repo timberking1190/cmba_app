@@ -29,6 +29,7 @@ import * as migration_20260730_162639_bracket_winner_set_by from './20260730_162
 import * as migration_20260730_164115_bulk_edit_undo from './20260730_164115_bulk_edit_undo';
 import * as migration_20260731_032821_add_scheduler_role from './20260731_032821_add_scheduler_role';
 import * as migration_20260804_155514_merged_schema_snapshot from './20260804_155514_merged_schema_snapshot';
+import * as migration_20261121_033059_payload_3_93_upgrade from './20261121_033059_payload_3_93_upgrade';
 
 export const migrations = [
   {
@@ -184,6 +185,11 @@ export const migrations = [
   {
     up: migration_20260804_155514_merged_schema_snapshot.up,
     down: migration_20260804_155514_merged_schema_snapshot.down,
-    name: '20260804_155514_merged_schema_snapshot'
+    name: '20260804_155514_merged_schema_snapshot',
+  },
+  {
+    up: migration_20261121_033059_payload_3_93_upgrade.up,
+    down: migration_20261121_033059_payload_3_93_upgrade.down,
+    name: '20261121_033059_payload_3_93_upgrade'
   },
 ];

@@ -403,6 +403,7 @@ export interface User {
   resetPasswordExpiration?: string | null;
   salt?: string | null;
   hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
@@ -426,6 +427,7 @@ export interface Media {
    */
   alt: string;
   caption?: string | null;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -655,6 +657,7 @@ export interface CertificateFile {
    * The user this certificate file belongs to.
    */
   owner: number | User;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -1317,6 +1320,7 @@ export interface ScoresheetFile {
    * The game this scoresheet belongs to. Set at upload and locked.
    */
   game: number | Game;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -1651,6 +1655,7 @@ export interface IncidentFile {
   id: number;
   owner: number | User;
   game?: (number | null) | Game;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -2929,6 +2934,7 @@ export interface UsersSelect<T extends boolean = true> {
   resetPasswordExpiration?: T;
   salt?: T;
   hash?: T;
+  resetPasswordRequestedAt?: T;
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:
@@ -2998,6 +3004,7 @@ export interface CertificationsSelect<T extends boolean = true> {
  */
 export interface CertificateFilesSelect<T extends boolean = true> {
   owner?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -3263,6 +3270,7 @@ export interface AnnouncementsSelect<T extends boolean = true> {
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -3519,6 +3527,7 @@ export interface ScoreReportsSelect<T extends boolean = true> {
 export interface ScoresheetFilesSelect<T extends boolean = true> {
   owner?: T;
   game?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -3756,6 +3765,7 @@ export interface GameIncidentsSelect<T extends boolean = true> {
 export interface IncidentFilesSelect<T extends boolean = true> {
   owner?: T;
   game?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
