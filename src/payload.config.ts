@@ -7,6 +7,7 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { trackedEmailAdapter } from './lib/email/adapter'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { buildConfig } from 'payload'
+import nodemailer from 'nodemailer'
 import sharp from 'sharp'
 
 import { Announcements } from './collections/Announcements'
@@ -272,18 +273,22 @@ export default buildConfig({
       defaultFromName: 'CMBA Connect',
       // AWS SES (ca-central-1) over SMTP when configured. Without SES creds we use
       // nodemailer's jsonTransport (no network) so dev/build never hangs or sends.
-      transportOptions: process.env.SES_SMTP_HOST
+      // nodemailer 10 types transportOptions as SMTP only, so the JSON transport is
+      // built here and passed as a ready transport instead.
+      ...(process.env.SES_SMTP_HOST
         ? {
-            host: process.env.SES_SMTP_HOST,
-            port: Number(process.env.SES_SMTP_PORT) || 587,
-            secure: false,
-            requireTLS: true,
-            auth: {
-              user: process.env.SES_SMTP_USER,
-              pass: process.env.SES_SMTP_PASS,
+            transportOptions: {
+              host: process.env.SES_SMTP_HOST,
+              port: Number(process.env.SES_SMTP_PORT) || 587,
+              secure: false,
+              requireTLS: true,
+              auth: {
+                user: process.env.SES_SMTP_USER,
+                pass: process.env.SES_SMTP_PASS,
+              },
             },
           }
-        : { jsonTransport: true },
+        : { transport: nodemailer.createTransport({ jsonTransport: true }) }),
     }),
   ),
   sharp,

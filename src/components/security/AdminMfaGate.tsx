@@ -18,8 +18,11 @@ export function AdminMfaGate({ children }: { children?: React.ReactNode }) {
       .then((d: { enforced?: boolean; decision?: string } | null) => {
         if (cancelled || !d || !d.enforced) return
         const next = '?next=' + encodeURIComponent('/admin')
+        // Kept as a full page load, as before this upgrade.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         if (d.decision === 'enroll-required') window.location.href = '/account/security' + next
         else if (d.decision === 'challenge-required' || d.decision === 'stepup-required') {
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
           window.location.href = '/account/security/challenge' + next
         }
       })

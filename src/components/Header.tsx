@@ -84,6 +84,7 @@ export function Header({ user: serverUser = null }: { user?: AuthUser }) {
     setSignedOut(true);
     // A full document load, for the same reason sign in uses one: the client
     // router may hold a cached render made while the member was still signed in.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- a full load is the point, see above
     window.location.assign("/");
   }
 
